@@ -55,7 +55,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_sim = new VisionSystemSim(getName());
 
     // Load AprilTag field layout
-    m_fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+    m_fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     // PV estimates will always be blue
     m_fieldLayout.setOrigin(AprilTagFieldLayout.OriginPosition.kBlueAllianceWallRightSide);
 

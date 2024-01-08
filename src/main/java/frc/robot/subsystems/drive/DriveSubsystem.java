@@ -12,6 +12,7 @@ import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
+import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
@@ -164,8 +165,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, deadband, DRIVE_MAX_LINEAR_SPEED);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, -0.5),
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, -0.1),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.5),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED,
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),
@@ -258,7 +259,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule lFrontModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
-        Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID
+        Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
+        MotorKind.NEO
       ),
       MAXSwerveModule.ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
@@ -271,7 +273,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule rFrontModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
-        Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID
+        Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
+        MotorKind.NEO
       ),
       MAXSwerveModule.ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
@@ -284,7 +287,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule lRearModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
-        Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID
+        Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
+        MotorKind.NEO
       ),
       MAXSwerveModule.ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
@@ -297,7 +301,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule rRearModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
-        Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID
+        Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
+        MotorKind.NEO
       ),
       MAXSwerveModule.ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
@@ -508,7 +513,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Configure AutoBuilder for PathPlannerLib
    */
   public void configureAutoBuilder() {
-    AutoBuilder.configureHolonomic(this::getPose, this::resetPose, this::getChassisSpeeds, this::autoDrive, m_pathFollowerConfig, this);
+    AutoBuilder.configureHolonomic(
+      this::getPose,
+      this::resetPose,
+      this::getChassisSpeeds,
+      this::autoDrive,
+      m_pathFollowerConfig,
+      () -> false,
+      this
+    );
   }
 
   /**

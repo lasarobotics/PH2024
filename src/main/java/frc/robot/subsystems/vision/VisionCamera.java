@@ -56,7 +56,7 @@ public class VisionCamera implements Runnable, AutoCloseable {
   public VisionCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
     this.m_camera = new PhotonCamera(name);
     this.m_transform = transform;
-    var fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+    var fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     // PV estimates will always be blue
     fieldLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
     this.m_poseEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera, m_transform);

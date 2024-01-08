@@ -9,7 +9,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.hardware.revrobotics.SparkMax;
+import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
 
@@ -36,21 +36,15 @@ import frc.robot.subsystems.vision.VisionCamera.Resolution;
  */
 public final class Constants {
   public static class Field {
-    public static final double FIELD_WIDTH = 8.1026;
-    public static final double FIELD_LENGTH = 16.4846;
+    public static final double FIELD_WIDTH = 8.21;
+    public static final double FIELD_LENGTH = 16.54;
 
     public static final Translation2d CENTER = new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2);
+    public static final Translation2d BLUE_SPEAKER = new Translation2d(0.00, 5.55);
+    public static final Translation2d RED_SPEAKER = new Translation2d(15.64, 5.55);
 
-    public static final PurplePathPose SUBSTATION = new PurplePathPose(new Pose2d(15.72, 6.15, Rotation2d.fromDegrees(0.0)), new Pose2d(0.85, 6.15, Rotation2d.fromDegrees(180.0)), 2.0);
-    public static final PurplePathPose GRID_1 = new PurplePathPose(new Pose2d(1.85, 4.93, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 4.93, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_2 = new PurplePathPose(new Pose2d(1.85, 4.45, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 4.45, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_3 = new PurplePathPose(new Pose2d(1.85, 3.90, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 3.90, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_4 = new PurplePathPose(new Pose2d(1.85, 3.30, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 3.30, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_5 = new PurplePathPose(new Pose2d(1.85, 2.75, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 2.75, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_6 = new PurplePathPose(new Pose2d(1.85, 2.20, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 2.20, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_7 = new PurplePathPose(new Pose2d(1.85, 1.65, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 1.65, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_8 = new PurplePathPose(new Pose2d(1.85, 1.10, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 1.10, Rotation2d.fromDegrees(0.0)), 0.15);
-    public static final PurplePathPose GRID_9 = new PurplePathPose(new Pose2d(1.85, 0.52, Rotation2d.fromDegrees(180.0)), new Pose2d(14.70, 0.52, Rotation2d.fromDegrees(0.0)), 0.15);
+    public static final PurplePathPose AMP = new PurplePathPose(new Pose2d(1.85, 7.77, Rotation2d.fromDegrees(+90.0)), new Pose2d(14.66, 7.77, Rotation2d.fromDegrees(+90.0)), 1.0);
+    public static final PurplePathPose SOURCE = new PurplePathPose(new Pose2d(15.48, 0.84, Rotation2d.fromDegrees(-60.00)), new Pose2d(1.07, 0.82, Rotation2d.fromDegrees(-120.0)), 0.8);
   }
 
   public static class HID {
@@ -81,14 +75,14 @@ public final class Constants {
 
   public static class DriveHardware {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
-    public static final SparkMax.ID LEFT_FRONT_DRIVE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/LeftFront/Drive", 2);
-    public static final SparkMax.ID LEFT_FRONT_ROTATE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/LeftFront/Rotate", 3);
-    public static final SparkMax.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/RightFront/Drive", 4);
-    public static final SparkMax.ID RIGHT_FRONT_ROTATE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/RightFront/Rotate", 5);
-    public static final SparkMax.ID LEFT_REAR_DRIVE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/LeftRear/Drive", 6);
-    public static final SparkMax.ID LEFT_REAR_ROTATE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/LeftRear/Rotate", 7);
-    public static final SparkMax.ID RIGHT_REAR_DRIVE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/RightRear/Drive", 8);
-    public static final SparkMax.ID RIGHT_REAR_ROTATE_MOTOR_ID = new SparkMax.ID("DriveHardware/Swerve/RightRear/Rotate", 9);
+    public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 2);
+    public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 3);
+    public static final Spark.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Drive", 4);
+    public static final Spark.ID RIGHT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Rotate", 5);
+    public static final Spark.ID LEFT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Drive", 6);
+    public static final Spark.ID LEFT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Rotate", 7);
+    public static final Spark.ID RIGHT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Drive", 8);
+    public static final Spark.ID RIGHT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Rotate", 9);
     public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 

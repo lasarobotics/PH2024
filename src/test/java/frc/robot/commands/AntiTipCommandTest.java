@@ -21,13 +21,14 @@ import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.drive.MAXSwerveModule.ModuleLocation;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
-import org.lasarobotics.hardware.revrobotics.SparkMax;
-import org.lasarobotics.hardware.revrobotics.SparkMaxInputsAutoLogged;
+import org.lasarobotics.hardware.revrobotics.Spark;
+import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
+import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.lasarobotics.led.LEDStrip;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
-import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkBase.ControlType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -42,10 +43,10 @@ public class AntiTipCommandTest {
 
   private NavX2 m_navx;
 
-  private SparkMax m_lFrontDriveMotor, m_lFrontRotateMotor;
-  private SparkMax m_rFrontDriveMotor, m_rFrontRotateMotor;
-  private SparkMax m_lRearDriveMotor, m_lRearRotateMotor;
-  private SparkMax m_rRearDriveMotor, m_rRearRotateMotor;
+  private Spark m_lFrontDriveMotor, m_lFrontRotateMotor;
+  private Spark m_rFrontDriveMotor, m_rFrontRotateMotor;
+  private Spark m_lRearDriveMotor, m_lRearRotateMotor;
+  private Spark m_rRearDriveMotor, m_rRearRotateMotor;
 
   private LEDStrip m_ledStrip;
 
@@ -53,29 +54,34 @@ public class AntiTipCommandTest {
   public void setup() {
     // Create mock hardware devices
     m_navx = mock(NavX2.class);
-    m_lFrontDriveMotor = mock(SparkMax.class);
-    m_lFrontRotateMotor = mock(SparkMax.class);
-    m_rFrontDriveMotor = mock(SparkMax.class);
-    m_rFrontRotateMotor = mock(SparkMax.class);
-    m_lRearDriveMotor = mock(SparkMax.class);
-    m_lRearRotateMotor = mock(SparkMax.class);
-    m_rRearDriveMotor = mock(SparkMax.class);
-    m_rRearRotateMotor = mock(SparkMax.class);
+    m_lFrontDriveMotor = mock(Spark.class);
+    m_lFrontRotateMotor = mock(Spark.class);
+    m_rFrontDriveMotor = mock(Spark.class);
+    m_rFrontRotateMotor = mock(Spark.class);
+    m_lRearDriveMotor = mock(Spark.class);
+    m_lRearRotateMotor = mock(Spark.class);
+    m_rRearDriveMotor = mock(Spark.class);
+    m_rRearRotateMotor = mock(Spark.class);
     m_ledStrip = mock(LEDStrip.class);
 
 
     NavX2InputsAutoLogged navxInputs = new NavX2InputsAutoLogged();
     when(m_navx.getInputs()).thenReturn(navxInputs);
 
-    SparkMaxInputsAutoLogged sparkMaxInputs = new SparkMaxInputsAutoLogged();
-    when(m_lFrontDriveMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_rFrontDriveMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_lRearDriveMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_lRearRotateMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_rRearDriveMotor.getInputs()).thenReturn(sparkMaxInputs);
-    when(m_rRearRotateMotor.getInputs()).thenReturn(sparkMaxInputs);
+    SparkInputsAutoLogged sparkInputs = new SparkInputsAutoLogged();
+    when(m_lFrontDriveMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_rFrontDriveMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_lRearDriveMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_lRearRotateMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
+    when(m_rRearRotateMotor.getInputs()).thenReturn(sparkInputs);
+
+    when(m_lFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_rFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_lRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_rRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
 
     // Create hardware object using mock devices
     m_drivetrainHardware = new DriveSubsystem.Hardware(

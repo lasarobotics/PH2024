@@ -85,7 +85,7 @@ public class AutoTrajectory {
    * @return Ramsete command that will stop when complete
    */
   public Command getCommandAndStop() {
-    return AutoBuilder.followPathWithEvents(m_path)
+    return AutoBuilder.followPath(m_path)
            .andThen(() -> {
               m_driveSubsystem.resetTurnPID();
               m_driveSubsystem.lock();
@@ -101,7 +101,7 @@ public class AutoTrajectory {
   public Command getCommandAndStop(boolean isFirstPath) {
     if (isFirstPath) {
       return Commands.runOnce(() -> resetOdometry())
-              .andThen(AutoBuilder.followPathWithEvents(m_path))
+              .andThen(AutoBuilder.followPath(m_path))
               .andThen(() -> {
                 m_driveSubsystem.resetTurnPID();
                 m_driveSubsystem.lock();
@@ -117,8 +117,8 @@ public class AutoTrajectory {
    *     following command.
    * @return Command to execute actions in autonomous
    */
-  public Command getCommandAndStopWithEvents(HashMap<String, Command> eventMap) {
-    return AutoBuilder.followPathWithEvents(m_path)
+  public Command getCommandAndStop(HashMap<String, Command> eventMap) {
+    return AutoBuilder.followPath(m_path)
            .andThen(() -> {
               m_driveSubsystem.resetTurnPID();
               m_driveSubsystem.lock();
@@ -134,15 +134,15 @@ public class AutoTrajectory {
    *     following command.
    * @return Command to execute actions in autonomous
    */
-  public Command getCommandAndStopWithEvents(boolean isFirstPath, HashMap<String, Command> eventMap) {
+  public Command getCommandAndStop(boolean isFirstPath, HashMap<String, Command> eventMap) {
     if (isFirstPath) {
-      return AutoBuilder.followPathWithEvents(m_path)
+      return AutoBuilder.followPath(m_path)
              .andThen(() -> {
               m_driveSubsystem.resetTurnPID();
               m_driveSubsystem.lock();
               m_driveSubsystem.stop();
             });
-    } else return getCommandAndStopWithEvents(eventMap);
+    } else return getCommandAndStop(eventMap);
   }
 
   /**
@@ -150,7 +150,7 @@ public class AutoTrajectory {
    * @return Ramsete command that does NOT stop when complete
    */
   public Command getCommand() {
-    return AutoBuilder.followPathWithEvents(m_path).andThen(() -> m_driveSubsystem.resetTurnPID());
+    return AutoBuilder.followPath(m_path).andThen(() -> m_driveSubsystem.resetTurnPID());
   }
 
   /**
@@ -161,7 +161,7 @@ public class AutoTrajectory {
   public Command getCommand(boolean isFirstPath) {
     if (isFirstPath) {
       return Commands.runOnce(() -> resetOdometry())
-             .andThen(AutoBuilder.followPathWithEvents(m_path))
+             .andThen(AutoBuilder.followPath(m_path))
              .andThen(() -> m_driveSubsystem.resetTurnPID());
     } else return getCommand();
   }

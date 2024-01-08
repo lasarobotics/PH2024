@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.revrobotics.REVPhysicsSim;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -48,15 +50,13 @@ public class RobotContainer {
         DRIVE_SUBSYSTEM.aimAtPoint(
           -PRIMARY_CONTROLLER.getLeftY(),
           -PRIMARY_CONTROLLER.getLeftX(),
-          Constants.Field.CENTER
+          DriverStation.getAlliance().get() == Alliance.Blue ? Constants.Field.BLUE_SPEAKER : Constants.Field.RED_SPEAKER
         )
       ).finallyDo(() -> DRIVE_SUBSYSTEM.resetTurnPID())
     );
 
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.SUBSTATION));
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.GRID_5));
-    PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.GRID_8));
-    PRIMARY_CONTROLLER.x().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.GRID_2));
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.AMP));
+    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.SOURCE));
   }
 
   /**

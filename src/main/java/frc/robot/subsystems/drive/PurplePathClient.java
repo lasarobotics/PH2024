@@ -153,10 +153,10 @@ public class PurplePathClient {
 
     // Return path following command
     CommandScheduler.getInstance().removeComposedCommand(parallelCommand);
-    return isClose ? AutoBuilder.followPathWithEvents(path).alongWith(parallelCommand)
+    return isClose ? AutoBuilder.followPath(path).alongWith(parallelCommand)
                    : Commands.sequence(
-                      AutoBuilder.followPathWithEvents(path),
-                      AutoBuilder.followPathWithEvents(finalApproachPath).alongWith(parallelCommand)
+                      AutoBuilder.followPath(path),
+                      AutoBuilder.followPath(finalApproachPath).alongWith(parallelCommand)
                     );
   }
 
