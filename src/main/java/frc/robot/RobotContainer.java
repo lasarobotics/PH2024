@@ -31,8 +31,10 @@ public class RobotContainer {
   public RobotContainer() {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
-      DRIVE_SUBSYSTEM.run(
-        () -> DRIVE_SUBSYSTEM.teleopPID(-PRIMARY_CONTROLLER.getLeftY(), -PRIMARY_CONTROLLER.getLeftX(), PRIMARY_CONTROLLER.getRightX())
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> -PRIMARY_CONTROLLER.getLeftY(),
+        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX()
       )
     );
 
@@ -44,19 +46,19 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.toggleTractionControl()));
+    PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
     PRIMARY_CONTROLLER.leftBumper().whileTrue(
-      DRIVE_SUBSYSTEM.run(() ->
-        DRIVE_SUBSYSTEM.aimAtPoint(
-          -PRIMARY_CONTROLLER.getLeftY(),
-          -PRIMARY_CONTROLLER.getLeftX(),
-          DriverStation.getAlliance().get() == Alliance.Blue ? Constants.Field.BLUE_SPEAKER : Constants.Field.RED_SPEAKER
-        )
-      ).finallyDo(() -> DRIVE_SUBSYSTEM.resetTurnPID())
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> -PRIMARY_CONTROLLER.getLeftY(),
+        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
+          ? Constants.Field.BLUE_SPEAKER
+          : Constants.Field.RED_SPEAKER
+      )
     );
 
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.AMP));
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPose(Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
+    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
   }
 
   /**

@@ -136,7 +136,7 @@ public class DriveSubsystemTest {
     );
 
     // Disable traction control for unit tests
-    m_driveSubsystem.disableTractionControl();
+    m_driveSubsystem.disableTractionControlCommand().initialize();
   }
 
   @AfterEach
@@ -156,7 +156,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to drive forward
-    m_driveSubsystem.teleopPID(+1.0, 0.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> +1.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -180,7 +180,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to drive in reverse
-    m_driveSubsystem.teleopPID(-1.0, 0.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> -1.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -204,7 +204,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to strafe left
-    m_driveSubsystem.teleopPID(0.0, +1.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> +1.0, () -> 0.0).execute();
 
     // Verify motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -228,7 +228,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to strafe right
-    m_driveSubsystem.teleopPID(0.0, -1.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> -1.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -252,7 +252,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to rotate left
-    m_driveSubsystem.teleopPID(0.0, 0.0, +1.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> 0.0, () -> +1.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.gt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -276,7 +276,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to rotate right
-    m_driveSubsystem.teleopPID(0.0, 0.0, -1.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> 0.0, () -> -1.0).execute();;
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -294,7 +294,7 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can stop")
   public void stop() {
     // Try to stop
-    m_driveSubsystem.teleopPID(0.0, 0.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -312,7 +312,7 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can lock swerve modules")
   public void lock() {
     // Try to lock swerve modules
-    m_driveSubsystem.lock();
+    m_driveSubsystem.lockCommand().initialize();;
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -336,7 +336,7 @@ public class DriveSubsystemTest {
     when(m_navx.getInputs()).thenReturn(inputs);
 
     // Try to stay still
-    m_driveSubsystem.teleopPID(0.0, 0.0, 0.0);
+    m_driveSubsystem.driveCommand(() -> 0.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -363,8 +363,8 @@ public class DriveSubsystemTest {
     when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
 
     // Try to drive forward with traction control
-    m_driveSubsystem.enableTractionControl();
-    m_driveSubsystem.teleopPID(+1.0, 0.0, 0.0);
+    m_driveSubsystem.enableTractionControlCommand().initialize();
+    m_driveSubsystem.driveCommand(() -> +1.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+0.28, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -391,8 +391,8 @@ public class DriveSubsystemTest {
     when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
 
     // Try to drive forward without traction control
-    m_driveSubsystem.disableTractionControl();
-    m_driveSubsystem.teleopPID(+1.0, 0.0, 0.0);
+    m_driveSubsystem.disableTractionControlCommand().initialize();
+    m_driveSubsystem.driveCommand(() -> +1.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -411,7 +411,7 @@ public class DriveSubsystemTest {
   public void aimLeftTowardsPoint() {
     // Rotate left towards point
     m_driveSubsystem.resetPose(new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0)));
-    m_driveSubsystem.aimAtPoint(new Translation2d(0.0, Constants.Field.FIELD_WIDTH));
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH)).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -430,7 +430,7 @@ public class DriveSubsystemTest {
   public void aimRightTowardsPoint() {
     // Rotate right towards point
     m_driveSubsystem.resetPose(new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0)));
-    m_driveSubsystem.aimAtPoint(new Translation2d(0.0, 0.0));
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0)).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.gt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));

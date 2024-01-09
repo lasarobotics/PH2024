@@ -43,8 +43,8 @@ public final class Constants {
     public static final Translation2d BLUE_SPEAKER = new Translation2d(0.00, 5.55);
     public static final Translation2d RED_SPEAKER = new Translation2d(15.64, 5.55);
 
-    public static final PurplePathPose AMP = new PurplePathPose(new Pose2d(1.85, 7.77, Rotation2d.fromDegrees(+90.0)), new Pose2d(14.66, 7.77, Rotation2d.fromDegrees(+90.0)), 1.0);
-    public static final PurplePathPose SOURCE = new PurplePathPose(new Pose2d(15.48, 0.84, Rotation2d.fromDegrees(-60.00)), new Pose2d(1.07, 0.82, Rotation2d.fromDegrees(-120.0)), 0.8);
+    public static final PurplePathPose AMP = new PurplePathPose(new Pose2d(1.85, 7.77, Rotation2d.fromDegrees(+90.0)), new Pose2d(14.66, 7.77, Rotation2d.fromDegrees(+90.0)), 0.7);
+    public static final PurplePathPose SOURCE = new PurplePathPose(new Pose2d(15.48, 0.84, Rotation2d.fromDegrees(-60.00)), new Pose2d(1.07, 0.82, Rotation2d.fromDegrees(-120.0)), 0.7);
   }
 
   public static class HID {

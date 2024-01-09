@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class PurplePathClient {
   private final String GOAL_POSE_LOG_ENTRY = "/GoalPose";
   private final String FINAL_APPROACH_POSE_LOG_ENTRY = "/FinalApproachPose";
+  private final double FINAL_APPROACH_SPEED_FUDGE_FACTOR = 0.6;
   private final double PATH_DISTANCE_SPEED_FUDGE_FACTOR = 0.3;
 
   private final String URI;
@@ -141,7 +142,7 @@ public class PurplePathClient {
       new GoalEndState(
         isClose ? 0.0
                 : Math.min(
-                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * finalApproachDistance),
+                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
                     Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * distance) * PATH_DISTANCE_SPEED_FUDGE_FACTOR
                 ),
         finalApproachPose.getRotation()
