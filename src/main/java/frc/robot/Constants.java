@@ -86,6 +86,12 @@ public final class Constants {
     public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 
+  public static class ShooterHardware {
+    public static final Spark.ID LEFT_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Left", 11);
+    public static final Spark.ID RIGHT_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Right", 12);
+    
+  }
+
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "cameraA";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
