@@ -112,6 +112,10 @@ public final class Constants {
     public static final Rotation2d CAMERA_C_FOV = Rotation2d.fromDegrees(79.7);
   }
 
+  public static class IntakeHardware {
+    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/LeftFront/Drive", 10);
+  }
+
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
