@@ -122,7 +122,7 @@ public final class Constants {
   }
 
   public static class IntakeHardware {
-    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/LeftFront/Drive", 10);
+    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/RollerMotor", 10);
   }
 
   public static class SmartDashboard {

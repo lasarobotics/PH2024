@@ -18,18 +18,18 @@ import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
   public static class Hardware {
-    private Spark rollorMotor;
+    private Spark rollerMotor;
 
-    public Hardware(Spark rollorMotor) {
-      this.rollorMotor = rollorMotor;
+    public Hardware(Spark rollerMotor) {
+      this.rollerMotor = rollerMotor;
     }
   }
 
-  private Spark m_rollorMotor;
+  private Spark m_rollerMotor;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(Hardware intakeHardware) {
-    this.m_rollorMotor = intakeHardware.rollorMotor;
+    this.m_rollerMotor = intakeHardware.rollerMotor;
   }
   
   /**
@@ -46,7 +46,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Tells the robot to intake
   private void intake(double speed) {
-    m_rollorMotor.set(speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
+    m_rollerMotor.set(speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
   }
 
   public Command intakeCommand(DoubleSupplier speed) {
@@ -55,7 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Tells the robot to outtake
   private void outtake(double speed) {
-    m_rollorMotor.set(-speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
+    m_rollerMotor.set(-speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
   }
 
   public Command outtakeCommand(DoubleSupplier speed) {
@@ -64,7 +64,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Stop the robot
   private void stop() {
-    m_rollorMotor.stopMotor();;
+    m_rollerMotor.stopMotor();;
   }
 
   @Override
