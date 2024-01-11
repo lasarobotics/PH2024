@@ -49,22 +49,22 @@ public class IntakeSubsystem extends SubsystemBase {
     m_rollerMotor.set(speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
   }
 
-  public Command intakeCommand(DoubleSupplier speed) {
-    return startEnd(() -> intake(speed.getAsDouble()), () -> stop());
-  }
-
   // Tells the robot to outtake
   private void outtake(double speed) {
     m_rollerMotor.set(-speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
   }
 
-  public Command outtakeCommand(DoubleSupplier speed) {
-    return startEnd(() -> outtake(speed.getAsDouble()), () -> stop());
-  }
-
   // Stop the robot
   private void stop() {
     m_rollerMotor.stopMotor();;
+  }
+  
+  public Command intakeCommand(DoubleSupplier speed) {
+    return startEnd(() -> intake(speed.getAsDouble()), () -> stop());
+  }
+
+  public Command outtakeCommand(DoubleSupplier speed) {
+    return startEnd(() -> outtake(speed.getAsDouble()), () -> stop());
   }
 
   @Override
