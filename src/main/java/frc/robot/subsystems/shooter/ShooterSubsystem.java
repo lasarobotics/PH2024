@@ -26,36 +26,44 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
-  Hardware h;
+  Spark m_leftMotor;
+  Spark m_rightMotor;
 
-  /** Creates a new Shooter. */
-  public ShooterSubsystem(Hardware intakHardware) {
-    this.h = intakHardware;
+  /**
+   * Create an instance of ShooterSubsystem
+   * <p>
+   * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
+   * <p>
+   * @param shooterHardware Hardware devices required by shooter
+   */
+  public ShooterSubsystem(Hardware shooterHardware) {
+    this.m_leftMotor = shooterHardware.leftMotor;
+    this.m_rightMotor = shooterHardware.rightMotor;
   }
 
   public Hardware initializeHardware() {
-    Hardware intakeHardware = new Hardware(
-      new Spark(Constants.ShooterHardware.LEFT_MOTOR_ID, MotorKind.NEO), 
+    Hardware shooterHardware = new Hardware(
+      new Spark(Constants.ShooterHardware.LEFT_MOTOR_ID, MotorKind.NEO),
       new Spark(Constants.ShooterHardware.RIGHT_MOTOR_ID, MotorKind.NEO)
     );
 
-    return intakeHardware;
+    return shooterHardware;
   }
 
-  private void set_power(double power) {
-    h.rightMotor.set(power);
+  private void setPower(double power) {
+    m_leftMotor.set(power);
   }
 
   private void stop() {
-    h.rightMotor.stopMotor();
-  }
-
-  public Command shootCommand(DoubleSupplier speed) {
-    return startEnd(() -> set_power(speed.getAsDouble()), () -> stop());
+    m_leftMotor.stopMotor();
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  public Command shootCommand(DoubleSupplier speed) {
+    return startEnd(() -> setPower(speed.getAsDouble()), () -> stop());
   }
 }
