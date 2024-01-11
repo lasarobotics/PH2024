@@ -30,6 +30,7 @@ import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -90,37 +91,37 @@ public class AntiTipCommandTest {
         new MAXSwerveModule.Hardware(m_lFrontDriveMotor, m_lFrontRotateMotor),
         ModuleLocation.LeftFront,
         Constants.Drive.GEAR_RATIO,
-        Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.AUTO_LOCK_TIME
+        DriveSubsystem.AUTO_LOCK_TIME,
+        Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
         ModuleLocation.RightFront,
         Constants.Drive.GEAR_RATIO,
-        Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.AUTO_LOCK_TIME
+        DriveSubsystem.AUTO_LOCK_TIME,
+        Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
         ModuleLocation.LeftRear,
         Constants.Drive.GEAR_RATIO,
-        Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.AUTO_LOCK_TIME
+        DriveSubsystem.AUTO_LOCK_TIME,
+        Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
         ModuleLocation.RightRear,
         Constants.Drive.GEAR_RATIO,
-        Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.AUTO_LOCK_TIME
+        DriveSubsystem.AUTO_LOCK_TIME,
+        Constants.Drive.DRIVE_SLIP_RATIO
       ),
       m_ledStrip
     );
@@ -155,7 +156,7 @@ public class AntiTipCommandTest {
   public void execute() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.rollAngle = +35.0;
+    inputs.rollAngle = Units.Degrees.of(+35.0);
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -163,13 +164,13 @@ public class AntiTipCommandTest {
     m_antiTipCommand.execute();
 
     // Verify motors are being driven with expected values
-    verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_lFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_rFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_lRearDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lRearDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_lRearRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rRearDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rRearDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_rRearRotateMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
   }
 
@@ -179,7 +180,7 @@ public class AntiTipCommandTest {
   public void isFinished() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.rollAngle = +4.0;
+    inputs.rollAngle = Units.Degrees.of(+4.0);
 
     when(m_navx.getInputs()).thenReturn(inputs);
 

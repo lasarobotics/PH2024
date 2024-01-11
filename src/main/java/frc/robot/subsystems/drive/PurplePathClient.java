@@ -102,7 +102,7 @@ public class PurplePathClient {
     PathPlannerPath finalApproachPath = goal.getFinalApproachPath();
     double finalApproachDistance = goal.getFinalApproachDistance();
 
-    if (goalPose == null || finalApproachPose == null || finalApproachPath == null) return Commands.none();
+    if (goalPose == null || finalApproachPose == null || finalApproachPath == null) return parallelCommand;
 
     // Check if robot is close to goal
     boolean isClose = start.getTranslation().getDistance(goalPose.getTranslation()) < finalApproachDistance;
@@ -124,8 +124,8 @@ public class PurplePathClient {
     // Attempt to read path from response
     List<Translation2d> points = JSONObject.readPointList(jsonResponse);
 
-    // If path isn't there, return empty command
-    if (points == null || points.size() < 2) return Commands.none();
+    // If path isn't there, return specified command
+    if (points == null || points.size() < 2) return parallelCommand;
 
     // Convert to PathPoint list
     double distance = 0.0;

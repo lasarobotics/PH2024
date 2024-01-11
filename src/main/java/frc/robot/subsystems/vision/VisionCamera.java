@@ -119,13 +119,6 @@ public class VisionCamera implements Runnable, AutoCloseable {
     m_camera.setPipelineIndex(index);
   }
 
-  /**
-   * Allows user to set pipeline index
-   */
-  public void getCamera(int index) {
-    m_camera.setPipelineIndex(index);
-  }
-
   /***
    * Get camera to robot transform
    * @return Camera to robot transform

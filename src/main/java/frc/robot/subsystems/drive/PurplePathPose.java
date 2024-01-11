@@ -14,6 +14,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -33,14 +36,14 @@ public class PurplePathPose {
    * MUST call {@link PurplePathPose#calculateFinalApproach(PathConstraints)} before using
    * @param bluePose Pose if blue alliance
    * @param redPose Pose if red alliance
-   * @param finalApproachDistance Distance of final approach in meters [0.15, 1.00]
+   * @param finalApproachDistance Distance of final approach
    * @param isReversed True if robot's rear is facing object
    */
-  public PurplePathPose(Pose2d bluePose, Pose2d redPose, double finalApproachDistance, boolean isReversed) {
+  public PurplePathPose(Pose2d bluePose, Pose2d redPose, Measure<Distance> finalApproachDistance, boolean isReversed) {
     this.m_bluePose = bluePose;
     this.m_redPose = redPose;
     this.m_finalApproachDistance = MathUtil.clamp(
-      finalApproachDistance,
+      finalApproachDistance.in(Units.Meters),
       MIN_FINAL_APPROACH_DISTANCE,
       MAX_FINAL_APPROACH_DISTANCE
     );
@@ -67,7 +70,7 @@ public class PurplePathPose {
    * @param redPose Pose if red alliance
    * @param finalApproachDistance Distance of final approach in meters [0.15, 1.00]
    */
-  public PurplePathPose(Pose2d bluePose, Pose2d redPose, double finalApproachDistance) {
+  public PurplePathPose(Pose2d bluePose, Pose2d redPose, Measure<Distance> finalApproachDistance) {
     this(bluePose, redPose, finalApproachDistance, false);
   }
 
@@ -79,7 +82,7 @@ public class PurplePathPose {
    * @param finalApproachDistance Distance of final approach
    * @param isReversed True if robot's rear is facing object
    */
-  public PurplePathPose(Pose2d pose, double finalApproachDistance, boolean isReversed) {
+  public PurplePathPose(Pose2d pose, Measure<Distance> finalApproachDistance, boolean isReversed) {
     this(pose, pose, finalApproachDistance, isReversed);
   }
 
@@ -90,7 +93,7 @@ public class PurplePathPose {
    * @param pose Goal pose
    * @param finalApproachDistance Distance of final approach
    */
-  public PurplePathPose(Pose2d pose, double finalApproachDistance) {
+  public PurplePathPose(Pose2d pose, Measure<Distance> finalApproachDistance) {
     this(pose, finalApproachDistance, false);
   }
 

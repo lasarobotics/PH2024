@@ -45,6 +45,12 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -81,13 +87,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   // Drive specs
-  public static final double DRIVE_WHEELBASE = 0.6;
-  public static final double DRIVE_TRACK_WIDTH = 0.6;
-  public final double DRIVE_MAX_LINEAR_SPEED;
-  public final double DRIVE_AUTO_ACCELERATION;
-  public final double DRIVE_ROTATE_VELOCITY = 12 * Math.PI;
-  public final double DRIVE_ROTATE_ACCELERATION = 4 * Math.PI;
-  public static final double AUTO_LOCK_TIME = 3.0;
+  public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.6);
+  public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.6);
+  public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
+  public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
+  public final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
+  public final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
+  public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
 
 
   private ThrottleMap m_throttleMap;
@@ -157,7 +163,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED;
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second);
     this.m_navx = drivetrainHardware.navx;
     this.m_lFrontModule = drivetrainHardware.lFrontModule;
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
@@ -165,10 +171,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_rRearModule = drivetrainHardware.rRearModule;
     this.m_ledStrip = drivetrainHardware.ledStrip;
     this.m_controlCentricity = controlCentricity;
-    this.m_throttleMap = new ThrottleMap(throttleInputCurve, deadband, DRIVE_MAX_LINEAR_SPEED);
+    this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      DRIVE_MAX_LINEAR_SPEED,
+      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
@@ -180,7 +186,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Setup turn PID
     m_rotatePIDController.setTolerance(TOLERANCE);
-    m_rotatePIDController.setSetpoint(getAngle());
+    m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
 
     // Define drivetrain kinematics
     m_kinematics = new SwerveDriveKinematics(m_lFrontModule.getModuleCoordinate(),
@@ -197,7 +203,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialise pose estimator
     m_poseEstimator = new SwerveDrivePoseEstimator(
       m_kinematics,
-      Rotation2d.fromDegrees(getAngle()),
+      getRotation2d(),
       getModulePositions(),
       new Pose2d(),
       ODOMETRY_STDDEV,
@@ -265,10 +271,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       ),
       MAXSwerveModule.ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
-      Constants.Drive.DRIVE_SLIP_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      AUTO_LOCK_TIME
+      AUTO_LOCK_TIME,
+      Constants.Drive.DRIVE_SLIP_RATIO
     );
 
     MAXSwerveModule rFrontModule = new MAXSwerveModule(
@@ -279,10 +285,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       ),
       MAXSwerveModule.ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
-      Constants.Drive.DRIVE_SLIP_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      AUTO_LOCK_TIME
+      AUTO_LOCK_TIME,
+      Constants.Drive.DRIVE_SLIP_RATIO
     );
 
     MAXSwerveModule lRearModule = new MAXSwerveModule(
@@ -293,10 +299,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       ),
       MAXSwerveModule.ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
-      Constants.Drive.DRIVE_SLIP_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      AUTO_LOCK_TIME
+      AUTO_LOCK_TIME,
+      Constants.Drive.DRIVE_SLIP_RATIO
     );
 
     MAXSwerveModule rRearModule = new MAXSwerveModule(
@@ -307,10 +313,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       ),
       MAXSwerveModule.ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
-      Constants.Drive.DRIVE_SLIP_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      AUTO_LOCK_TIME
+      AUTO_LOCK_TIME,
+      Constants.Drive.DRIVE_SLIP_RATIO
     );
 
     LEDStrip ledStrip = new LEDStrip(LEDStrip.initializeHardware(Constants.DriveHardware.LED_STRIP_ID));
@@ -338,7 +344,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param inertialVelocity Current inertial velocity (m/s)
    * @param rotateRate Current rotate rate (degrees/s)
    */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, double inertialVelocity, double rotateRate) {
+  private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
     m_lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
     m_rFrontModule.set(moduleStates, inertialVelocity, rotateRate);
     m_lRearModule.set(moduleStates, inertialVelocity, rotateRate);
@@ -348,16 +354,20 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Drive robot and apply traction control
-   * @param xRequest Desired X (forward) velocity (m/s)
-   * @param yRequest Desired Y (sideways) velocity (m/s)
-   * @param rotateRequest Desired rotate rate (degrees/s)
-   * @param inertialVelocity Current robot inertial velocity (m/s)
-   * @param rotateRate Current robot rotate rate (degrees/s)
+   * @param xRequest Desired X (forward) velocity
+   * @param yRequest Desired Y (sideways) velocity
+   * @param rotateRequest Desired rotate rate
+   * @param inertialVelocity Current robot inertial velocity
+   * @param rotateRate Current robot rotate rate
    */
-  private void drive(double xRequest, double yRequest, double rotateRequest, double inertialVelocity, double rotateRate) {
+  private void drive(Measure<Velocity<Distance>> xRequest,
+                     Measure<Velocity<Distance>> yRequest,
+                     Measure<Velocity<Angle>> rotateRequest,
+                     Measure<Velocity<Distance>> inertialVelocity,
+                     Measure<Velocity<Angle>> rotateRate) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
-      new ChassisSpeeds(xRequest, yRequest, Math.toRadians(rotateRequest))
+      new ChassisSpeeds(xRequest, yRequest, rotateRequest)
     );
 
     // Convert speeds to module states, correcting for 2nd order kinematics
@@ -484,10 +494,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void antiTip() {
     // Calculate direction of tip
-    double direction = Math.atan2(getRoll(), getPitch());
+    double direction = Math.atan2(getRoll().in(Units.Degrees), getPitch().in(Units.Degrees));
 
     // Drive to counter tipping motion
-    drive(DRIVE_MAX_LINEAR_SPEED / 4 * Math.cos(direction), DRIVE_MAX_LINEAR_SPEED / 4 * Math.sin(direction), 0.0);
+    drive(
+      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4 * Math.cos(direction),
+      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4 * Math.sin(direction),
+      0.0
+    );
   }
 
   /**
@@ -527,7 +541,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
 
     // Drive robot accordingly
-    drive(velocityOutput * Math.cos(moveDirection), velocityOutput * Math.sin(moveDirection), rotateOutput, getInertialVelocity(), getRotateRate());
+    drive(
+      Units.MetersPerSecond.of(velocityOutput * Math.cos(moveDirection)),
+      Units.MetersPerSecond.of(velocityOutput * Math.sin(moveDirection)),
+      Units.DegreesPerSecond.of(rotateOutput),
+      getInertialVelocity(),
+      getRotateRate()
+    );
 
     return currentPose.getTranslation().getDistance(aimPoint);
   }
@@ -547,7 +567,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     m_autoAimPIDController.calculate(getPose().getRotation().getDegrees(), getPose().getRotation().getDegrees());
 
-    drive(velocityOutput * Math.cos(moveDirection), velocityOutput * Math.sin(moveDirection), rotateOutput, getInertialVelocity(), getRotateRate());
+    drive(
+      Units.MetersPerSecond.of(velocityOutput * Math.cos(moveDirection)),
+      Units.MetersPerSecond.of(velocityOutput * Math.sin(moveDirection)),
+      Units.DegreesPerSecond.of(rotateOutput),
+      getInertialVelocity(),
+      getRotateRate()
+    );
   }
 
   /**
@@ -801,7 +827,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset DriveSubsystem turn PID
    */
   public void resetRotatePID() {
-    m_rotatePIDController.setSetpoint(getAngle());
+    m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
     m_rotatePIDController.reset();
   }
 
@@ -831,7 +857,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Path following constraints
    */
   public PathConstraints getPathConstraints() {
-    return new PathConstraints(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION, DRIVE_ROTATE_VELOCITY, DRIVE_ROTATE_ACCELERATION);
+    return new PathConstraints(
+      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
+      DRIVE_AUTO_ACCELERATION.in(Units.MetersPerSecondPerSecond),
+      DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
+      DRIVE_ROTATE_ACCELERATION.magnitude()
+    );
   }
 
   /**
@@ -863,8 +894,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if robot is tipping
    */
   public boolean isTipping() {
-    return Math.abs(getPitch()) > TIP_THRESHOLD ||
-           Math.abs(getRoll()) > TIP_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) > TIP_THRESHOLD ||
+           Math.abs(getRoll().in(Units.Degrees)) > TIP_THRESHOLD;
   }
 
 
@@ -873,23 +904,25 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if robot is (nearly) balanced
    */
   public boolean isBalanced() {
-    return Math.abs(getPitch()) < BALANCED_THRESHOLD &&
-           Math.abs(getRoll()) < BALANCED_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) < BALANCED_THRESHOLD &&
+           Math.abs(getRoll().in(Units.Degrees)) < BALANCED_THRESHOLD;
   }
 
   /**
    * Get inertial velocity of robot
    * @return Inertial velocity of robot in m/s
    */
-  public double getInertialVelocity() {
-    return Math.hypot(m_navx.getInputs().xVelocity, m_navx.getInputs().yVelocity);
+  public Measure<Velocity<Distance>> getInertialVelocity() {
+    return Units.MetersPerSecond.of(
+      Math.hypot(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond), m_navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+    );
   }
 
   /**
    * Get pitch of robot
    * @return Current pitch angle of robot in degrees
    */
-  public double getPitch() {
+  public Measure<Angle> getPitch() {
     // Robot pitch axis is navX pitch axis
     return m_navx.getInputs().pitchAngle;
   }
@@ -898,7 +931,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Get roll of robot
    * @return Current roll angle of robot in degrees
    */
-  public double getRoll() {
+  public Measure<Angle> getRoll() {
     // Robot roll axis is navX roll axis
     return m_navx.getInputs().rollAngle;
   }
@@ -907,7 +940,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Return the heading of the robot in degrees
    * @return Current heading of the robot in degrees
    */
-  public double getAngle() {
+  public Measure<Angle> getAngle() {
     return m_navx.getInputs().yawAngle;
   }
 
@@ -915,7 +948,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Get rotate rate of robot
    * @return Current rotate rate of robot (degrees/s)
    */
-  public double getRotateRate() {
+  public Measure<Velocity<Angle>> getRotateRate() {
     return m_navx.getInputs().yawRate;
   }
 

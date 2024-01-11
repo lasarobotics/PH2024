@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.vision.VisionCamera.Resolution;
 
@@ -43,8 +44,16 @@ public final class Constants {
     public static final Translation2d BLUE_SPEAKER = new Translation2d(0.00, 5.55);
     public static final Translation2d RED_SPEAKER = new Translation2d(15.64, 5.55);
 
-    public static final PurplePathPose AMP = new PurplePathPose(new Pose2d(1.85, 7.77, Rotation2d.fromDegrees(+90.0)), new Pose2d(14.66, 7.77, Rotation2d.fromDegrees(+90.0)), 0.7);
-    public static final PurplePathPose SOURCE = new PurplePathPose(new Pose2d(15.48, 0.84, Rotation2d.fromDegrees(-60.00)), new Pose2d(1.07, 0.82, Rotation2d.fromDegrees(-120.0)), 0.7);
+    public static final PurplePathPose AMP = new PurplePathPose(
+      new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
+      new Pose2d(Units.Meters.of(14.66), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
+      Units.Meters.of(0.7)
+    );
+    public static final PurplePathPose SOURCE = new PurplePathPose(
+      new Pose2d(Units.Meters.of(15.48), Units.Meters.of(0.84), Rotation2d.fromDegrees(-60.00)),
+      new Pose2d(Units.Meters.of(1.07), Units.Meters.of(0.82), Rotation2d.fromDegrees(-120.0)),
+      Units.Meters.of(0.7)
+    );
   }
 
   public static class HID {
