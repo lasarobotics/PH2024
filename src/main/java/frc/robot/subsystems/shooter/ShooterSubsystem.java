@@ -15,19 +15,17 @@ import frc.robot.Constants;
 
 public class ShooterSubsystem extends SubsystemBase {
   public class Hardware {
-    Spark leftMotor;
-    Spark rightMotor;
+    private Spark lSlaveMotor;
+    private Spark rMasterMotor;
 
-    public Hardware(Spark leftMotor, Spark rightMotor) {
-      this.leftMotor = leftMotor;
-      this.rightMotor = rightMotor;
-
-      this.leftMotor.follow(this.rightMotor);
+    public Hardware(Spark lSlaveMotor, Spark rMasterMotor) {
+      this.lSlaveMotor = lSlaveMotor;
+      this.rMasterMotor = rMasterMotor;
     }
   }
-
-  Spark m_leftMotor;
-  Spark m_rightMotor;
+  
+  private Spark m_lSlaveMotor;
+  private Spark m_rMasterMotor;
 
   /**
    * Create an instance of ShooterSubsystem
@@ -37,33 +35,35 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param shooterHardware Hardware devices required by shooter
    */
   public ShooterSubsystem(Hardware shooterHardware) {
-    this.m_leftMotor = shooterHardware.leftMotor;
-    this.m_rightMotor = shooterHardware.rightMotor;
+    this.m_lSlaveMotor = shooterHardware.lSlaveMotor;
+    this.m_rMasterMotor = shooterHardware.rMasterMotor;
+
+    m_lSlaveMotor.follow(m_rMasterMotor);
   }
 
   public Hardware initializeHardware() {
     Hardware shooterHardware = new Hardware(
-      new Spark(Constants.ShooterHardware.LEFT_MOTOR_ID, MotorKind.NEO),
-      new Spark(Constants.ShooterHardware.RIGHT_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.ShooterHardware.LEFT_SLAVE_MOTOR_ID, MotorKind.NEO),
+      new Spark(Constants.ShooterHardware.RIGHT_MASTER_MOTOR_ID, MotorKind.NEO)
     );
 
     return shooterHardware;
   }
 
-  private void setPower(double power) {
-    m_leftMotor.set(power);
+  private void shoot(double power) {
+    m_rMasterMotor.set(power);
   }
 
   private void stop() {
-    m_leftMotor.stopMotor();
+    m_rMasterMotor.stopMotor();
+  }
+
+  public Command shootCommand(DoubleSupplier speed) {
+    return startEnd(() -> shoot(speed.getAsDouble()), () -> stop());
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  }
-
-  public Command shootCommand(DoubleSupplier speed) {
-    return startEnd(() -> setPower(speed.getAsDouble()), () -> stop());
   }
 }
