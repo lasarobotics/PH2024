@@ -87,8 +87,8 @@ public final class Constants {
   }
 
   public static class ShooterHardware {
-    public static final Spark.ID LEFT_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Left", 11);
-    public static final Spark.ID RIGHT_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Right", 12);
+    public static final Spark.ID LEFT_SLAVE_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Left", 11);
+    public static final Spark.ID RIGHT_MASTER_MOTOR_ID = new Spark.ID("DriveHardware/Shooter/Right", 12);
     
   }
 
