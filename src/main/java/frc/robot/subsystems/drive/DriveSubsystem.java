@@ -174,6 +174,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),
@@ -386,14 +388,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Drive robot without traction control
-   * @param xRequest Desired X (forward) velocity (m/s)
-   * @param yRequest Desired Y (sideways) velocity (m/s)
-   * @param rotateRequest Desired rotate rate (degrees/s)
+   * @param xRequest Desired X (forward) velocity
+   * @param yRequest Desired Y (sideways) velocity
+   * @param rotateRequest Desired rotate rate
    */
-  private void drive(double xRequest, double yRequest, double rotateRequest) {
+  private void drive(Measure<Velocity<Distance>> xRequest,
+                     Measure<Velocity<Distance>> yRequest,
+                     Measure<Velocity<Angle>> rotateRequest) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
-      new ChassisSpeeds(xRequest, yRequest, Math.toRadians(rotateRequest))
+      new ChassisSpeeds(xRequest, yRequest, rotateRequest)
     );
 
     // Convert speeds to module states, correcting for 2nd order kinematics
@@ -498,9 +502,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive to counter tipping motion
     drive(
-      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4 * Math.cos(direction),
-      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 4 * Math.sin(direction),
-      0.0
+      DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.cos(direction)),
+      DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.sin(direction)),
+      Units.DegreesPerSecond.of(0.0)
     );
   }
 
@@ -535,15 +539,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Calculate new angle using adjusted point
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
     // Calculate necessary rotate rate
-    double rotateOutput = -m_autoAimPIDController.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
+    double rotateOutput = m_autoAimPIDController.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
 
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
 
     // Drive robot accordingly
     drive(
-      Units.MetersPerSecond.of(velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(velocityOutput * Math.sin(moveDirection)),
+      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity(),
       getRotateRate()
@@ -654,7 +658,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_lRearModule.simulationPeriodic();
     m_rRearModule.simulationPeriodic();
 
-    double angle = m_navx.getSimAngle() + Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD;
+    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD;
     m_navx.setSimAngle(angle);
 
     updatePose();
@@ -684,9 +688,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public void autoDrive(ChassisSpeeds speeds) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(speeds);
-
-    // Invert rotation
-    m_desiredChassisSpeeds.omegaRadiansPerSecond = -m_desiredChassisSpeeds.omegaRadiansPerSecond;
 
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
