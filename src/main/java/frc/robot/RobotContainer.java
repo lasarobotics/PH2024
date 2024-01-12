@@ -32,8 +32,8 @@ public class RobotContainer {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
-        () -> -PRIMARY_CONTROLLER.getLeftY(),
-        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX()
       )
     );
@@ -49,8 +49,8 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
     PRIMARY_CONTROLLER.leftBumper().whileTrue(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -PRIMARY_CONTROLLER.getLeftY(),
-        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
           ? Constants.Field.BLUE_SPEAKER
           : Constants.Field.RED_SPEAKER

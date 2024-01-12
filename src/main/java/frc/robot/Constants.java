@@ -59,13 +59,13 @@ public final class Constants {
   public static class HID {
     public static final int PRIMARY_CONTROLLER_PORT = 0;
     public static final int SECONDARY_CONTROLLER_PORT = 1;
-    public static final double CONTROLLER_DEADBAND = 0.10;
+    public static final double CONTROLLER_DEADBAND = 0.15;
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_TURN_PID = new PIDConstants(30.0, 0.0, 0.3, 0.0);
+    public static final PIDConstants DRIVE_TURN_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.08;
-    public static final double DRIVE_TURN_SCALAR = 30.0;
+    public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 3;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;

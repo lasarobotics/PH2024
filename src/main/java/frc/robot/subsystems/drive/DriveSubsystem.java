@@ -563,13 +563,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveDirection = Math.atan2(yRequest, xRequest);
 
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
-    double rotateOutput = m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+    double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
 
     m_autoAimPIDController.calculate(getPose().getRotation().getDegrees(), getPose().getRotation().getDegrees());
 
     drive(
-      Units.MetersPerSecond.of(velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(velocityOutput * Math.sin(moveDirection)),
+      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity(),
       getRotateRate()
