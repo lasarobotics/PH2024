@@ -8,9 +8,13 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.autonomous.Leave;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class RobotContainer {
@@ -28,6 +32,8 @@ public class RobotContainer {
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
+  private static SendableChooser<SequentialCommandGroup> m_automodeChooser = new SendableChooser<>();
+
   public RobotContainer() {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
@@ -43,6 +49,9 @@ public class RobotContainer {
 
     // Bind buttons and triggers
     configureBindings();
+
+    // Configure ShuffleBoard
+    defaultShuffleboardTab();
   }
 
   private void configureBindings() {
@@ -62,6 +71,14 @@ public class RobotContainer {
   }
 
   /**
+   * Add auto modes to chooser
+   */
+  private void autoModeChooser() {
+    m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
+    m_automodeChooser.addOption("Balance", new Leave(DRIVE_SUBSYSTEM));
+  }
+
+  /**
    * Run simlation related methods
    */
   public void simulationPeriodic() {
@@ -73,6 +90,15 @@ public class RobotContainer {
    * @return Autonomous command
    */
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return m_automodeChooser.getSelected();
+  }
+
+  /**
+   * Configure default Shuffleboard tab
+   */
+  public void defaultShuffleboardTab() {
+    Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
+    autoModeChooser();
+    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
   }
 }
