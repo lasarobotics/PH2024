@@ -11,7 +11,6 @@ import com.pathplanner.lib.path.EventMarker;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,14 +38,14 @@ public class AutoTrajectory {
    * @param waypoints List of x, y coordinate pairs in trajectory
    * @param pathConstraints Path following constraints
    */
-  public AutoTrajectory(DriveSubsystem driveSubsystem, List<PathPoint> waypoints, PathConstraints pathConstraints) {
+  public AutoTrajectory(DriveSubsystem driveSubsystem, List<Pose2d> waypoints, PathConstraints pathConstraints) {
     this.m_driveSubsystem = driveSubsystem;
 
     // Generate path from waypoints
-    m_path = PathPlannerPath.fromPathPoints(
-      waypoints,
+    m_path = new PathPlannerPath(
+      PathPlannerPath.bezierFromPoses(waypoints),
       pathConstraints,
-      new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).rotationTarget.getTarget())
+      new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).getRotation())
     );
   }
 
