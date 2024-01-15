@@ -136,8 +136,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     (interrupted) -> {
       m_ledStrip.set(Pattern.GREEN_SOLID);
       resetRotatePID();
-      lock();
       stop();
+      lock();
       m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
     },
     this::isBalanced,
@@ -163,7 +163,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(2.0));
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(0.5));
     this.m_navx = drivetrainHardware.navx;
     this.m_lFrontModule = drivetrainHardware.lFrontModule;
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
@@ -235,7 +235,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Initalise PurplePathClient
     m_purplePathClient = new PurplePathClient(this);
-    m_purplePathClient.disableConnectivityCheck();
 
     // Initialise field
     m_field = new Field2d();

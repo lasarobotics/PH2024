@@ -6,7 +6,9 @@ package frc.robot.subsystems.drive;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,6 +58,9 @@ public class PurplePathClient {
     // Set URI
     if (RobotBase.isSimulation()) URI = "http://localhost:5000/";
     else URI = "http://purplebox.local:5000/";
+
+    // Supress output
+    System.setOut(new PrintStream(OutputStream.nullOutputStream()));
   }
 
   /**
