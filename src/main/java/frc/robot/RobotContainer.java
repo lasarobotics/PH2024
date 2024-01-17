@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.Leave;
+import frc.robot.commands.autonomous.Simple;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class RobotContainer {
@@ -78,6 +79,7 @@ public class RobotContainer {
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
     m_automodeChooser.addOption("Mobility", new Leave(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Simple", new Simple(DRIVE_SUBSYSTEM));
   }
 
   /**
