@@ -262,7 +262,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Hardware object containing all necessary devices for this subsystem
    */
   public static Hardware initializeHardware() {
-    NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID, GlobalConstants.ROBOT_LOOP_HZ);
+    NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID, GlobalConstants.ROBOT_LOOP_HZ * 2);
 
     MAXSwerveModule lFrontModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(

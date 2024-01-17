@@ -59,21 +59,21 @@ public final class Constants {
   public static class HID {
     public static final int PRIMARY_CONTROLLER_PORT = 0;
     public static final int SECONDARY_CONTROLLER_PORT = 1;
-    public static final double CONTROLLER_DEADBAND = 0.15;
+    public static final double CONTROLLER_DEADBAND = 0.1;
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_TURN_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.08;
     public static final double DRIVE_TURN_SCALAR = 60.0;
-    public static final double DRIVE_LOOKAHEAD = 3;
+    public static final double DRIVE_LOOKAHEAD = 6;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
     private static final double DRIVE_THROTTLE_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
     private static final double DRIVE_THROTTLE_INPUT_CURVE_Y[] = { 0.0, 0.042, 0.168, 0.378, 0.672, 1.050, 1.512, 2.508, 2.688, 3.402, 4.300 };
     private static final double DRIVE_TURN_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
-    private static final double DRIVE_TURN_INPUT_CURVE_Y[] = { 0.0, 0.008, 0.032, 0.072, 0.128, 0.200, 0.288, 0.392, 0.512, 0.768, 1.0 };
+    private static final double DRIVE_TURN_INPUT_CURVE_Y[] = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
 
     private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
     public static final PolynomialSplineFunction DRIVE_THROTTLE_INPUT_CURVE = SPLINE_INTERPOLATOR.interpolate(DRIVE_THROTTLE_INPUT_CURVE_X, DRIVE_THROTTLE_INPUT_CURVE_Y);

@@ -21,7 +21,7 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
     DriveSubsystem.initializeHardware(),
-    Constants.Drive.DRIVE_TURN_PID,
+    Constants.Drive.DRIVE_ROTATE_PID,
     Constants.Drive.DRIVE_CONTROL_CENTRICITY,
     Constants.Drive.DRIVE_TURN_SCALAR,
     Constants.HID.CONTROLLER_DEADBAND,
