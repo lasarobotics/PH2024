@@ -33,6 +33,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -103,6 +104,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private SwerveDrivePoseEstimator m_poseEstimator;
   private AdvancedSwerveKinematics m_advancedKinematics;
   private HolonomicPathFollowerConfig m_pathFollowerConfig;
+  private MedianFilter m_yawRateFilter;
 
   private NavX2 m_navx;
   private MAXSwerveModule m_lFrontModule;
@@ -111,6 +113,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_rRearModule;
   private LEDStrip m_ledStrip;
 
+  private final int YAW_RATE_FILTER_TAPS = 3;
   private final double TOLERANCE = 1.0;
   private final double TIP_THRESHOLD = 30.0;
   private final double BALANCED_THRESHOLD = 5.0;
@@ -181,6 +184,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
+    this.m_yawRateFilter = new MedianFilter(YAW_RATE_FILTER_TAPS);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -640,6 +644,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_rFrontModule.periodic();
     m_lRearModule.periodic();
     m_rRearModule.periodic();
+
+    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
+      m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
+    );
 
     m_purplePathClient.periodic();
 
