@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.JSONObject;
 import org.littletonrobotics.junction.Logger;
 
@@ -29,6 +30,7 @@ import com.pathplanner.lib.path.RotationTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -48,6 +50,7 @@ public class PurplePathClient {
   private HttpURLConnection m_serverConnection;
   private boolean m_isConnected;
   private boolean m_connectivityCheckEnabled;
+  private Notifier m_periodicNotifier;
 
   public PurplePathClient(DriveSubsystem driveSubsystem) {
     this.m_driveSubsystem = driveSubsystem;
@@ -61,6 +64,13 @@ public class PurplePathClient {
 
     // Supress output
     System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+
+    // Initialize connectivity check thread
+    this.m_periodicNotifier = new Notifier(() -> periodic());
+
+    // Start connectivity check thread
+    m_periodicNotifier.setName(getClass().getSimpleName());
+    m_periodicNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
   }
 
   /**
@@ -169,7 +179,7 @@ public class PurplePathClient {
   /**
    * Call this method periodically
    */
-  public void periodic() {
+  private void periodic() {
     if (!m_connectivityCheckEnabled) return;
     if (m_isConnected) return;
 
