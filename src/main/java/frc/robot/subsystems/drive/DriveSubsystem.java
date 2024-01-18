@@ -649,8 +649,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
     );
 
-    m_purplePathClient.periodic();
-
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
