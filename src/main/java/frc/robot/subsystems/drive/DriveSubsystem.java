@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -665,6 +666,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD;
     m_navx.setSimAngle(angle);
+
+    double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
+    m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
+    m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
+    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
+      m_yawRateFilter.calculate(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise)
+    );
 
     updatePose();
     smartDashboard();
