@@ -129,7 +129,7 @@ public class AntiTipCommandTest {
     // Create DriveSubsystem object
     m_driveSubsystem = new DriveSubsystem(
       m_drivetrainHardware,
-      Constants.Drive.DRIVE_TURN_PID,
+      Constants.Drive.DRIVE_ROTATE_PID,
       Constants.Drive.DRIVE_CONTROL_CENTRICITY,
       Constants.Drive.DRIVE_TURN_SCALAR,
       Constants.HID.CONTROLLER_DEADBAND,

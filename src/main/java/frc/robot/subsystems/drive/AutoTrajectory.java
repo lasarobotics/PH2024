@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.drive;
 
-import java.util.HashMap;
 import java.util.List;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -12,11 +11,9 @@ import com.pathplanner.lib.path.EventMarker;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 public class AutoTrajectory {
   DriveSubsystem m_driveSubsystem;
@@ -27,8 +24,6 @@ public class AutoTrajectory {
    * Create new path trajectory using PathPlanner path
    * @param driveSubsystem DriveSubsystem to drive the robot
    * @param pathName PathPlanner path name
-   * @param maxVelocity Maximum velocity of robot during path (m/s)
-   * @param maxAcceleration Maximum acceleration of robot during path (m/s^2)
    */
   public AutoTrajectory(DriveSubsystem driveSubsystem, String pathName) {
     this.m_driveSubsystem = driveSubsystem;
@@ -40,27 +35,18 @@ public class AutoTrajectory {
   /**
    * Creates new path trajectory using a physical x,y coordinate points
    * @param driveSubsystem DriveSubsystem required for drivetrain movement
-   * @param waypoints list of x, y coordinate pairs in trajectory
-   * @param reversed whether the trajectory followed should be in reverse
-   * @param maxVelocity Maximum velocity of robot during path (m/s)
-   * @param maxAcceleration Maximum acceleration of robot during path (m/s^2)
+   * @param waypoints List of x, y coordinate pairs in trajectory
+   * @param pathConstraints Path following constraints
    */
-  public AutoTrajectory(DriveSubsystem driveSubsystem, List<PathPoint> waypoints, PathConstraints pathConstraints) {
+  public AutoTrajectory(DriveSubsystem driveSubsystem, List<Pose2d> waypoints, PathConstraints pathConstraints) {
     this.m_driveSubsystem = driveSubsystem;
 
     // Generate path from waypoints
-    m_path = PathPlannerPath.fromPathPoints(
-      waypoints,
+    m_path = new PathPlannerPath(
+      PathPlannerPath.bezierFromPoses(waypoints),
       pathConstraints,
-      new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).rotationTarget.getTarget())
+      new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).getRotation())
     );
-  }
-
-  /**
-   * Reset drive odometry to beginning of this path
-   */
-  private void resetOdometry() {
-    m_driveSubsystem.resetPose(getInitalPose());
   }
 
   /**
@@ -87,54 +73,8 @@ public class AutoTrajectory {
   public Command getCommandAndStop() {
     return AutoBuilder.followPath(m_path)
             .andThen(() -> m_driveSubsystem.resetRotatePID())
-            .andThen(m_driveSubsystem.lockCommand())
-            .andThen(m_driveSubsystem.stopCommand());
-  }
-
-  /**
-   * Get auto command to execute path, resetting odometry first
-   * @param isFirstPath true if path is the first one in autonomous
-   * @return Ramsete command that will stop when complete
-   */
-  public Command getCommandAndStop(boolean isFirstPath) {
-    if (isFirstPath) {
-      return Commands.runOnce(() -> resetOdometry())
-              .andThen(AutoBuilder.followPath(m_path))
-              .andThen(() -> m_driveSubsystem.resetRotatePID())
-              .andThen(m_driveSubsystem.lockCommand())
-              .andThen(m_driveSubsystem.stopCommand());
-    } else return getCommandAndStop();
-  }
-
-  /**
-   * Get auto command to execute path and events along the way
-   * @param eventMap Map of event marker names to the commands that should run when reaching that
-   *     marker. This SHOULD NOT contain any commands requiring the same subsystems as the path
-   *     following command.
-   * @return Command to execute actions in autonomous
-   */
-  public Command getCommandAndStop(HashMap<String, Command> eventMap) {
-    return AutoBuilder.followPath(m_path)
-            .andThen(() -> m_driveSubsystem.resetRotatePID())
-            .andThen(m_driveSubsystem.lockCommand())
-            .andThen(m_driveSubsystem.stopCommand());
-  }
-
-  /**
-   * Get auto command to execute path and events along the way, resetting odometry first
-   * @param isFirstPath true if path is the first one in autonomous
-   * @param eventMap Map of event marker names to the commands that should run when reaching that
-   *     marker. This SHOULD NOT contain any commands requiring the same subsystems as the path
-   *     following command.
-   * @return Command to execute actions in autonomous
-   */
-  public Command getCommandAndStop(boolean isFirstPath, HashMap<String, Command> eventMap) {
-    if (isFirstPath) {
-      return AutoBuilder.followPath(m_path)
-            .andThen(() -> m_driveSubsystem.resetRotatePID())
-            .andThen(m_driveSubsystem.lockCommand())
-            .andThen(m_driveSubsystem.stopCommand());
-    } else return getCommandAndStop(eventMap);
+            .andThen(m_driveSubsystem.stopCommand())
+            .andThen(m_driveSubsystem.lockCommand());
   }
 
   /**
@@ -143,18 +83,5 @@ public class AutoTrajectory {
    */
   public Command getCommand() {
     return AutoBuilder.followPath(m_path).andThen(() -> m_driveSubsystem.resetRotatePID());
-  }
-
-  /**
-   * Get auto command to execute path, resetting odometry first
-   * @param isFirstPath true if path is first one in autonomous
-   * @return Ramsete command that does NOT stop when complete
-   */
-  public Command getCommand(boolean isFirstPath) {
-    if (isFirstPath) {
-      return Commands.runOnce(() -> resetOdometry())
-             .andThen(AutoBuilder.followPath(m_path))
-             .andThen(() -> m_driveSubsystem.resetRotatePID());
-    } else return getCommand();
   }
 }

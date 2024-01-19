@@ -6,17 +6,23 @@ package frc.robot;
 
 import com.revrobotics.REVPhysicsSim;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.autonomous.Leave;
+import frc.robot.commands.autonomous.Simple;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
     DriveSubsystem.initializeHardware(),
-    Constants.Drive.DRIVE_TURN_PID,
+    Constants.Drive.DRIVE_ROTATE_PID,
     Constants.Drive.DRIVE_CONTROL_CENTRICITY,
     Constants.Drive.DRIVE_TURN_SCALAR,
     Constants.HID.CONTROLLER_DEADBAND,
@@ -28,12 +34,14 @@ public class RobotContainer {
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
+  private static SendableChooser<SequentialCommandGroup> m_automodeChooser = new SendableChooser<>();
+
   public RobotContainer() {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
-        () -> -PRIMARY_CONTROLLER.getLeftY(),
-        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX()
       )
     );
@@ -43,14 +51,17 @@ public class RobotContainer {
 
     // Bind buttons and triggers
     configureBindings();
+
+    // Configure ShuffleBoard
+    defaultShuffleboardTab();
   }
 
   private void configureBindings() {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
     PRIMARY_CONTROLLER.leftBumper().whileTrue(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -PRIMARY_CONTROLLER.getLeftY(),
-        () -> -PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
           ? Constants.Field.BLUE_SPEAKER
           : Constants.Field.RED_SPEAKER
@@ -59,6 +70,16 @@ public class RobotContainer {
 
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.resetPose(new Pose2d())));
+  }
+
+  /**
+   * Add auto modes to chooser
+   */
+  private void autoModeChooser() {
+    m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
+    m_automodeChooser.addOption("Mobility", new Leave(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Simple", new Simple(DRIVE_SUBSYSTEM));
   }
 
   /**
@@ -73,6 +94,15 @@ public class RobotContainer {
    * @return Autonomous command
    */
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return m_automodeChooser.getSelected();
+  }
+
+  /**
+   * Configure default Shuffleboard tab
+   */
+  public void defaultShuffleboardTab() {
+    Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
+    autoModeChooser();
+    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
   }
 }
