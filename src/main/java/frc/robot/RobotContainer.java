@@ -19,6 +19,7 @@ import frc.robot.commands.autonomous.Leave;
 import frc.robot.commands.autonomous.Simple;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
