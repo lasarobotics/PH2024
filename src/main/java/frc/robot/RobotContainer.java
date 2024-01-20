@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.Leave;
 import frc.robot.commands.autonomous.Simple;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
@@ -31,6 +32,8 @@ public class RobotContainer {
     Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
     Constants.Drive.DRIVE_TURN_INPUT_CURVE
   );
+
+  private static final VisionSubsystem VISION_SUBSYSTEM = new VisionSubsystem(VisionSubsystem.initializeHardware());
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
@@ -58,7 +61,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(
+    PRIMARY_CONTROLLER.x().whileTrue(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
@@ -71,6 +74,12 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
     PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.resetPose(new Pose2d())));
+
+    PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.driveCommand(
+      () -> -PRIMARY_CONTROLLER.getLeftY(),
+      () -> -PRIMARY_CONTROLLER.getLeftX(),
+      () -> VISION_SUBSYSTEM.getNoteRotationPower()
+    ));
   }
 
   /**
