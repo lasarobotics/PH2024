@@ -7,7 +7,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
-import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -26,6 +26,8 @@ public class ObjectCamera implements Runnable, AutoCloseable {
     Transform3d m_transform;
 
     VisionSystemSim m_visionSim;
+
+    Pose2d m_robotPose;
 
     /**
      * Create VisionCamera
@@ -65,28 +67,28 @@ public class ObjectCamera implements Runnable, AutoCloseable {
     }
 
     public Double getDistance() {
-        PhotonTrackedTarget result = m_camera.getLatestResult().getBestTarget();
-        if (result == null) return -1.0;
+        PhotonPipelineResult result = m_camera.getLatestResult();
+        if (!result.hasTargets()) return null;
 
         double range = PhotonUtils.calculateDistanceToTargetMeters(
             0.5,
             2,
             -15,
-            Units.degreesToRadians(result.getPitch())
+            Units.degreesToRadians(result.getBestTarget().getPitch())
         );
 
         return range;
     }
 
     public Double getHeading() {
-        PhotonTrackedTarget result = m_camera.getLatestResult().getBestTarget();
-        if (result != null) return -result.getYaw();
-        else return 0.0;
+        PhotonPipelineResult result = m_camera.getLatestResult();
+        if (!result.hasTargets()) return null;
+        return result.getBestTarget().getYaw();
     }
 
     public void run(Pose2d pose) {
+        m_robotPose = pose;
         m_visionSim.update(pose);
-        
     }
 
     @Override

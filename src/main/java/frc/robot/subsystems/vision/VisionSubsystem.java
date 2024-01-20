@@ -18,6 +18,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -183,6 +185,19 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public double getNoteRotationPower() {
     double power = getNoteAngle() / 5;
     return Math.min(Math.max(power, -1), 1);
+  }
+
+  public Translation2d getNoteTranslation() {
+    Double heading = m_objectCamera.getHeading();
+    Double distance = m_objectCamera.getDistance();
+    Pose2d pose = m_poseSupplier.get();
+    if (heading != null && distance != null && pose != null) {
+      Logger.recordOutput(getName() + "/distance", distance);
+      Logger.recordOutput(getName() + "/heading", heading);
+      return m_poseSupplier.get().getTranslation().plus(new Translation2d(distance.doubleValue(), new Rotation2d(Math.toRadians(pose.getRotation().getDegrees() + heading))));
+    } else {
+      return new Translation2d();
+    }
   }
 
   @Override

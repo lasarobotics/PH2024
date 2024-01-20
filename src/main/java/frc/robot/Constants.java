@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
