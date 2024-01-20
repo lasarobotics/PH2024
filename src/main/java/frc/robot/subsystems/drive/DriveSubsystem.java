@@ -742,6 +742,28 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> point);
   }
 
+  public void aimAtAngle(double angle) {
+    double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
+    // double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), angle);
+
+    drive(
+      Units.MetersPerSecond.of(0),
+      Units.MetersPerSecond.of(0),
+      Units.DegreesPerSecond.of(rotateOutput),
+      getInertialVelocity(),
+      getRotateRate()
+    );
+  }
+
+  public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
+    return run(() ->
+      aimAtAngle(
+        angleRequestSupplier.getAsDouble()
+      )
+    );
+    // ).finallyDo(() -> resetRotatePID());
+  }
+
   /**
    * Drive the robot
    * @param xRequestSupplier X axis speed supplier
