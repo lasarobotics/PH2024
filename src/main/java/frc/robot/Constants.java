@@ -47,12 +47,12 @@ public final class Constants {
     public static final PurplePathPose AMP = new PurplePathPose(
       new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
       new Pose2d(Units.Meters.of(14.66), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
-      Units.Meters.of(0.7)
+      Units.Meters.of(0.2)
     );
     public static final PurplePathPose SOURCE = new PurplePathPose(
       new Pose2d(Units.Meters.of(15.48), Units.Meters.of(0.84), Rotation2d.fromDegrees(-60.00)),
       new Pose2d(Units.Meters.of(1.07), Units.Meters.of(0.82), Rotation2d.fromDegrees(-120.0)),
-      Units.Meters.of(0.7)
+      Units.Meters.of(0.2)
     );
   }
 
@@ -64,7 +64,7 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.08;
+    public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -98,7 +98,7 @@ public final class Constants {
   public static class ShooterHardware {
     public static final Spark.ID LEFT_SLAVE_MOTOR_ID = new Spark.ID("ShooterHardware/Shooter/Left", 11);
     public static final Spark.ID RIGHT_MASTER_MOTOR_ID = new Spark.ID("ShooterHardware/Shooter/Right", 12);
-    
+
   }
 
   public static class VisionHardware {

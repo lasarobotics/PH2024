@@ -15,8 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.autonomous.Leave;
-import frc.robot.commands.autonomous.Simple;
+import frc.robot.commands.autonomous.LeaveAuto;
+import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class RobotContainer {
@@ -62,15 +62,15 @@ public class RobotContainer {
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
-          ? Constants.Field.BLUE_SPEAKER
-          : Constants.Field.RED_SPEAKER
+        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
+          ? Constants.Field.RED_SPEAKER
+          : Constants.Field.BLUE_SPEAKER
       )
     );
 
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
-    PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.resetPose(new Pose2d())));
+    PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
   }
 
   /**
@@ -78,8 +78,8 @@ public class RobotContainer {
    */
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
-    m_automodeChooser.addOption("Mobility", new Leave(DRIVE_SUBSYSTEM));
-    m_automodeChooser.addOption("Simple", new Simple(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Leave", new LeaveAuto(DRIVE_SUBSYSTEM));
   }
 
   /**
