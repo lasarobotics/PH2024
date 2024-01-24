@@ -122,8 +122,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final double EPSILON = 1e-2;
   private final double POSE_RESET_TIME = 2.0;
   private final double TOLERANCE = 1.0;
-  private final double TIP_THRESHOLD = 30.0;
-  private final double BALANCED_THRESHOLD = 5.0;
+  private final double TIP_THRESHOLD = 35.0;
+  private final double BALANCED_THRESHOLD = 10.0;
   private final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
   private final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(0.5, 0.5, Math.toRadians(40));
   private final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
