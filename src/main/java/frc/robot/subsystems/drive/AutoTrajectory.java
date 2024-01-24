@@ -71,7 +71,7 @@ public class AutoTrajectory {
   public Command getCommand() {
     Command autoCommand = m_auto.getSecond().size() == 1
       ? AutoBuilder.followPath(m_auto.getSecond().get(0))
-      : AutoBuilder.buildAuto(m_auto.getFirst());
+      : new PathPlannerAuto(m_auto.getFirst());
 
     return m_driveSubsystem.resetPoseCommand(() -> new Pose2d())
       .andThen(m_driveSubsystem.resetPoseCommand(() -> getInitialPose()))

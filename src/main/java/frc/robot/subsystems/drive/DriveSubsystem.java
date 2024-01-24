@@ -48,6 +48,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
@@ -93,6 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
@@ -286,6 +288,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -300,6 +303,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -314,6 +318,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -328,6 +333,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
