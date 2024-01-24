@@ -675,6 +675,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
     );
 
+    if (!m_navx.getInputs().isConnected) System.err.println("NavX2 is disconnected!");
+
     if (Math.abs(m_desiredChassisSpeeds.vxMetersPerSecond) < EPSILON
       && Math.abs(m_desiredChassisSpeeds.vyMetersPerSecond) < EPSILON
       && Math.abs(m_desiredChassisSpeeds.omegaRadiansPerSecond) < EPSILON
