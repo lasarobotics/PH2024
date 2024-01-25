@@ -119,8 +119,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private LEDStrip m_ledStrip;
 
   private final int YAW_RATE_FILTER_TAPS = 3;
-  private final double EPSILON = 1e-2;
-  private final double POSE_RESET_TIME = 2.0;
   private final double TOLERANCE = 1.0;
   private final double TIP_THRESHOLD = 35.0;
   private final double BALANCED_THRESHOLD = 10.0;
@@ -139,7 +137,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
-  private Timer m_poseResetTimer;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> m_ledStrip.set(Pattern.RED_STROBE),
@@ -195,7 +192,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
     this.m_yawRateFilter = LinearFilter.singlePoleIIR(GlobalConstants.ROBOT_LOOP_PERIOD * YAW_RATE_FILTER_TAPS, GlobalConstants.ROBOT_LOOP_PERIOD);
-    this.m_poseResetTimer = new Timer();
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -674,12 +670,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
       m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
     );
-
-    if (Math.abs(m_desiredChassisSpeeds.vxMetersPerSecond) < EPSILON
-      && Math.abs(m_desiredChassisSpeeds.vyMetersPerSecond) < EPSILON
-      && Math.abs(m_desiredChassisSpeeds.omegaRadiansPerSecond) < EPSILON
-      && m_poseResetTimer.hasElapsed(POSE_RESET_TIME)) resetPose(getPose());
-    else m_poseResetTimer.restart();
 
     if (RobotBase.isSimulation()) return;
     updatePose();
