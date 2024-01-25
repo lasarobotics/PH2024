@@ -34,7 +34,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.MedianFilter;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -109,7 +109,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private SwerveDrivePoseEstimator m_poseEstimator;
   private AdvancedSwerveKinematics m_advancedKinematics;
   private HolonomicPathFollowerConfig m_pathFollowerConfig;
-  private MedianFilter m_yawRateFilter;
+  private LinearFilter m_yawRateFilter;
 
   private NavX2 m_navx;
   private MAXSwerveModule m_lFrontModule;
@@ -194,7 +194,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
-    this.m_yawRateFilter = new MedianFilter(YAW_RATE_FILTER_TAPS);
+    this.m_yawRateFilter = LinearFilter.singlePoleIIR(GlobalConstants.ROBOT_LOOP_PERIOD * YAW_RATE_FILTER_TAPS, GlobalConstants.ROBOT_LOOP_PERIOD);
     this.m_poseResetTimer = new Timer();
 
     // Calibrate and reset navX
@@ -674,8 +674,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
       m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
     );
-
-    if (!m_navx.getInputs().isConnected) System.err.println("NavX2 is disconnected!");
 
     if (Math.abs(m_desiredChassisSpeeds.vxMetersPerSecond) < EPSILON
       && Math.abs(m_desiredChassisSpeeds.vyMetersPerSecond) < EPSILON
