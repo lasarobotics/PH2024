@@ -695,17 +695,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_lRearModule.simulationPeriodic();
     m_rRearModule.simulationPeriodic();
 
-    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
-    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD
-                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
-    m_navx.setSimAngle(angle);
-
     double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
     m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
     m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
     m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
       m_yawRateFilter.calculate(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise)
     );
+
+    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
+    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise) * GlobalConstants.ROBOT_LOOP_PERIOD
+                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
+    m_navx.setSimAngle(angle);
 
     updatePose();
     smartDashboard();
