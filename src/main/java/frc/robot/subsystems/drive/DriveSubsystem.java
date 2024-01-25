@@ -745,8 +745,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Desaturate drive speeds
     SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
-    // Set modules to calculated states, WITH traction control
-    setSwerveModules(moduleStates, getInertialVelocity(), getRotateRate());
+    // Set modules to calculated states, WITHOUT traction control
+    setSwerveModules(moduleStates);
 
     // Update turn PID
     m_rotatePIDController.calculate(getAngle(), getRotateRate(), 0.0);
