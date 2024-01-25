@@ -91,6 +91,7 @@ public class DriveSubsystemTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -100,6 +101,7 @@ public class DriveSubsystemTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -109,6 +111,7 @@ public class DriveSubsystemTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -118,6 +121,7 @@ public class DriveSubsystemTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       m_ledStrip
@@ -356,7 +360,7 @@ public class DriveSubsystemTest {
   public void tractionControl() {
     // Hardcode sensor values
     SparkInputsAutoLogged sparkInputs = new SparkInputsAutoLogged();
-    sparkInputs.encoderVelocity = +1.0;
+    sparkInputs.encoderVelocity = +4.3;
 
     when(m_lFrontDriveMotor.getInputs()).thenReturn(sparkInputs);
     when(m_rFrontDriveMotor.getInputs()).thenReturn(sparkInputs);
@@ -365,17 +369,17 @@ public class DriveSubsystemTest {
 
     // Try to drive forward with traction control
     m_driveSubsystem.enableTractionControlCommand().initialize();
-    m_driveSubsystem.driveCommand(() -> +1.0, () -> 0.0, () -> 0.0).execute();
+    m_driveSubsystem.driveCommand(() -> +0.5, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
-    verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 4, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 4, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_lRearDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lRearRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 4, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rRearDriveMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rRearRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 4, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 2), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 2), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lRearDriveMotor, times(1)).set(AdditionalMatchers.lt(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 2), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lRearRotateMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rRearDriveMotor, times(1)).set(AdditionalMatchers.lt(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond) / 2), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rRearRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
   }
 
   @Test
@@ -411,7 +415,7 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim left towards specified point")
   public void aimLeftTowardsPoint() {
     // Rotate left towards point
-    m_driveSubsystem.resetPose(new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0)));
+    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
     m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH)).execute();
 
     // Verify that motors are being driven with expected values
@@ -430,7 +434,7 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim right towards specified point")
   public void aimRightTowardsPoint() {
     // Rotate right towards point
-    m_driveSubsystem.resetPose(new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0)));
+    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
     m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0)).execute();
 
     // Verify that motors are being driven with expected values

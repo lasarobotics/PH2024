@@ -94,6 +94,7 @@ public class AntiTipCommandTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -103,6 +104,7 @@ public class AntiTipCommandTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -112,6 +114,7 @@ public class AntiTipCommandTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       new MAXSwerveModule(
@@ -121,6 +124,7 @@ public class AntiTipCommandTest {
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
+        DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
       ),
       m_ledStrip

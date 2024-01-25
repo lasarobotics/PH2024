@@ -34,7 +34,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.MedianFilter;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -48,12 +48,14 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -91,11 +93,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   // Drive specs
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
+  public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
+  public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
   public final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
 
 
   private ThrottleMap m_throttleMap;
@@ -105,7 +109,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private SwerveDrivePoseEstimator m_poseEstimator;
   private AdvancedSwerveKinematics m_advancedKinematics;
   private HolonomicPathFollowerConfig m_pathFollowerConfig;
-  private MedianFilter m_yawRateFilter;
+  private LinearFilter m_yawRateFilter;
 
   private NavX2 m_navx;
   private MAXSwerveModule m_lFrontModule;
@@ -115,9 +119,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private LEDStrip m_ledStrip;
 
   private final int YAW_RATE_FILTER_TAPS = 3;
+  private final double EPSILON = 1e-2;
+  private final double POSE_RESET_TIME = 2.0;
   private final double TOLERANCE = 1.0;
-  private final double TIP_THRESHOLD = 30.0;
-  private final double BALANCED_THRESHOLD = 5.0;
+  private final double TIP_THRESHOLD = 35.0;
+  private final double BALANCED_THRESHOLD = 10.0;
   private final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
   private final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(0.5, 0.5, Math.toRadians(40));
   private final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
@@ -133,6 +139,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
+  private Timer m_poseResetTimer;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> m_ledStrip.set(Pattern.RED_STROBE),
@@ -147,6 +154,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this::isBalanced,
     this
   );
+
+  Timer m_timer;
 
   /**
    * Create an instance of DriveSubsystem
@@ -185,7 +194,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
-    this.m_yawRateFilter = new MedianFilter(YAW_RATE_FILTER_TAPS);
+    this.m_yawRateFilter = LinearFilter.singlePoleIIR(GlobalConstants.ROBOT_LOOP_PERIOD * YAW_RATE_FILTER_TAPS, GlobalConstants.ROBOT_LOOP_PERIOD);
+    this.m_poseResetTimer = new Timer();
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -221,7 +231,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredChassisSpeeds = new ChassisSpeeds();
 
     // Setup anti-tip command
-    new Trigger(this::isTipping).onTrue(ANTI_TIP_COMMAND);
+    new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
     // Register LED strip with LED subsystem
     LEDSubsystem.getInstance().add(m_ledStrip);
@@ -239,7 +249,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_currentHeading = new Rotation2d();
 
     // Initalise PurplePathClient
-    m_purplePathClient = new PurplePathClient(this);
+    m_purplePathClient = new PurplePathClient(this::getPose, getPathConstraints());
 
     // Initialise field
     m_field = new Field2d();
@@ -258,8 +268,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set VisionSubsystem pose supplier for simulation
     VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
-
-    disableTractionControl();
   }
 
   /**
@@ -280,6 +288,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -294,6 +303,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -308,6 +318,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -322,6 +333,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
@@ -637,6 +649,19 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_rRearModule.disableTractionControl();
   }
 
+  /**
+   * Reset pose estimator
+   * @param pose Pose to set robot to
+   */
+  private void resetPose(Pose2d pose) {
+    resetEncoders();
+    m_poseEstimator.resetPosition(
+      getRotation2d(),
+      getModulePositions(),
+      pose
+    );
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -649,6 +674,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
       m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
     );
+
+    if (Math.abs(m_desiredChassisSpeeds.vxMetersPerSecond) < EPSILON
+      && Math.abs(m_desiredChassisSpeeds.vyMetersPerSecond) < EPSILON
+      && Math.abs(m_desiredChassisSpeeds.omegaRadiansPerSecond) < EPSILON
+      && m_poseResetTimer.hasElapsed(POSE_RESET_TIME)) resetPose(getPose());
+    else m_poseResetTimer.restart();
 
     if (RobotBase.isSimulation()) return;
     updatePose();
@@ -664,7 +695,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_lRearModule.simulationPeriodic();
     m_rRearModule.simulationPeriodic();
 
-    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD;
+    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
+    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD
+                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
     m_navx.setSimAngle(angle);
 
     double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
@@ -810,6 +843,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Reset pose estimator
+   * @param poseSupplier Pose supplier
+   * @return Command to reset pose
+   */
+  public Command resetPoseCommand(Supplier<Pose2d> poseSupplier) {
+    return runOnce(() -> resetPose(poseSupplier.get()));
+  }
+
+  /**
    * Go to goal pose
    * @param goal Desired goal pose
    * @param parallelCommand Command to run in parallel on final approach
@@ -824,7 +866,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         .finallyDo(() -> resetRotatePID())
       ),
       runOnce(() -> stop()),
-      Commands.parallel(Commands.idle(this), endCommand)
+      Commands.parallel(driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), endCommand)
     );
   }
 
@@ -843,19 +885,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public void resetRotatePID() {
     m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
     m_rotatePIDController.reset();
-  }
-
-  /**
-   * Reset pose estimator
-   * @param pose Pose to set robot to
-   */
-  public void resetPose(Pose2d pose) {
-    resetEncoders();
-    m_poseEstimator.resetPosition(
-      getRotation2d(),
-      getModulePositions(),
-      pose
-    );
   }
 
   /**

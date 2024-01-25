@@ -6,15 +6,14 @@ package frc.robot.subsystems.drive;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Supplier;
 
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.JSONObject;
@@ -41,29 +40,25 @@ public class PurplePathClient {
   private final String GOAL_POSE_LOG_ENTRY = "/GoalPose";
   private final String FINAL_APPROACH_POSE_LOG_ENTRY = "/FinalApproachPose";
   private final double FINAL_APPROACH_SPEED_FUDGE_FACTOR = 0.6;
-  private final double PATH_DISTANCE_SPEED_FUDGE_FACTOR = 0.3;
 
   private final String URI;
 
-  private DriveSubsystem m_driveSubsystem;
+  private Supplier<Pose2d> m_poseSupplier;
   private PathConstraints m_pathConstraints;
   private HttpURLConnection m_serverConnection;
   private boolean m_isConnected;
   private boolean m_connectivityCheckEnabled;
   private Notifier m_periodicNotifier;
 
-  public PurplePathClient(DriveSubsystem driveSubsystem) {
-    this.m_driveSubsystem = driveSubsystem;
-    this.m_pathConstraints = m_driveSubsystem.getPathConstraints();
+  public PurplePathClient(Supplier<Pose2d> poseSupplier, PathConstraints pathConstraints) {
+    this.m_poseSupplier = poseSupplier;
+    this.m_pathConstraints = pathConstraints;
     this.m_isConnected = false;
     this.m_connectivityCheckEnabled = true;
 
     // Set URI
     if (RobotBase.isSimulation()) URI = "http://localhost:5000/";
     else URI = "http://purplebox.local:5000/";
-
-    // Supress output
-    System.setOut(new PrintStream(OutputStream.nullOutputStream()));
 
     // Initialize connectivity check thread
     this.m_periodicNotifier = new Notifier(() -> periodic());
@@ -158,7 +153,7 @@ public class PurplePathClient {
         isClose ? 0.0
                 : Math.min(
                     Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
-                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * distance) * PATH_DISTANCE_SPEED_FUDGE_FACTOR
+                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * distance)
                 ),
         finalApproachPose.getRotation()
       )
@@ -173,7 +168,7 @@ public class PurplePathClient {
                    : Commands.sequence(
                       AutoBuilder.followPath(path),
                       AutoBuilder.followPath(finalApproachPath).alongWith(parallelCommand)
-                    );
+                     );
   }
 
   /**
@@ -183,9 +178,9 @@ public class PurplePathClient {
     if (!m_connectivityCheckEnabled) return;
     if (m_isConnected) return;
 
-    try { sendRequest(JSONObject.writePointList(Arrays.asList(new Translation2d(), new Translation2d()))); }
-    catch (IOException e) {
-      System.out.println(e.getMessage());
+    try {
+      sendRequest(JSONObject.writePointList(Arrays.asList(new Translation2d(), new Translation2d())));
+    } catch (IOException e) {
       m_isConnected = false;
     }
   }
@@ -197,7 +192,7 @@ public class PurplePathClient {
    * @return Trajectory command
    */
   public Command getTrajectoryCommand(PurplePathPose goal, Command parallelCommand) {
-    return getCommand(m_driveSubsystem.getPose(), goal, parallelCommand);
+    return getCommand(m_poseSupplier.get(), goal, parallelCommand);
   }
 
   /**
