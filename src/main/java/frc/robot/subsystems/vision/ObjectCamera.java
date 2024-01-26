@@ -31,7 +31,7 @@ public class ObjectCamera implements Runnable, AutoCloseable {
 
     /**
      * Create VisionCamera
-     * 
+     *
      * @param name       Name of device
      * @param transform  Location on robot in meters
      * @param resolution Resolution used by camera
@@ -97,8 +97,5 @@ public class ObjectCamera implements Runnable, AutoCloseable {
     }
 
     @Override
-    public void run() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
-    }
+    public void run() {}
 }
