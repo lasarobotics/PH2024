@@ -351,8 +351,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Set swerve modules, automatically applying traction control
    * @param moduleStates Array of calculated module states
-   * @param inertialVelocity Current inertial velocity (m/s)
-   * @param rotateRate Current rotate rate (degrees/s)
+   * @param inertialVelocity Current inertial velocity
+   * @param rotateRate Desired robot rotate rate
    */
   private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
     m_lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
