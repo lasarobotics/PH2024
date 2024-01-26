@@ -34,7 +34,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -109,7 +108,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private SwerveDrivePoseEstimator m_poseEstimator;
   private AdvancedSwerveKinematics m_advancedKinematics;
   private HolonomicPathFollowerConfig m_pathFollowerConfig;
-  private LinearFilter m_yawRateFilter;
 
   private NavX2 m_navx;
   private MAXSwerveModule m_lFrontModule;
@@ -118,7 +116,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_rRearModule;
   private LEDStrip m_ledStrip;
 
-  private final int YAW_RATE_FILTER_TAPS = 3;
   private final double TOLERANCE = 1.0;
   private final double TIP_THRESHOLD = 35.0;
   private final double BALANCED_THRESHOLD = 10.0;
@@ -191,7 +188,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
-    this.m_yawRateFilter = LinearFilter.singlePoleIIR(GlobalConstants.ROBOT_LOOP_PERIOD * YAW_RATE_FILTER_TAPS, GlobalConstants.ROBOT_LOOP_PERIOD);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -377,8 +373,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private void drive(Measure<Velocity<Distance>> xRequest,
                      Measure<Velocity<Distance>> yRequest,
                      Measure<Velocity<Angle>> rotateRequest,
-                     Measure<Velocity<Distance>> inertialVelocity,
-                     Measure<Velocity<Angle>> rotateRate) {
+                     Measure<Velocity<Distance>> inertialVelocity) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -395,7 +390,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
     // Set modules to calculated states, WITH traction control
-    setSwerveModules(moduleStates, inertialVelocity, rotateRate);
+    setSwerveModules(moduleStates, inertialVelocity, Units.RadiansPerSecond.of(m_desiredChassisSpeeds.omegaRadiansPerSecond));
   }
 
   /**
@@ -561,8 +556,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialVelocity()
     );
 
     return currentPose.getTranslation().getDistance(aimPoint);
@@ -587,8 +581,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialVelocity()
     );
   }
 
@@ -667,10 +660,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_lRearModule.periodic();
     m_rRearModule.periodic();
 
-    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
-      m_yawRateFilter.calculate(m_navx.getInputs().yawRate.in(Units.RadiansPerSecond))
-    );
-
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
@@ -688,9 +677,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
     m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
     m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
-    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(
-      m_yawRateFilter.calculate(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise)
-    );
+    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise);
 
     int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
     double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise) * GlobalConstants.ROBOT_LOOP_PERIOD
