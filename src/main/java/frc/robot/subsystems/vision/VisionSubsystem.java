@@ -34,7 +34,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
       this.cameras = cameras;
       this.objectCamera = objectCamera;
     }
-  
+
     public Hardware(AprilTagCamera... cameras) {
       this.cameras = cameras;
     }
@@ -59,7 +59,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Create a new vision subsystem
    * @param visionHardware Vision hardware
    */
-  public VisionSubsystem(Hardware visionHardware) {
+  private VisionSubsystem(Hardware visionHardware) {
     setName(getClass().getSimpleName());
     this.m_cameras = visionHardware.cameras;
     this.m_objectCamera = visionHardware.objectCamera;
@@ -174,20 +174,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Get the position of any visible notes
-   * @return List of notes visible, or null if (a) no notes are visible or (b) the object camera was not initialized.
+   * Get the position of an object that can be seen by the object camera.
+   * @return The position of the object, relative to the field
    */
-  public double getNoteAngle() {
-    return m_objectCamera.getHeading();
-  }
-
-  // todo name this better
-  public double getNoteRotationPower() {
-    double power = getNoteAngle() / 5;
-    return Math.min(Math.max(power, -1), 1);
-  }
-
-  public Translation2d getNoteTranslation() {
+  public Translation2d getObjectTranslation() {
     Double heading = m_objectCamera.getHeading();
     Double distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();

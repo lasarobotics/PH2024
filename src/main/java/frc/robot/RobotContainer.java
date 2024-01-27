@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.Leave;
@@ -35,7 +34,7 @@ public class RobotContainer {
       Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
       Constants.Drive.DRIVE_TURN_INPUT_CURVE);
 
-  private static final VisionSubsystem VISION_SUBSYSTEM = new VisionSubsystem(VisionSubsystem.initializeHardware());
+  private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
       Constants.HID.PRIMARY_CONTROLLER_PORT);
@@ -71,24 +70,18 @@ public class RobotContainer {
             () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
                 ? Constants.Field.BLUE_SPEAKER
                 : Constants.Field.RED_SPEAKER,
-            () -> false));
+            false));
 
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
     PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.resetPose(new Pose2d())));
 
     PRIMARY_CONTROLLER.b().whileTrue(
-      // Commands.either(
-        DRIVE_SUBSYSTEM.aimAtPointCommand(
-          () -> PRIMARY_CONTROLLER.getLeftY(),
-          () -> PRIMARY_CONTROLLER.getLeftX(),
-          () -> VISION_SUBSYSTEM.getNoteTranslation() == null ? null : VISION_SUBSYSTEM.getNoteTranslation(),
-          () -> false)
-        // DRIVE_SUBSYSTEM.driveCommand(
-          // () -> PRIMARY_CONTROLLER.getLeftY(),
-          // () -> PRIMARY_CONTROLLER.getLeftX(),
-          // () -> PRIMARY_CONTROLLER.getRightX()),
-        // () -> (true))
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> VISION_SUBSYSTEM.getObjectTranslation() == null ? null : VISION_SUBSYSTEM.getObjectTranslation(),
+        false)
       );
   }
 
@@ -107,12 +100,12 @@ public class RobotContainer {
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
 
-    Logger.recordOutput(DRIVE_SUBSYSTEM.getName() + "/notePose", VISION_SUBSYSTEM.getNoteTranslation());
+    Logger.recordOutput(DRIVE_SUBSYSTEM.getName() + "/notePose", VISION_SUBSYSTEM.getObjectTranslation());
   }
 
   /**
    * Get currently selected autonomous command
-   * 
+   *
    * @return Autonomous command
    */
   public Command getAutonomousCommand() {

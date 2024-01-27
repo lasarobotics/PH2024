@@ -5,7 +5,6 @@
 package frc.robot.subsystems.drive;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -526,35 +525,26 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveDirection = Math.atan2(yRequest, xRequest);
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
 
-    double rotateOutput;
-    Translation2d aimPoint = new Translation2d();
-
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
     Rotation2d targetAngle = new Rotation2d(point.getX() - currentPose.getX(), point.getY() - currentPose.getY());
-
-    if (velocityCorrection) {
-      
-      // Movement vector of robot
-      Vector2D robotVector = new Vector2D(velocityOutput * m_currentHeading.getCos(), velocityOutput * m_currentHeading.getSin());
-      // Aim point
-      aimPoint = point.minus(new Translation2d(robotVector.getX(), robotVector.getY()));
-      // Vector from robot to target
-      Vector2D targetVector = new Vector2D(currentPose.getTranslation().getDistance(point) * targetAngle.getCos(), currentPose.getTranslation().getDistance(point) * targetAngle.getSin());
-      // Parallel component of robot's motion to target vector
-      Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
-      // Perpendicular component of robot's motion to target vector
-      Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector);
-      // Adjust aim point using calculated vector
-      Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
-      // Calculate new angle using adjusted point
-      Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
-      // Calculate necessary rotate rate
-      rotateOutput = m_autoAimPIDController.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
-    } else {
-      rotateOutput = m_autoAimPIDController.calculate(currentPose.getRotation().getDegrees(), targetAngle.getDegrees());
-    }
+    // Movement vector of robot
+    Vector2D robotVector = new Vector2D(velocityOutput * m_currentHeading.getCos(), velocityOutput * m_currentHeading.getSin());
+    // Aim point
+    Translation2d aimPoint = point.minus(new Translation2d(robotVector.getX(), robotVector.getY()));
+    // Vector from robot to target
+    Vector2D targetVector = new Vector2D(currentPose.getTranslation().getDistance(point) * targetAngle.getCos(), currentPose.getTranslation().getDistance(point) * targetAngle.getSin());
+    // Parallel component of robot's motion to target vector
+    Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
+    // Perpendicular component of robot's motion to target vector
+    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ? 1 : 0);
+    // Adjust aim point using calculated vector
+    Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
+    // Calculate new angle using adjusted point
+    Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
+    // Calculate necessary rotate rate
+    double rotateOutput = m_autoAimPIDController.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
 
@@ -737,14 +727,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param velocityCorrectionSupplier Velocity correction flag supplier
    * @return Command that will aim at point while strafing
    */
-  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Supplier<Translation2d> pointSupplier, BooleanSupplier velocityCorrectionSupplier) {
+  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Supplier<Translation2d> pointSupplier, boolean velocityCorrection) {
     if (pointSupplier.get() == null) return Commands.none();
     return run(() ->
       aimAtPoint(
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
         pointSupplier.get(),
-        velocityCorrectionSupplier.getAsBoolean()
+        velocityCorrection
       )
     ).finallyDo(() -> resetRotatePID());
   }
@@ -757,8 +747,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param velocityCorrectionSupplier Velocity correction flag supplier
    * @return Command that will aim at point while strafing
    */
-  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Translation2d point, BooleanSupplier velocityCorrectionSupplier) {
-    return aimAtPointCommand(xRequestSupplier, yRequestSupplier, () -> point, velocityCorrectionSupplier);
+  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Translation2d point, boolean velocityCorrection) {
+    return aimAtPointCommand(xRequestSupplier, yRequestSupplier, () -> point, velocityCorrection);
   }
 
   /**
@@ -768,7 +758,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that will aim robot at point while strafing
    */
   public Command aimAtPointCommand(Translation2d point, boolean velocityCorrection) {
-    return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> point, () -> velocityCorrection);
+    return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> point, velocityCorrection);
   }
 
   public void aimAtAngle(double angle) {
