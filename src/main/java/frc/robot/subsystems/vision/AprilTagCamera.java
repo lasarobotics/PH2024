@@ -64,9 +64,13 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
 
     this.m_atomicEstimatedRobotPose = new AtomicReference<EstimatedRobotPose>();
 
+    // Create simulated AprilTag camera
     var cameraProperties = SimCameraProperties.PERFECT_90DEG();
     cameraProperties.setCalibration(resolution.width, resolution.height, fovDiag);
     this.m_cameraSim = new PhotonCameraSim(m_camera, cameraProperties);
+
+    // Enable wireframe in sim camera stream
+    m_cameraSim.enableDrawWireframe(true);
   }
 
   /**

@@ -63,6 +63,7 @@ public class ObjectCamera implements Runnable, AutoCloseable {
         // robot-to-camera transform.
         m_visionSim.addCamera(cameraSim, robotToCamera);
 
+        // Enable wireframe in sim camera stream
         cameraSim.enableDrawWireframe(true);
     }
 
