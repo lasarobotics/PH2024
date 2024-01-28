@@ -34,6 +34,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -93,6 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
+  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(0.6);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
@@ -116,6 +118,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_rRearModule;
   private LEDStrip m_ledStrip;
 
+  private final int INERTIAL_VELOCITY_FILTER_TAPS = 50;
   private final double TOLERANCE = 1.0;
   private final double TIP_THRESHOLD = 35.0;
   private final double BALANCED_THRESHOLD = 10.0;
@@ -134,6 +137,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
+  private MedianFilter m_xVelocityFilter;
+  private MedianFilter m_yVelocityFilter;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> m_ledStrip.set(Pattern.RED_STROBE),
@@ -188,6 +193,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
+    this.m_xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
+    this.m_yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -280,6 +287,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
@@ -295,6 +303,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
@@ -310,6 +319,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
@@ -325,6 +335,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
       AUTO_LOCK_TIME,
+      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
@@ -659,6 +670,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_rFrontModule.periodic();
     m_lRearModule.periodic();
     m_rRearModule.periodic();
+
+    // Filter inertial velocity
+    m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(
+      m_xVelocityFilter.calculate(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond))
+    );
+    m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(
+      m_yVelocityFilter.calculate(m_navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+    );
 
     if (RobotBase.isSimulation()) return;
     updatePose();
