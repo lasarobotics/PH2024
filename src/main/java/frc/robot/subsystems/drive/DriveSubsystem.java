@@ -166,13 +166,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param turnScalar Scalar for turn input (degrees)
    * @param deadband Deadband for controller input [+0.001, +0.2]
    * @param lookAhead Turn PID lookahead, in number of loops
-   * @param slipRatio Traction control slip ratio [+0.01, +0.15]
+   * @param slipRatio Traction control slip ratio [+0.01, +0.40]
    * @param throttleInputCurve Spline function characterising throttle input
    * @param turnInputCurve Spline function characterising turn input
    */
   public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                        double turnScalar, double deadband, double lookAhead, double slipRatio,
-                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve) {
+                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                        double turnScalar, double deadband, double lookAhead) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
     DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(0.5));

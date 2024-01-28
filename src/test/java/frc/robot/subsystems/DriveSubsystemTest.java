@@ -145,12 +145,11 @@ public class DriveSubsystemTest {
       m_drivetrainHardware,
       Constants.Drive.DRIVE_ROTATE_PID,
       Constants.Drive.DRIVE_CONTROL_CENTRICITY,
+      Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
+      Constants.Drive.DRIVE_TURN_INPUT_CURVE,
       Constants.Drive.DRIVE_TURN_SCALAR,
       Constants.HID.CONTROLLER_DEADBAND,
-      Constants.Drive.DRIVE_LOOKAHEAD,
-      Constants.Drive.DRIVE_SLIP_RATIO,
-      Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
-      Constants.Drive.DRIVE_TURN_INPUT_CURVE
+      Constants.Drive.DRIVE_LOOKAHEAD
     );
 
     // Disable traction control for unit tests
