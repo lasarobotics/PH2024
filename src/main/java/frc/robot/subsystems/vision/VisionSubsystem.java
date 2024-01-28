@@ -18,6 +18,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -25,9 +27,15 @@ import frc.robot.Constants;
 
 public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
-    VisionCamera[] cameras;
+    AprilTagCamera[] cameras;
+    ObjectCamera objectCamera;
 
-    public Hardware(VisionCamera... cameras) {
+    public Hardware(ObjectCamera objectCamera, AprilTagCamera... cameras) {
+      this.cameras = cameras;
+      this.objectCamera = objectCamera;
+    }
+
+    public Hardware(AprilTagCamera... cameras) {
       this.cameras = cameras;
     }
   }
@@ -37,9 +45,11 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String VISIBLE_TAGS_LOG_ENTRY = "/VisibleTags";
   private static final String ESTIMATED_POSES_LOG_ENTRY = "/EstimatedPoses";
 
-  private VisionCamera[] m_cameras;
+  private AprilTagCamera[] m_cameras;
   private Notifier m_cameraNotifier;
   private AprilTagFieldLayout m_fieldLayout;
+
+  private ObjectCamera m_objectCamera;
 
   private Supplier<Pose2d> m_poseSupplier;
 
@@ -52,6 +62,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private VisionSubsystem(Hardware visionHardware) {
     setName(getClass().getSimpleName());
     this.m_cameras = visionHardware.cameras;
+    this.m_objectCamera = visionHardware.objectCamera;
+
     this.m_sim = new VisionSystemSim(getName());
 
     // Load AprilTag field layout
@@ -82,19 +94,25 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
   public static Hardware initializeHardware() {
     Hardware visionHardware = new Hardware(
-      new VisionCamera(
+      new ObjectCamera(
+        Constants.VisionHardware.CAMERA_OBJECT_NAME,
+        Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
+        Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
+        Constants.VisionHardware.CAMERA_OBJECT_FOV
+      ),
+      new AprilTagCamera(
         Constants.VisionHardware.CAMERA_A_NAME,
         Constants.VisionHardware.CAMERA_A_LOCATION,
         Constants.VisionHardware.CAMERA_A_RESOLUTION,
         Constants.VisionHardware.CAMERA_A_FOV
       ),
-      new VisionCamera(
+      new AprilTagCamera(
         Constants.VisionHardware.CAMERA_B_NAME,
         Constants.VisionHardware.CAMERA_B_LOCATION,
         Constants.VisionHardware.CAMERA_B_RESOLUTION,
         Constants.VisionHardware.CAMERA_B_FOV
       ),
-      new VisionCamera(
+      new AprilTagCamera(
         Constants.VisionHardware.CAMERA_C_NAME,
         Constants.VisionHardware.CAMERA_C_LOCATION,
         Constants.VisionHardware.CAMERA_C_RESOLUTION,
@@ -126,6 +144,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
+    if (m_poseSupplier != null) m_objectCamera.run(m_poseSupplier.get());
   }
 
   /**
@@ -154,9 +173,27 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return estimatedPoses;
   }
 
+  /**
+   * Get the position of an object that can be seen by the object camera.
+   * @return The position of the object, relative to the field
+   */
+  public Translation2d getObjectTranslation() {
+    Double heading = m_objectCamera.getHeading();
+    Double distance = m_objectCamera.getDistance();
+    Pose2d pose = m_poseSupplier.get();
+    if (heading != null && distance != null && pose != null) {
+      Logger.recordOutput(getName() + "/distance", distance);
+      Logger.recordOutput(getName() + "/heading", heading);
+      return m_poseSupplier.get().getTranslation().plus(new Translation2d(distance.doubleValue(), new Rotation2d(Math.toRadians(pose.getRotation().getDegrees() + heading))));
+    } else {
+      return new Translation2d();
+    }
+  }
+
   @Override
   public void close() {
     for (var camera : m_cameras) camera.close();
+    m_objectCamera.close();
     m_cameraNotifier.close();
   }
 }

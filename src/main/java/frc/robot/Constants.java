@@ -21,7 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
-import frc.robot.subsystems.vision.VisionCamera.Resolution;
+import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -124,6 +124,14 @@ public final class Constants {
     );
     public static final Resolution CAMERA_C_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_C_FOV = Rotation2d.fromDegrees(79.7);
+
+    public static final String CAMERA_OBJECT_NAME = "cameraC";
+    public static final Transform3d CAMERA_OBJECT_LOCATION = new Transform3d(
+      new Translation3d(0.0, 0.0, 0.5),
+      new Rotation3d(0.0, 0.0, Math.toRadians(-120.0))
+    );
+    public static final Resolution CAMERA_OBJECT_RESOLUTION = Resolution.RES_1280_720;
+    public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);
   }
 
   public static class IntakeHardware {

@@ -4,9 +4,10 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.REVPhysicsSim;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
@@ -31,22 +33,25 @@ public class RobotContainer {
     Constants.Drive.DRIVE_LOOKAHEAD
   );
 
-  private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
+
+  private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
+      Constants.HID.PRIMARY_CONTROLLER_PORT);
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX()
-      )
-    );
+        DRIVE_SUBSYSTEM.driveCommand(
+            () -> PRIMARY_CONTROLLER.getLeftY(),
+            () -> PRIMARY_CONTROLLER.getLeftX(),
+            () -> PRIMARY_CONTROLLER.getRightX()));
 
     // Setup AutoBuilder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
+
+    VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Bind buttons and triggers
     configureBindings();
@@ -56,20 +61,36 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(
+
+    // Y button - aim at speaker
+    PRIMARY_CONTROLLER.y().whileTrue(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red
-          ? Constants.Field.RED_SPEAKER
-          : Constants.Field.BLUE_SPEAKER
+        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
+            ? Constants.Field.BLUE_SPEAKER
+            : Constants.Field.RED_SPEAKER,
+        true
       )
     );
 
+    // Right bumper button - go to amp
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
+
+    // A button - go to source
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
-    PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
+
+    // B button - aim at game object
+    PRIMARY_CONTROLLER.b().whileTrue(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> VISION_SUBSYSTEM.getObjectTranslation(),
+        false
+      )
+    );
   }
 
   /**
@@ -86,10 +107,13 @@ public class RobotContainer {
    */
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
+
+    Logger.recordOutput(DRIVE_SUBSYSTEM.getName() + "/notePose", VISION_SUBSYSTEM.getObjectTranslation());
   }
 
   /**
    * Get currently selected autonomous command
+   *
    * @return Autonomous command
    */
   public Command getAutonomousCommand() {

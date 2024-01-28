@@ -21,7 +21,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.Constants;
 
 /** Create a camera */
-public class VisionCamera implements Runnable, AutoCloseable {
+public class AprilTagCamera implements Runnable, AutoCloseable {
   private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.2;
 
   public enum Resolution {
@@ -53,7 +53,7 @@ public class VisionCamera implements Runnable, AutoCloseable {
    * @param resolution Resolution used by camera
    * @param fovDiag Diagonal FOV of camera
    */
-  public VisionCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
+  public AprilTagCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
     this.m_camera = new PhotonCamera(name);
     this.m_transform = transform;
     var fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
@@ -64,9 +64,13 @@ public class VisionCamera implements Runnable, AutoCloseable {
 
     this.m_atomicEstimatedRobotPose = new AtomicReference<EstimatedRobotPose>();
 
+    // Create simulated AprilTag camera
     var cameraProperties = SimCameraProperties.PERFECT_90DEG();
     cameraProperties.setCalibration(resolution.width, resolution.height, fovDiag);
     this.m_cameraSim = new PhotonCameraSim(m_camera, cameraProperties);
+
+    // Enable wireframe in sim camera stream
+    m_cameraSim.enableDrawWireframe(true);
   }
 
   /**
