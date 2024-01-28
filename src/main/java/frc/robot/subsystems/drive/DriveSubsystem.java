@@ -561,6 +561,23 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Aim robot by given angle
+   * @param angle
+   */
+  private void aimAtAngle(double angle) {
+    double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
+    // double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), angle);
+
+    drive(
+      Units.MetersPerSecond.of(0),
+      Units.MetersPerSecond.of(0),
+      Units.DegreesPerSecond.of(rotateOutput),
+      getInertialVelocity(),
+      getRotateRate()
+    );
+  }
+
+  /**
    * Call this repeatedly to drive using PID during teleoperation
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
@@ -761,26 +778,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> point, velocityCorrection);
   }
 
-  public void aimAtAngle(double angle) {
-    double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
-    // double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), angle);
-
-    drive(
-      Units.MetersPerSecond.of(0),
-      Units.MetersPerSecond.of(0),
-      Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity(),
-      getRotateRate()
-    );
-  }
-
+  /**
+   * Change robot aim by desired angle
+   * @param angleRequestSupplier
+   * @return Command that aims robot
+   */
   public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
     return run(() ->
       aimAtAngle(
         angleRequestSupplier.getAsDouble()
       )
     );
-    // ).finallyDo(() -> resetRotatePID());
   }
 
   /**

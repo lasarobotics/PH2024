@@ -8,7 +8,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.REVPhysicsSim;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -62,27 +61,36 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
+
+    // Y button - aim at speaker
     PRIMARY_CONTROLLER.y().whileTrue(
-        DRIVE_SUBSYSTEM.aimAtPointCommand(
-            () -> PRIMARY_CONTROLLER.getLeftY(),
-            () -> PRIMARY_CONTROLLER.getLeftX(),
-            () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
-                ? Constants.Field.BLUE_SPEAKER
-                : Constants.Field.RED_SPEAKER,
-            false));
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
+            ? Constants.Field.BLUE_SPEAKER
+            : Constants.Field.RED_SPEAKER,
+        false
+      )
+    );
 
+    // Right bumper button - go to amp
     PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
-    PRIMARY_CONTROLLER.x().onTrue(DRIVE_SUBSYSTEM.runOnce(() -> DRIVE_SUBSYSTEM.resetPose(new Pose2d())));
 
+    // A button - go to source
+    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+
+    // B button - aim at game object
     PRIMARY_CONTROLLER.b().whileTrue(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> VISION_SUBSYSTEM.getObjectTranslation() == null ? null : VISION_SUBSYSTEM.getObjectTranslation(),
-        false)
-      );
+        () -> VISION_SUBSYSTEM.getObjectTranslation(),
+        false
+      )
+    );
   }
 
   /**
