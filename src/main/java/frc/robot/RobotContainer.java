@@ -95,7 +95,9 @@ public class RobotContainer {
     );
 
     // A button - go to source
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.a().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.SOURCE));
 
     // B button - aim at game object
     PRIMARY_CONTROLLER.b().whileTrue(
