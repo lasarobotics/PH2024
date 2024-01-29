@@ -107,6 +107,8 @@ public class PurplePathClient {
    * @return Command that drives robot to desired pose
    */
   private Command getCommand(Pose2d start, PurplePathPose goal, Command parallelCommand) {
+    CommandScheduler.getInstance().removeComposedCommand(parallelCommand);
+
     Pose2d goalPose = goal.getGoalPose();
     Pose2d finalApproachPose = goal.getFinalApproachPose();
     PathPlannerPath finalApproachPath = goal.getFinalApproachPath();
@@ -163,7 +165,6 @@ public class PurplePathClient {
     Logger.recordOutput(getClass().getSimpleName() + FINAL_APPROACH_POSE_LOG_ENTRY, finalApproachPose);
 
     // Return path following command
-    CommandScheduler.getInstance().removeComposedCommand(parallelCommand);
     return isClose ? AutoBuilder.followPath(path).alongWith(parallelCommand)
                    : Commands.sequence(
                       AutoBuilder.followPath(path),

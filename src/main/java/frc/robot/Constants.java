@@ -4,13 +4,20 @@
 
 package frc.robot;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
+import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
+import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,8 +26,12 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
+import frc.robot.subsystems.shooter.ShooterSubsystem.ShooterState;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 /**
@@ -45,14 +56,16 @@ public final class Constants {
     public static final Translation2d RED_SPEAKER = new Translation2d(15.64, 5.55);
 
     public static final PurplePathPose AMP = new PurplePathPose(
-      new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
-      new Pose2d(Units.Meters.of(14.66), Units.Meters.of(7.77), Rotation2d.fromDegrees(+90.0)),
-      Units.Meters.of(0.2)
+      new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
+      new Pose2d(Units.Meters.of(14.66), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
+      Units.Meters.of(0.5),
+      true
     );
     public static final PurplePathPose SOURCE = new PurplePathPose(
-      new Pose2d(Units.Meters.of(15.48), Units.Meters.of(0.84), Rotation2d.fromDegrees(-60.00)),
-      new Pose2d(Units.Meters.of(1.07), Units.Meters.of(0.82), Rotation2d.fromDegrees(-120.0)),
-      Units.Meters.of(0.2)
+      new Pose2d(Units.Meters.of(15.48), Units.Meters.of(0.84), Rotation2d.fromDegrees(+120.00)),
+      new Pose2d(Units.Meters.of(1.07), Units.Meters.of(0.82), Rotation2d.fromDegrees(+60.0)),
+      Units.Meters.of(0.5),
+      true
     );
   }
 
@@ -82,6 +95,54 @@ public final class Constants {
     public static final MAXSwerveModule.GearRatio GEAR_RATIO = MAXSwerveModule.GearRatio.L3;
   }
 
+  public static class Shooter {
+    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.0);
+    public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
+      new PIDConstants(
+        0.01,
+        0.0,
+        0.0,
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI / 60))
+      ),
+      false,
+      false,
+      10.0
+    );
+    public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
+      new PIDConstants(
+        0.1,
+        0.0,
+        0.0,
+        0.0
+      ),
+      false,
+      false,
+      Units.Degrees.of(0.5).in(Units.Radians),
+      0.0,
+      0.0,
+      true
+    );
+    public static final FFConstants ANGLE_FF = new FFConstants(0.0, 0.78, 4.18, 0.1);
+    public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
+      Units.DegreesPerSecond.of(180.0),
+      Units.DegreesPerSecond.of(360.0).per(Units.Second)
+    );
+    public static final List<Entry<Measure<Distance>, ShooterState>> SHOOTER_MAP = Arrays.asList(
+      Map.entry(Units.Meters.of(0.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
+      Map.entry(Units.Meters.of(1.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
+      Map.entry(Units.Meters.of(1.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(2.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
+      Map.entry(Units.Meters.of(2.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(4.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(29.5))),
+      Map.entry(Units.Meters.of(4.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(5.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
+      Map.entry(Units.Meters.of(5.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
+      Map.entry(Units.Meters.of(6.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
+    );
+  }
+
   public static class DriveHardware {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 2);
@@ -96,8 +157,10 @@ public final class Constants {
   }
 
   public static class ShooterHardware {
-    public static final Spark.ID LEFT_SLAVE_MOTOR_ID = new Spark.ID("ShooterHardware/Shooter/Left", 11);
-    public static final Spark.ID RIGHT_MASTER_MOTOR_ID = new Spark.ID("ShooterHardware/Shooter/Right", 12);
+    public static final Spark.ID TOP_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 11);
+    public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 12);
+    public static final Spark.ID ANGLE_MOTOR_ID = new Spark.ID("ShooterHardware/Angle", 13);
+    public static final Spark.ID INDEXER_MOTOR_ID = new Spark.ID("ShooterHardware/Indexer", 14);
   }
 
   public static class VisionHardware {

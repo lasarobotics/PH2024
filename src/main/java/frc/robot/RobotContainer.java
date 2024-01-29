@@ -8,17 +8,22 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.REVPhysicsSim;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem.ShooterState;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
@@ -31,6 +36,17 @@ public class RobotContainer {
     Constants.Drive.DRIVE_TURN_SCALAR,
     Constants.HID.CONTROLLER_DEADBAND,
     Constants.Drive.DRIVE_LOOKAHEAD
+  );
+  private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
+    ShooterSubsystem.initializeHardware(),
+    Constants.Shooter.FLYWHEEL_CONFIG,
+    Constants.Shooter.ANGLE_CONFIG,
+    Constants.Shooter.ANGLE_FF,
+    Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
+    Constants.Shooter.FLYWHEEL_DIAMETER,
+    Constants.Shooter.SHOOTER_MAP,
+    DRIVE_SUBSYSTEM::getPose,
+    () -> speakerSupplier()
   );
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
@@ -69,18 +85,25 @@ public class RobotContainer {
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
-            ? Constants.Field.BLUE_SPEAKER
-            : Constants.Field.RED_SPEAKER,
+        () -> speakerSupplier(),
+        true,
         true
       )
     );
 
     // Right bumper button - go to amp
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.AMP));
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.AMP,
+        SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+        Commands.none()
+      )
+    );
 
     // A button - go to source
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.a().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.SOURCE));
 
     // B button - aim at game object
     PRIMARY_CONTROLLER.b().whileTrue(
@@ -88,9 +111,23 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> VISION_SUBSYSTEM.getObjectTranslation(),
+        false,
         false
       )
     );
+
+    // POV Up button - set shooter angle to 60 degrees
+    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> new ShooterState(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0))));
+  }
+
+  /**
+   * Get correct speaker for current alliance
+   * @return Location of appropriate speaker
+   */
+  private static Translation2d speakerSupplier() {
+    return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
+      ? Constants.Field.BLUE_SPEAKER
+      : Constants.Field.RED_SPEAKER;
   }
 
   /**

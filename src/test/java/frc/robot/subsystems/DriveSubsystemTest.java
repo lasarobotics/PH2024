@@ -428,7 +428,7 @@ public class DriveSubsystemTest {
   public void aimLeftTowardsPoint() {
     // Rotate left towards point
     m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
-    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH), true).execute();
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH), false, true).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.gt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -447,7 +447,7 @@ public class DriveSubsystemTest {
   public void aimRightTowardsPoint() {
     // Rotate right towards point
     m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
-    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0), true).execute();
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0), false, true).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.lt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
