@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.REVPhysicsSim;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -81,15 +82,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
     // Y button - aim at speaker
-    PRIMARY_CONTROLLER.y().whileTrue(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> speakerSupplier(),
-        true,
-        true
-      )
-    );
+    PRIMARY_CONTROLLER.y().whileTrue(shootCommand());
 
     // Right bumper button - go to amp
     PRIMARY_CONTROLLER.rightBumper().whileTrue(
@@ -121,10 +114,27 @@ public class RobotContainer {
   }
 
   /**
+   * Compose command to shoot note
+   * @return Command that will automatically aim and shoot note
+   */
+  private Command shootCommand() {
+    return Commands.parallel(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> speakerSupplier().getSecond(),
+        true,
+        true
+      ),
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+    );
+  }
+
+  /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
    */
-  private static Translation2d speakerSupplier() {
+  private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
       : Constants.Field.RED_SPEAKER;

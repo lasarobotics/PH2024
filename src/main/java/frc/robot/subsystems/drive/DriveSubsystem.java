@@ -999,6 +999,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
            Math.abs(getRoll().in(Units.Degrees)) < BALANCED_THRESHOLD;
   }
 
+  public boolean isAimed() {
+    return m_autoAimPIDControllerFront.atGoal() || m_autoAimPIDControllerBack.atGoal();
+  }
+
   /**
    * Get inertial velocity of robot
    * @return Inertial velocity of robot in m/s

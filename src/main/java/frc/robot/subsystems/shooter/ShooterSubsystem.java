@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooter;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
@@ -20,6 +21,8 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,12 +34,13 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -61,6 +65,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> shooterSpeed;
     public final Measure<Angle> shooterAngle;
 
+    public static final ShooterState AMP_PREP_STATE = new ShooterState(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+
     public ShooterState(Measure<Velocity<Distance>> shooterSpeed, Measure<Angle> shooterAngle) {
       this.shooterSpeed = shooterSpeed;
       this.shooterAngle = shooterAngle;
@@ -84,7 +90,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private ElevatorFeedforward m_angleFF;
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
-  private Supplier<Translation2d> m_targetSupplier;
+  private Supplier<Pair<Integer,Translation2d>> m_targetSupplier;
 
   private ShooterState m_desiredShooterState;
   private PolynomialSplineFunction m_shooterAngleCurve;
@@ -104,7 +110,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
                           FFConstants angleFF, TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
                           List<Entry<Measure<Distance>, ShooterState>> shooterMap,
-                          Supplier<Pose2d> poseSupplier, Supplier<Translation2d> targetSupplier) {
+                          Supplier<Pose2d> poseSupplier, Supplier<Pair<Integer,Translation2d>> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
     this.m_bottomFlywheelMotor = shooterHardware.bottomFlywheelMotor;
@@ -145,16 +151,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_mechanism2d = new Mechanism2d(1.0, 1.0);
     m_simShooterJoint = m_mechanism2d.getRoot("shooter", 0.5, 0.33).append(new MechanismLigament2d("shooter", 0.4, 1.0));
     m_simShooterAngleState = new TrapezoidProfile.State();
-
-    // Set commands
-    setDefaultCommand(run(() ->
-      setShooterState(
-        new ShooterState(
-          ZERO_FLYWHEEL_SPEED,
-          Units.Radians.of(m_shooterAngleCurve.value(getTargetDistance().in(Units.Meters)))
-        )
-      )
-    ));
   }
 
   /**
@@ -206,6 +202,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Reset shooter state
+   */
+  private void resetShooter() {
+    setShooterState(new ShooterState(ZERO_FLYWHEEL_SPEED, SHOOTER_ANGLE_OFFSET));
+  }
+
+  /**
    * Get current shooter state
    * @return Current shooter state
    */
@@ -217,6 +220,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Get shooter state based on distance to target
+   * @return Shooter state for current target distance
+   */
+  private ShooterState getAutomaticShooterState() {
+    var targetDistance = getTargetDistance();
+    var flywheelSpeed = m_shooterFlywheelCurve.value(targetDistance.in(Units.Meters));
+    var angle = m_shooterAngleCurve.value(targetDistance.in(Units.Meters));
+
+    return new ShooterState(Units.MetersPerSecond.of(flywheelSpeed), Units.Radians.of(angle));
+  }
+
+  /**
    * Feed forward calculator for shooter angle
    * @param state Current motion profile state
    * @return Feed forward voltage to apply
@@ -225,9 +240,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return m_angleFF.calculate(state.velocity, state.position);
   }
 
+  /**
+   * Get distance to target, clamped to maximum shooting distance
+   * @return Distance to target
+   */
   private Measure<Distance> getTargetDistance() {
     return Units.Meters.of(
-      Math.min(m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get()), MAX_SHOOTING_DISTANCE.in(Units.Meters))
+      MathUtil.clamp(
+        m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().getSecond()),
+        MIN_SHOOTING_DISTANCE.in(Units.Meters),
+        MAX_SHOOTING_DISTANCE.in(Units.Meters)
+      )
     );
   }
 
@@ -268,6 +291,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
+    m_topFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.shooterSpeed.in(Units.MetersPerSecond);
+
     m_angleMotor.getInputs().absoluteEncoderPosition = m_simShooterAngleState.position;
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
 
@@ -286,17 +311,37 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to control shooter manually
    */
   public Command shootManualCommand(Supplier<ShooterState> stateSupplier) {
-    return Commands.parallel(
-      runEnd(
-        () -> {
-          if (isShooterReady()) feedStart();
-          else feedStop();
-        },
-        () -> {
-          setShooterState(new ShooterState(ZERO_FLYWHEEL_SPEED, getCurrentShooterState().shooterAngle));
-          feedStop();
-        }
-      ).beforeStarting(() -> setShooterState(stateSupplier.get()), this)
+    return runEnd(
+      () -> {
+        if (isShooterReady()) feedStart();
+        else feedStop();
+      },
+      () -> {
+        feedStop();
+        resetShooter();
+      }
+    ).beforeStarting(() -> setShooterState(stateSupplier.get()), this);
+  }
+
+  /**
+   * Shoot automatically based on current location
+   * @param isAimed Is robot aimed at target
+   * @return Command to automatically shoot note
+   */
+  public Command shootCommand(BooleanSupplier isAimed) {
+    return runEnd(
+      () -> {
+        setShooterState(getAutomaticShooterState());
+        if (RobotBase.isSimulation() | isShooterReady()
+            && isAimed.getAsBoolean()
+            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()))
+          feedStart();
+        else feedStop();
+      },
+      () -> {
+        feedStop();
+        resetShooter();
+      }
     );
   }
 
@@ -305,10 +350,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that prepares shooter for scoring in the amp
    */
   public Command prepareForAmpCommand() {
-    return runEnd(
-      () -> setShooterState(new ShooterState(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0))),
-      () -> setShooterState(new ShooterState(ZERO_FLYWHEEL_SPEED, getCurrentShooterState().shooterAngle))
-    );
+    return startEnd(
+      () -> setShooterState(ShooterState.AMP_PREP_STATE),
+      () -> resetShooter()
+    ).until(() -> isShooterReady());
   }
 
   @Override

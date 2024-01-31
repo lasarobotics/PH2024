@@ -5,8 +5,10 @@
 package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.lasarobotics.utils.GlobalConstants;
@@ -45,16 +47,15 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String VISIBLE_TAGS_LOG_ENTRY = "/VisibleTags";
   private static final String ESTIMATED_POSES_LOG_ENTRY = "/EstimatedPoses";
 
+  private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
+  private AtomicReference<List<Integer>> m_visibleTagIDs;
+
   private AprilTagCamera[] m_cameras;
   private Notifier m_cameraNotifier;
   private AprilTagFieldLayout m_fieldLayout;
-
   private ObjectCamera m_objectCamera;
-
   private Supplier<Pose2d> m_poseSupplier;
-
   private VisionSystemSim m_sim;
-
   /**
    * Create a new vision subsystem
    * @param visionHardware Vision hardware
@@ -63,6 +64,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     setName(getClass().getSimpleName());
     this.m_cameras = visionHardware.cameras;
     this.m_objectCamera = visionHardware.objectCamera;
+    this.m_estimatedRobotPoses = new AtomicReference<List<EstimatedRobotPose>>();
+    this.m_visibleTagIDs = new AtomicReference<List<Integer>>();
 
     this.m_sim = new VisionSystemSim(getName());
 
@@ -75,10 +78,14 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     m_sim.addAprilTags(m_fieldLayout);
 
     // Setup camera pose estimation threads
-    this.m_cameraNotifier = (RobotBase.isReal()) ? new Notifier(() -> { for (var camera : m_cameras) camera.run(); })
+    this.m_cameraNotifier = (RobotBase.isReal()) ? new Notifier(() -> {
+                                                     for (var camera : m_cameras) camera.run();
+                                                     updateEstimatedGlobalPoses();
+                                                   })
                                                  : new Notifier(() -> {
                                                      if (m_poseSupplier != null) m_sim.update(m_poseSupplier.get());
                                                      for (var camera : m_cameras) camera.run();
+                                                     updateEstimatedGlobalPoses();
                                                    });
 
     // Set all cameras to primary pipeline
@@ -111,12 +118,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.VisionHardware.CAMERA_B_LOCATION,
         Constants.VisionHardware.CAMERA_B_RESOLUTION,
         Constants.VisionHardware.CAMERA_B_FOV
-      ),
-      new AprilTagCamera(
-        Constants.VisionHardware.CAMERA_C_NAME,
-        Constants.VisionHardware.CAMERA_C_LOCATION,
-        Constants.VisionHardware.CAMERA_C_RESOLUTION,
-        Constants.VisionHardware.CAMERA_C_FOV
       )
     );
 
@@ -148,18 +149,19 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Get currently estimated robot poses from each camera
-   * @return List of estimated poses, the timestamp, and targets used to create the estimate
+   * Update currently estimated robot pose from each camera
    */
-  public List<EstimatedRobotPose> getEstimatedGlobalPoses() {
+  private void updateEstimatedGlobalPoses() {
     List<EstimatedRobotPose> estimatedPoses = new ArrayList<EstimatedRobotPose>();
 
+    List<Integer> visibleTagIDs = new ArrayList<Integer>();
     HashSet<Pose3d> visibleTags = new HashSet<Pose3d>();
     List<Pose2d> loggedPoses = new ArrayList<Pose2d>();
     for (var camera : m_cameras) {
       var result = camera.getLatestEstimatedPose();
       if (result == null) continue;
       result.targetsUsed.forEach((photonTrackedTarget) -> {
+        visibleTagIDs.add(photonTrackedTarget.getFiducialId());
         visibleTags.add(m_fieldLayout.getTagPose(photonTrackedTarget.getFiducialId()).get());
       });
       estimatedPoses.add(result);
@@ -170,7 +172,24 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, visibleTags.toArray(new Pose3d[0]));
     Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, loggedPoses.toArray(new Pose2d[0]));
 
-    return estimatedPoses;
+    m_visibleTagIDs.set(visibleTagIDs);
+    m_estimatedRobotPoses.set(estimatedPoses);
+  }
+
+  /**
+   * Get currently estimated robot poses from each camera
+   * @return List of estimated poses, the timestamp, and targets used to create the estimate
+   */
+  public List<EstimatedRobotPose> getEstimatedGlobalPoses() {
+    return m_estimatedRobotPoses.getAndSet(Collections.emptyList());
+  }
+
+  /**
+   * Get IDs of currently visible tags
+   * @return List of IDs of currently visible tags
+   */
+  public List<Integer> getVisibleTagIDs() {
+    return m_visibleTagIDs.get();
   }
 
   /**
