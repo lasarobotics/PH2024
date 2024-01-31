@@ -10,7 +10,6 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -24,7 +23,6 @@ import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.subsystems.shooter.ShooterSubsystem.ShooterState;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class RobotContainer {
@@ -94,9 +92,7 @@ public class RobotContainer {
     );
 
     // A button - go to source
-    PRIMARY_CONTROLLER.a().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
     // B button - aim at game object
     PRIMARY_CONTROLLER.b().whileTrue(
@@ -108,9 +104,6 @@ public class RobotContainer {
         false
       )
     );
-
-    // POV Up button - set shooter angle to 60 degrees
-    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> new ShooterState(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0))));
   }
 
   /**
