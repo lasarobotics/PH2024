@@ -92,9 +92,7 @@ public class RobotContainer {
     );
 
     // A button - go to source
-    PRIMARY_CONTROLLER.a().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.SOURCE));
+    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
     // B button - aim at game object
     PRIMARY_CONTROLLER.b().whileTrue(
@@ -106,9 +104,6 @@ public class RobotContainer {
         false
       )
     );
-
-    // POV Up button - set shooter angle to 60 degrees
-    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> new ShooterState(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0))));
   }
 
   /**
