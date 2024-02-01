@@ -493,7 +493,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Add vision measurements to pose estimator
     for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-      if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
+      // if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
       m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
     }
   }
