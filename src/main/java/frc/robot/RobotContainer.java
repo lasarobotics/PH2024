@@ -108,6 +108,10 @@ public class RobotContainer {
 
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+
+    // POV left/right - wiggle stick
+    PRIMARY_CONTROLLER.povLeft().onTrue(WIGGLE_STICK.setPositionCommand(0.0));
+    PRIMARY_CONTROLLER.povRight().onTrue(WIGGLE_STICK.setPositionCommand(15.0));
   }
 
   /**
