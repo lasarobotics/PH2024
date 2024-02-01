@@ -46,6 +46,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static final String VISIBLE_TAGS_LOG_ENTRY = "/VisibleTags";
   private static final String ESTIMATED_POSES_LOG_ENTRY = "/EstimatedPoses";
+  private static final String OBJECT_DISTANCE_LOG_ENTRY = "/ObjectDistance";
+  private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
 
   private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
   private AtomicReference<List<Integer>> m_visibleTagIDs;
@@ -78,15 +80,16 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     m_sim.addAprilTags(m_fieldLayout);
 
     // Setup camera pose estimation threads
-    this.m_cameraNotifier = (RobotBase.isReal()) ? new Notifier(() -> {
-                                                     for (var camera : m_cameras) camera.run();
-                                                     updateEstimatedGlobalPoses();
-                                                   })
-                                                 : new Notifier(() -> {
-                                                     if (m_poseSupplier != null) m_sim.update(m_poseSupplier.get());
-                                                     for (var camera : m_cameras) camera.run();
-                                                     updateEstimatedGlobalPoses();
-                                                   });
+    this.m_cameraNotifier = (RobotBase.isReal())
+    ? new Notifier(() -> {
+      for (var camera : m_cameras) camera.run();
+      updateEstimatedGlobalPoses();
+    })
+    : new Notifier(() -> {
+      if (m_poseSupplier != null) m_sim.update(m_poseSupplier.get());
+      for (var camera : m_cameras) camera.run();
+      updateEstimatedGlobalPoses();
+    });
 
     // Set all cameras to primary pipeline
     for (var camera : m_cameras) camera.setPipelineIndex(0);
@@ -201,12 +204,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     Double distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
     if (heading != null && distance != null && pose != null) {
-      Logger.recordOutput(getName() + "/distance", distance);
-      Logger.recordOutput(getName() + "/heading", heading);
+      Logger.recordOutput(getName() + OBJECT_DISTANCE_LOG_ENTRY, distance);
+      Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, heading);
       return m_poseSupplier.get().getTranslation().plus(new Translation2d(distance.doubleValue(), new Rotation2d(Math.toRadians(pose.getRotation().getDegrees() + heading))));
-    } else {
-      return new Translation2d();
-    }
+    } else return new Translation2d();
   }
 
   @Override
