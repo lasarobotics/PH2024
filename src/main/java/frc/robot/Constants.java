@@ -194,6 +194,19 @@ public final class Constants {
     public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
   }
 
+  public static class WiggleStick {
+    public static final SparkPIDConfig PID_CONSTANTS = new SparkPIDConfig(
+      new PIDConstants(1, 0, 0, 0),
+      false,
+      false,
+      0.1,
+      0,
+      15,
+      
+      true);
+    public static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(10, 10);
+  }
+
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
