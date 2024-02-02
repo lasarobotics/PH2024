@@ -123,7 +123,7 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     m_camera.setPipelineIndex(index);
   }
 
-  /***
+  /**
    * Get camera to robot transform
    * @return Camera to robot transform
    */
