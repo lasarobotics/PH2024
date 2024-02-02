@@ -124,50 +124,6 @@ public class RobotContainer {
   }
 
   /**
-   * Compose command to shoot note
-   * @return Command that will automatically aim and shoot note
-   */
-  private Command shootCommand() {
-    return Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> speakerSupplier().getSecond(),
-        true,
-        true
-      ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
-    );
-  }
-
-  /**
-   * Get correct speaker for current alliance
-   * @return Location of appropriate speaker
-   */
-  private static Pair<Integer,Translation2d> speakerSupplier() {
-    return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
-      ? Constants.Field.BLUE_SPEAKER
-      : Constants.Field.RED_SPEAKER;
-  }
-
-  /**
-   * Compose command to shoot note
-   * @return Command that will automatically aim and shoot note
-   */
-  private Command shootCommand() {
-    return Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> speakerSupplier().getSecond(),
-        true,
-        true
-      ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
-    );
-  }
-
-  /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
    */
