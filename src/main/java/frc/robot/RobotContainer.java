@@ -53,18 +53,19 @@ public class RobotContainer {
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
-  private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
-      Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
-        DRIVE_SUBSYSTEM.driveCommand(
-            () -> PRIMARY_CONTROLLER.getLeftY(),
-            () -> PRIMARY_CONTROLLER.getLeftX(),
-            () -> PRIMARY_CONTROLLER.getRightX()));
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX()
+      )
+    );
 
     // Setup AutoBuilder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
