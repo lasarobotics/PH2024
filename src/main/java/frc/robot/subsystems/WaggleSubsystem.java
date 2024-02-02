@@ -4,30 +4,36 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
-import org.lasarobotics.hardware.revrobotics.Spark.ID;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
+
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class wiggleStick extends SubsystemBase {
+public class WaggleSubsystem extends SubsystemBase {
   Spark m_motor;
   SparkPIDConfig m_PidConfig;
   Constraints m_constraint;
 
   /** Creates a new wiggleStick. */
-  public wiggleStick(SparkPIDConfig config, Constraints constraint) {
-    m_motor = new Spark(new ID("wiggleStick", 20), MotorKind.NEO);
+  public WaggleSubsystem(SparkPIDConfig config, Constraints constraint) {
+    m_motor = new Spark(new Spark.ID("wiggleStick", 20), MotorKind.NEO);
     m_PidConfig = config;
     m_constraint = constraint;
 
+    double conversionFactor = 1.0;
     m_motor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
+    m_motor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, conversionFactor);
+    m_motor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, conversionFactor);
+
+    m_motor.enablePIDWrapping(0.0, 15.0);
+    m_motor.setIdleMode(IdleMode.kCoast);
+    m_motor.resetEncoder();
   }
 
   public void setPosition(double position) {
@@ -38,9 +44,9 @@ public class wiggleStick extends SubsystemBase {
     return m_motor.getInputs().encoderPosition;
   }
 
-  public Command setPositionCommand(DoubleSupplier position) {
-    return runOnce(() -> setPosition(position.getAsDouble()));
-    
+  public Command setPositionCommand(double position) {
+    return runOnce(() -> setPosition(position));
+
   }
 
   @Override

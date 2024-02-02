@@ -195,15 +195,15 @@ public final class Constants {
   }
 
   public static class WiggleStick {
-    public static final SparkPIDConfig PID_CONSTANTS = new SparkPIDConfig(
-      new PIDConstants(1, 0, 0, 0),
+    public static final SparkPIDConfig WIGGLE_STICK_CONFIG = new SparkPIDConfig(
+      new PIDConstants(0.2, 0, 0, 0),
       false,
       false,
-      0.1,
+      1,
       0,
       15,
-      
-      true);
+      true
+    );
     public static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(10, 10);
   }
 

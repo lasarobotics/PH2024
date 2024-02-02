@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
-import frc.robot.subsystems.wiggleStick;
+import frc.robot.subsystems.WaggleSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -49,7 +49,7 @@ public class RobotContainer {
     () -> speakerSupplier()
   );
 
-  private static final wiggleStick WIGGLE_STICK = new wiggleStick(Constants.WiggleStick.PID_CONSTANTS, Constants.WiggleStick.CONSTRAINTS);
+  private static final WaggleSubsystem WIGGLE_STICK = new WaggleSubsystem(Constants.WiggleStick.WIGGLE_STICK_CONFIG, Constants.WiggleStick.CONSTRAINTS);
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
@@ -108,8 +108,8 @@ public class RobotContainer {
       )
     );
 
-    PRIMARY_CONTROLLER.povLeft().onTrue(WIGGLE_STICK.setPositionCommand(() -> 0));
-    PRIMARY_CONTROLLER.povRight().onTrue(WIGGLE_STICK.setPositionCommand(() -> 15));
+    PRIMARY_CONTROLLER.povLeft().onTrue(WIGGLE_STICK.setPositionCommand(0.0));
+    PRIMARY_CONTROLLER.povRight().onTrue(WIGGLE_STICK.setPositionCommand(15.0));
   }
 
   /**
