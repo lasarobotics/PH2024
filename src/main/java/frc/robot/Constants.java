@@ -184,7 +184,7 @@ public final class Constants {
     public static final String CAMERA_OBJECT_NAME = "Arducam_OV9782_USB_Camera_C";
     public static final Transform3d CAMERA_OBJECT_LOCATION = new Transform3d(
       new Translation3d(0.3, 0.0, 0.5),
-      new Rotation3d(0.0, 0.0, 0.0)
+      new Rotation3d(0, Math.toRadians(+15.0), 0)
     );
     public static final Resolution CAMERA_OBJECT_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);

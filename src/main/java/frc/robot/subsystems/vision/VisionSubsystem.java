@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -22,6 +23,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -48,9 +53,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String ESTIMATED_POSES_LOG_ENTRY = "/EstimatedPoses";
   private static final String OBJECT_DISTANCE_LOG_ENTRY = "/ObjectDistance";
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
-
-  private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
-  private AtomicReference<List<Integer>> m_visibleTagIDs;
 
   private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
   private AtomicReference<List<Integer>> m_visibleTagIDs;
@@ -97,7 +99,13 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     // Set all cameras to primary pipeline
     for (var camera : m_cameras) camera.setPipelineIndex(0);
 
-    // Add cameras to sim
+    // Add object camera to sim
+    m_sim.addCamera(m_objectCamera.getCameraSim(), m_objectCamera.getTransform());
+
+    // Add game object target to sim
+    m_sim.addVisionTargets(m_objectCamera.getTargetSim());
+
+    // Add AprilTag cameras to sim
     for (var camera : m_cameras) m_sim.addCamera(camera.getCameraSim(), camera.getTransform());
 
     // Start camera thread
@@ -151,7 +159,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
-    if (m_poseSupplier != null) m_objectCamera.run(m_poseSupplier.get());
   }
 
   /**
@@ -167,6 +174,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
       var result = camera.getLatestEstimatedPose();
       if (result == null) continue;
       result.targetsUsed.forEach((photonTrackedTarget) -> {
+        if (photonTrackedTarget.getFiducialId() == -1) return;
         visibleTagIDs.add(photonTrackedTarget.getFiducialId());
         visibleTags.add(m_fieldLayout.getTagPose(photonTrackedTarget.getFiducialId()).get());
       });
@@ -203,14 +211,14 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * @return The position of the object, relative to the field
    */
   public Translation2d getObjectTranslation() {
-    Double heading = m_objectCamera.getHeading();
-    Double distance = m_objectCamera.getDistance();
+    Optional<Measure<Angle>> heading = m_objectCamera.getYaw();
+    Optional<Measure<Distance>> distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
-    if (heading != null && distance != null && pose != null) {
-      Logger.recordOutput(getName() + OBJECT_DISTANCE_LOG_ENTRY, distance);
-      Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, heading);
-      return m_poseSupplier.get().getTranslation().plus(new Translation2d(distance.doubleValue(), new Rotation2d(Math.toRadians(pose.getRotation().getDegrees() + heading))));
-    } else return new Translation2d();
+    if (heading.isEmpty() || distance.isEmpty() || pose == null) return new Translation2d();
+
+    Logger.recordOutput(getName() + OBJECT_DISTANCE_LOG_ENTRY, distance.get());
+    Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, heading.get());
+    return m_poseSupplier.get().getTranslation().plus(new Translation2d(distance.get().in(Units.Meters), new Rotation2d(Math.toRadians(pose.getRotation().getDegrees() + heading.get().in(Units.Radians)))));
   }
 
   @Override

@@ -1,102 +1,117 @@
 package frc.robot.subsystems.vision;
 
+import java.util.Optional;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import frc.robot.Constants;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 /**
  * Camera that looks for rings on the ground
  */
-public class ObjectCamera implements Runnable, AutoCloseable {
-    PhotonCamera m_camera;
-    Transform3d m_transform;
+public class ObjectCamera implements AutoCloseable {
+  private PhotonCamera m_camera;
+  private Transform3d m_transform;
 
-    VisionSystemSim m_visionSim;
+  private VisionTargetSim m_targetSim;
+  private PhotonCameraSim m_cameraSim;
 
-    Pose2d m_robotPose;
+  /**
+    * Create Object Camera
+    *
+    * @param name       Name of device
+    * @param transform  Location on robot in meters
+    * @param resolution Resolution used by camera
+    * @param fovDiag    Diagonal FOV of camera
+    */
+  public ObjectCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
+    m_camera = new PhotonCamera(name);
+    m_transform = transform;
 
-    /**
-     * Create VisionCamera
-     *
-     * @param name       Name of device
-     * @param transform  Location on robot in meters
-     * @param resolution Resolution used by camera
-     * @param fovDiag    Diagonal FOV of camera
-     */
-    public ObjectCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
-        m_camera = new PhotonCamera(name);
-        m_transform = transform;
 
-        m_visionSim = new VisionSystemSim("main");
-        TargetModel targetModel = new TargetModel(0.5, 0.25);
+    TargetModel targetModel = new TargetModel(0.5, 0.25);
+    Pose3d targetPose = new Pose3d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH / 2, 2.0, new Rotation3d(0, 0, Math.PI));
 
-        Pose3d targetPose = new Pose3d(16, 4, 2, new Rotation3d(0, 0, Math.PI));
+    m_targetSim = new VisionTargetSim(targetPose, targetModel);
 
-        VisionTargetSim visionTarget = new VisionTargetSim(targetPose, targetModel);
 
-        m_visionSim.addVisionTargets(visionTarget);
+    var cameraProperties = SimCameraProperties.PERFECT_90DEG();
+    cameraProperties.setCalibration(resolution.width, resolution.height, fovDiag);
+    m_cameraSim = new PhotonCameraSim(m_camera, cameraProperties);
 
-        SimCameraProperties cameraProp = new SimCameraProperties();
+    // Enable wireframe in sim camera stream
+    m_cameraSim.enableDrawWireframe(true);
+  }
 
-        PhotonCameraSim cameraSim = new PhotonCameraSim(m_camera, cameraProp);
+  /**
+   * Get simulated game object target
+   * @return Target sim
+   */
+  public VisionTargetSim getTargetSim() {
+    return m_targetSim;
+  }
 
-        Translation3d robotToCameraTrl = new Translation3d(0.1, 0, 0.5);
-        // and pitched 15 degrees up.
-        Rotation3d robotToCameraRot = new Rotation3d(0, Math.toRadians(-15), 0);
-        Transform3d robotToCamera = new Transform3d(robotToCameraTrl, robotToCameraRot);
+  /**
+   * Get camera sim
+   * @return Simulated camera object
+   */
+  public PhotonCameraSim getCameraSim() {
+    return m_cameraSim;
+  }
 
-        // Add this camera to the vision system simulation with the given
-        // robot-to-camera transform.
-        m_visionSim.addCamera(cameraSim, robotToCamera);
+  /**
+    * Get distance to game object
+    * @return Distance to object, empty if undetected
+    */
+  public Optional<Measure<Distance>> getDistance() {
+    PhotonPipelineResult result = m_camera.getLatestResult();
+    if (!result.hasTargets()) return Optional.empty();
 
-        // Enable wireframe in sim camera stream
-        cameraSim.enableDrawWireframe(true);
-    }
+    double range = PhotonUtils.calculateDistanceToTargetMeters(
+        0.5,
+        2,
+        -15,
+        Units.Degrees.of(result.getBestTarget().getPitch()).in(Units.Radians)
+    );
 
-    public Double getDistance() {
-        PhotonPipelineResult result = m_camera.getLatestResult();
-        if (!result.hasTargets()) return null;
+    return Optional.of(Units.Meters.of(range));
+  }
 
-        double range = PhotonUtils.calculateDistanceToTargetMeters(
-            0.5,
-            2,
-            -15,
-            Units.degreesToRadians(result.getBestTarget().getPitch())
-        );
+  /**
+    * Get yaw angle to target
+    * @return Yaw angle to target, empty if undetected
+    */
+  public Optional<Measure<Angle>> getYaw() {
+    PhotonPipelineResult result = m_camera.getLatestResult();
+    if (!result.hasTargets()) return Optional.empty();
+    return Optional.of(Units.Degrees.of(result.getBestTarget().getYaw()));
+  }
 
-        return range;
-    }
+  /**
+   * Get camera to robot transform
+   * @return Camera to robot transform
+   */
+  public Transform3d getTransform() {
+    return m_transform;
+  }
 
-    public Double getHeading() {
-        PhotonPipelineResult result = m_camera.getLatestResult();
-        if (!result.hasTargets()) return null;
-        return result.getBestTarget().getYaw();
-    }
-
-    public void run(Pose2d pose) {
-        m_robotPose = pose;
-        m_visionSim.update(pose);
-    }
-
-    @Override
-    public void close() {
-        m_camera.close();
-    }
-
-    @Override
-    public void run() {}
+  @Override
+  public void close() {
+    m_camera.close();
+  }
 }
