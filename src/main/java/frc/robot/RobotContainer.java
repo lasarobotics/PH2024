@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
@@ -147,8 +145,6 @@ public class RobotContainer {
    */
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
-
-    Logger.recordOutput(DRIVE_SUBSYSTEM.getName() + "/notePose", VISION_SUBSYSTEM.getObjectTranslation());
   }
 
   /**
