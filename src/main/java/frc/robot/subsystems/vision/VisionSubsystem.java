@@ -144,35 +144,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return visionHardware;
   }
 
-  /**
-   * Get instance of vision subsystem, creating if nonexistent
-   * @return Instance of vision subsystem
-   */
-  public static VisionSubsystem getInstance() {
-    if (m_subsystem == null) m_subsystem = new VisionSubsystem(initializeHardware());
-    return m_subsystem;
-  }
-
-  /**
-   * Set pose supplier for simulation
-   * @param poseSupplier Pose supplier from drive subsystem
-   */
-  public void setPoseSupplier(Supplier<Pose2d> poseSupplier) {
-    m_poseSupplier = poseSupplier;
-  }
-
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run in simulation
-    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, getObjectTranslation());
-  }
-
-  /**
+   /**
    * Update currently estimated robot pose from each camera
    */
   private void updateEstimatedGlobalPoses() {
@@ -199,6 +171,34 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
     m_visibleTagIDs.set(visibleTagIDs);
     m_estimatedRobotPoses.set(estimatedPoses);
+  }
+
+  /**
+   * Get instance of vision subsystem, creating if nonexistent
+   * @return Instance of vision subsystem
+   */
+  public static VisionSubsystem getInstance() {
+    if (m_subsystem == null) m_subsystem = new VisionSubsystem(initializeHardware());
+    return m_subsystem;
+  }
+
+  /**
+   * Set pose supplier for simulation
+   * @param poseSupplier Pose supplier from drive subsystem
+   */
+  public void setPoseSupplier(Supplier<Pose2d> poseSupplier) {
+    m_poseSupplier = poseSupplier;
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // This method will be called once per scheduler run in simulation
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, getObjectTranslation());
   }
 
   /**
