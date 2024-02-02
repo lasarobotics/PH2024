@@ -115,7 +115,11 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     m_cameraNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
   }
 
-  public static Hardware initializeHardware() {
+  /**
+   * Initialize hardware devices for vision subsystem
+   * @return Hardware object containing all necessary devices for this subsystem
+   */
+  private static Hardware initializeHardware() {
     Hardware visionHardware = new Hardware(
       new ObjectCamera(
         Constants.VisionHardware.CAMERA_OBJECT_NAME,
@@ -140,6 +144,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return visionHardware;
   }
 
+  /**
+   * Get instance of vision subsystem, creating if nonexistent
+   * @return Instance of vision subsystem
+   */
   public static VisionSubsystem getInstance() {
     if (m_subsystem == null) m_subsystem = new VisionSubsystem(initializeHardware());
     return m_subsystem;
