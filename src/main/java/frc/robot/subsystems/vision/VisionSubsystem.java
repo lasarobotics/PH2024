@@ -57,9 +57,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
   private AtomicReference<List<Integer>> m_visibleTagIDs;
 
-  private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
-  private AtomicReference<List<Integer>> m_visibleTagIDs;
-
   private AprilTagCamera[] m_cameras;
   private Notifier m_cameraNotifier;
   private AprilTagFieldLayout m_fieldLayout;
