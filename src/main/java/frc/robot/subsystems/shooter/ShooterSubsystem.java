@@ -16,6 +16,7 @@ import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.utils.FFConstants;
+import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
@@ -91,6 +92,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private Supplier<Pose2d> m_poseSupplier;
   private Supplier<Pair<Integer,Translation2d>> m_targetSupplier;
 
+  private SparkPIDConfig m_flywheelConfig;
+  private SparkPIDConfig m_angleConfig;
+
   private ShooterState m_desiredShooterState;
   private PolynomialSplineFunction m_shooterAngleCurve;
   private PolynomialSplineFunction m_shooterFlywheelCurve;
@@ -115,6 +119,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_bottomFlywheelMotor = shooterHardware.bottomFlywheelMotor;
     this.m_angleMotor = shooterHardware.angleMotor;
     this.m_indexerMotor = shooterHardware.indexerMotor;
+    this.m_flywheelConfig = flywheelConfig;
+    this.m_angleConfig = angleConfig;
     this.m_angleFF = new ElevatorFeedforward(angleFF.kS, angleFF.kG, angleFF.kV, angleFF.kA);
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
@@ -124,8 +130,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
 
     // Initialize PID
-    m_topFlywheelMotor.initializeSparkPID(flywheelConfig, FeedbackSensor.NEO_ENCODER);
-    m_angleMotor.initializeSparkPID(angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
+    m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
+    m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
 
     // Set flywheel conversion factor
     var flywheelConversionFactor = flywheelDiameter.in(Units.Meters) * Math.PI;
@@ -191,12 +197,28 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param state Desired shooter state
    */
   private void setShooterState(ShooterState state) {
-    m_desiredShooterState = state;
+    m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.shooterSpeed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
       m_desiredShooterState.shooterAngle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
       m_angleConstraint,
       this::angleFFCalculator
+    );
+  }
+
+  /**
+   * Normalize shooter state to be within valid values
+   * @param state Desired state
+   * @return Valid shooter state
+   */
+  private ShooterState normalizeState(ShooterState state) {
+    return new ShooterState(
+      state.shooterSpeed,
+      Units.Radians.of(MathUtil.clamp(
+        m_desiredShooterState.shooterAngle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+        0.0,
+        m_angleConfig.getUpperLimit()
+      ))
     );
   }
 
@@ -296,12 +318,29 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
 
     m_simShooterAngleState = new TrapezoidProfile(m_angleConstraint).calculate(
-      m_angleMotor.getInputs().smoothMotionTime,
+      GlobalConstants.ROBOT_LOOP_PERIOD,
       new TrapezoidProfile.State(m_angleMotor.getInputs().absoluteEncoderPosition, m_angleMotor.getInputs().absoluteEncoderVelocity),
       new TrapezoidProfile.State(m_desiredShooterState.shooterAngle.in(Units.Radians), 0.0)
     );
 
     m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - m_angleMotor.getInputs().absoluteEncoderPosition));
+  }
+
+  /**
+   * Intake a game piece from the ground intake to be later fed to the shooter
+   * @return Command to intake to the shooter
+   */
+  public Command shooterIntakeCommand() {
+    return startEnd(
+      () -> {
+        m_indexerMotor.enableForwardLimitSwitch();
+        feedStart();
+      },
+      () -> {
+        m_indexerMotor.disableForwardLimitSwitch();
+        feedStop();
+      }
+    );
   }
 
   /**
