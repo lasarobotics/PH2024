@@ -25,11 +25,12 @@ import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
  * Camera that looks for rings on the ground
  */
 public class ObjectCamera implements AutoCloseable {
-  private PhotonCamera m_camera;
-  private Transform3d m_transform;
+  private static final double TARGET_HEIGHT_METERS = 0.0508;
 
-  private VisionTargetSim m_targetSim;
+  private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
+  private Transform3d m_transform;
+  private VisionTargetSim m_targetSim;
 
   /**
     * Create Object Camera
@@ -45,7 +46,7 @@ public class ObjectCamera implements AutoCloseable {
 
 
     TargetModel targetModel = new TargetModel(0.5, 0.25);
-    Pose3d targetPose = new Pose3d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH / 2, 2.0, new Rotation3d(0, 0, Math.PI));
+    Pose3d targetPose = new Pose3d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH / 2, TARGET_HEIGHT_METERS, new Rotation3d(0, 0, Math.PI));
 
     m_targetSim = new VisionTargetSim(targetPose, targetModel);
 
@@ -83,9 +84,9 @@ public class ObjectCamera implements AutoCloseable {
     if (!result.hasTargets()) return Optional.empty();
 
     double range = PhotonUtils.calculateDistanceToTargetMeters(
-        0.5,
-        2,
-        -15,
+        m_transform.getZ(),
+        TARGET_HEIGHT_METERS,
+        -m_transform.getRotation().getY(),
         Units.Degrees.of(result.getBestTarget().getPitch()).in(Units.Radians)
     );
 
