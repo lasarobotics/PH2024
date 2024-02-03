@@ -28,9 +28,11 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.ShooterState;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
@@ -141,6 +143,21 @@ public final class Constants {
       Map.entry(Units.Meters.of(5.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
       Map.entry(Units.Meters.of(5.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
       Map.entry(Units.Meters.of(6.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
+    );
+  }
+
+  public static class Intake {
+    public static final Measure<Velocity<Angle>> ROLLER_VELOCITY = Units.RPM.of(5000);
+    public static final SparkPIDConfig ROLLER_CONFIG = new SparkPIDConfig(
+      new PIDConstants(
+        0.01,
+        0.0,
+        0.0,
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60))
+      ),
+      false,
+      false,
+      10.0
     );
   }
 

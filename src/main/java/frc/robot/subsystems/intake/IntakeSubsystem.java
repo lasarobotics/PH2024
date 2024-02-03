@@ -4,14 +4,17 @@
 
 package frc.robot.subsystems.intake;
 
-import java.util.function.DoubleSupplier;
-
 import org.lasarobotics.hardware.revrobotics.Spark;
+import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
+import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 
 import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -27,9 +30,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Spark m_rollerMotor;
 
+  private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
+
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(Hardware intakeHardware) {
+  public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
+    m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
+    
+    ROLLER_VELOCITY = rollerVelocity;
   }
   
   /**
@@ -45,30 +53,46 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   // Tells the robot to intake
-  private void intake(double speed) {
-    m_rollerMotor.set(speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
+  private void intake() {
+    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
   }
 
   // Tells the robot to outtake
-  private void outtake(double speed) {
-    m_rollerMotor.set(-speed, ControlType.kDutyCycle, 0.0, ArbFFUnits.kPercentOut);
+  private void outtake() {
+    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
   }
 
   // Stop the robot
   private void stop() {
     m_rollerMotor.stopMotor();;
   }
-  
-  public Command intakeCommand(DoubleSupplier speed) {
-    return startEnd(() -> intake(speed.getAsDouble()), () -> stop());
-  }
-
-  public Command outtakeCommand(DoubleSupplier speed) {
-    return startEnd(() -> outtake(speed.getAsDouble()), () -> stop());
-  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    m_rollerMotor.periodic();
+  }
+  
+  /**
+   * Intake game piece from ground
+   * @return Command to run the roller motor
+   */
+  public Command intakeCommand() {
+    return startEnd(() -> intake(), () -> stop());
+  }
+
+  /**
+   * Spit out game piece from intake
+   * @return Command to run the roller motor in the reverse direction
+   */
+  public Command outtakeCommand() {
+    return startEnd(() -> outtake(), () -> stop());
+  }
+
+  /**
+   * Whether a game piece is in the intake
+   * @return The value of the roller motor's forward limit switch
+   */
+  public boolean isObjectPresent() {
+    return m_rollerMotor.getInputs().forwardLimitSwitch;
   }
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
@@ -44,6 +46,11 @@ public class RobotContainer {
     Constants.Shooter.SHOOTER_MAP,
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
+  );
+  private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
+    IntakeSubsystem.initializeHardware(), 
+    Constants.Intake.ROLLER_CONFIG,
+    Constants.Intake.ROLLER_VELOCITY
   );
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
@@ -78,11 +85,17 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Y button - aim at speaker
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand());
+    // Right trigger button - aim and shoot at speaker
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
 
-    // Right bumper button - go to amp
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(
+    // Left trigger button - aim at game piece and intake
+    PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
+
+    // Left bumper button - outtake game piece
+    PRIMARY_CONTROLLER.leftBumper().whileTrue(outtakeCommand());
+
+    // A button - go to amp
+    PRIMARY_CONTROLLER.a().whileTrue(
       DRIVE_SUBSYSTEM.goToPoseCommand(
         Constants.Field.AMP,
         SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
@@ -90,11 +103,49 @@ public class RobotContainer {
       )
     );
 
-    // A button - go to source
-    PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+    // B button - go to source
+    PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+  }
 
-    // B button - aim at game object
-    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+  /**
+   * Compose command to control controller rumble.
+   * <ul>
+   * <li> If the vision subsystem detects a game piece, the left side of the controller will rumble
+   * <li> If the intake has a game piece inside, the entire controller will rumble
+   * <li> Otherwise, no rumble :(
+   * </ul>
+   * @return Command that will automatically make the controller rumble based on the above conditions
+   */
+  private Command rumbleCommand() {
+    return Commands.run(() -> {
+      if (INTAKE_SUBSYSTEM.isObjectPresent()) {
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0);
+      } else if (VISION_SUBSYSTEM.getObjectLocation().isPresent()) {
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0);
+      }
+     }
+    );
+  }
+
+  /**
+   * Compose command to intake a note
+   * @return Command that will automatically intake a note and prepare it for feeding inside the shooter motor
+   */
+  private Command intakeCommand() {
+    return Commands.parallel(
+      rumbleCommand(),
+      aimAtObject(),
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.intakeCommand()
+    );
+  }
+
+  /**
+   * Command to outtake a note
+   * @return Command that will spit out a note from ground intake
+   */
+  private Command outtakeCommand() {
+    return INTAKE_SUBSYSTEM.outtakeCommand();
   }
 
   /**
