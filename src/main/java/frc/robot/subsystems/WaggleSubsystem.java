@@ -15,15 +15,16 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+
 public class WaggleSubsystem extends SubsystemBase {
   Spark m_motor;
-  SparkPIDConfig m_PidConfig;
+  SparkPIDConfig m_config;
   Constraints m_constraint;
 
   /** Creates a new wiggleStick. */
   public WaggleSubsystem(SparkPIDConfig config, Constraints constraint) {
     m_motor = new Spark(new Spark.ID("wiggleStick", 20), MotorKind.NEO);
-    m_PidConfig = config;
+    m_config = config;
     m_constraint = constraint;
 
     double conversionFactor = 1.0;

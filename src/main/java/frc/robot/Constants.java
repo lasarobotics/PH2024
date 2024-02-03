@@ -199,12 +199,12 @@ public final class Constants {
       new PIDConstants(0.2, 0, 0, 0),
       false,
       false,
-      1,
-      0,
-      15,
+      1.0,
+      0.0,
+      15.0,
       true
     );
-    public static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(10, 10);
+    public static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(10, 20);
   }
 
   public static class SmartDashboard {
