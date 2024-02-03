@@ -73,9 +73,9 @@ public class AutoTrajectory {
       ? AutoBuilder.followPath(m_auto.getSecond().get(0))
       : new PathPlannerAuto(m_auto.getFirst());
 
-    return m_driveSubsystem.resetPoseCommand(() -> new Pose2d())
-      .andThen(m_driveSubsystem.resetPoseCommand(() -> getInitialPose()))
-      .andThen(autoCommand)
+    // return m_driveSubsystem.resetPoseCommand(() -> new Pose2d())
+    //   .andThen(m_driveSubsystem.resetPoseCommand(() -> getInitialPose()))
+    return autoCommand
       .andThen(() -> m_driveSubsystem.resetRotatePID())
       .andThen(m_driveSubsystem.stopCommand())
       .andThen(m_driveSubsystem.lockCommand());

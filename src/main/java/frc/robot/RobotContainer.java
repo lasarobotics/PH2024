@@ -48,7 +48,7 @@ public class RobotContainer {
     () -> speakerSupplier()
   );
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
-    IntakeSubsystem.initializeHardware(), 
+    IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_CONFIG,
     Constants.Intake.ROLLER_VELOCITY
   );
@@ -158,7 +158,7 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> speakerSupplier().getSecond(),
-        true,
+        false,
         true
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())

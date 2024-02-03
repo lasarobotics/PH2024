@@ -80,7 +80,7 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.1;
+    public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -184,8 +184,8 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(0.381, 0.1524, 0.2032),
-      new Rotation3d(0.0, -0.174533, 0.0)
+      new Translation3d(0.381, 0.133, 0.102),
+      new Rotation3d(0.0, Math.toRadians(-20.0), 0.0)
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);

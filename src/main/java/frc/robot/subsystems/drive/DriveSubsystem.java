@@ -94,7 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(0.6);
+  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.0);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
@@ -177,7 +177,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                         double turnScalar, double deadband, double lookAhead) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(0.5));
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
     this.m_navx = drivetrainHardware.navx;
     this.m_lFrontModule = drivetrainHardware.lFrontModule;
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
@@ -241,10 +241,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
 
     // Setup auto-aim PID controller
-    m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP * 2, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
+    m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
     m_autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerFront.setTolerance(TOLERANCE);
-    m_autoAimPIDControllerBack = new ProfiledPIDController(pidf.kP * 2, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
+    m_autoAimPIDControllerBack = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
     m_autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerBack.setTolerance(TOLERANCE);
 
