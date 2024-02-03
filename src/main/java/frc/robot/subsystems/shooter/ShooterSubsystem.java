@@ -16,6 +16,7 @@ import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.utils.FFConstants;
+import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
@@ -317,7 +318,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
 
     m_simShooterAngleState = new TrapezoidProfile(m_angleConstraint).calculate(
-      m_angleMotor.getInputs().smoothMotionTime,
+      GlobalConstants.ROBOT_LOOP_PERIOD,
       new TrapezoidProfile.State(m_angleMotor.getInputs().absoluteEncoderPosition, m_angleMotor.getInputs().absoluteEncoderVelocity),
       new TrapezoidProfile.State(m_desiredShooterState.shooterAngle.in(Units.Radians), 0.0)
     );
