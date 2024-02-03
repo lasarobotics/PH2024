@@ -123,6 +123,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final double TOLERANCE = 1.0;
   private final double TIP_THRESHOLD = 35.0;
   private final double BALANCED_THRESHOLD = 10.0;
+  private final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
   private final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
   private final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(0.5, 0.5, Math.toRadians(40));
   private final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
@@ -240,10 +241,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
 
     // Setup auto-aim PID controller
-    m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
+    m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP * 2, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
     m_autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerFront.setTolerance(TOLERANCE);
-    m_autoAimPIDControllerBack = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
+    m_autoAimPIDControllerBack = new ProfiledPIDController(pidf.kP * 2, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
     m_autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerBack.setTolerance(TOLERANCE);
 
@@ -535,9 +536,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
    * @param velocityCorrection Turns velocity correction on/off
-   * @param point Target point
+   * @param point Target point, pass in origin to signify invalid point
    */
   private double aimAtPoint(double xRequest, double yRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
+    // Return if invalid point
+    if (point == null) return 0.0;
+
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
@@ -556,7 +560,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Parallel component of robot's motion to target vector
     Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
     // Perpendicular component of robot's motion to target vector
-    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ? 1 : 0);
+    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ? AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
     // Adjust aim point using calculated vector
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
