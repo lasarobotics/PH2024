@@ -198,7 +198,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
-    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, getObjectTranslation());
+    var objectLocation = getObjectLocation();
+    if (objectLocation.isEmpty()) return;
+
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, getObjectLocation().get());
   }
 
   /**
@@ -221,20 +224,20 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Get the position of an object that can be seen by the object camera.
    * @return The position of the object, relative to the field
    */
-  public Translation2d getObjectTranslation() {
-    Optional<Measure<Angle>> heading = m_objectCamera.getYaw();
+  public Optional<Translation2d> getObjectLocation() {
+    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
     Optional<Measure<Distance>> distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
-    if (heading.isEmpty() || distance.isEmpty() || pose == null) return new Translation2d();
+    if (yaw.isEmpty() || distance.isEmpty() || pose == null) return Optional.empty();
 
     Logger.recordOutput(getName() + OBJECT_DISTANCE_LOG_ENTRY, distance.get());
-    Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, heading.get());
-    return m_poseSupplier.get().getTranslation().plus(
+    Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, yaw.get());
+    return Optional.of(pose.getTranslation().plus(
       new Translation2d(
         distance.get().in(Units.Meters),
-        Rotation2d.fromRadians(Math.toRadians(pose.getRotation().getDegrees() + heading.get().in(Units.Radians)))
+        Rotation2d.fromRadians(pose.getRotation().getRadians() + yaw.get().in(Units.Radians))
       )
-    );
+    ));
   }
 
   @Override

@@ -93,15 +93,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.a().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
     // B button - aim at game object
-    PRIMARY_CONTROLLER.b().whileTrue(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> VISION_SUBSYSTEM.getObjectTranslation(),
-        false,
-        false
-      )
-    );
+    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
   }
 
   /**
@@ -118,6 +110,20 @@ public class RobotContainer {
         true
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+    );
+  }
+
+  private Command aimAtObject() {
+    return DRIVE_SUBSYSTEM.aimAtPointCommand(
+      () -> PRIMARY_CONTROLLER.getLeftY(),
+      () -> PRIMARY_CONTROLLER.getLeftX(),
+      () -> {
+        return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+                ? VISION_SUBSYSTEM.getObjectLocation().get()
+                : null;
+      },
+      false,
+      false
     );
   }
 
