@@ -327,6 +327,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Intake a game piece from the ground intake to be later fed to the shooter
+   * @return Command to intake to the shooter
+   */
+  public Command shooterIntakeCommand() {
+    return startEnd(
+      () -> {
+        m_indexerMotor.enableForwardLimitSwitch();
+        feedStart();
+      },
+      () -> {
+        m_indexerMotor.disableForwardLimitSwitch();
+        feedStop();
+      }
+    );
+  }
+
+  /**
    * Shoot by manually setting shooter state
    * @param stateSupplier Desired shooter state supplier
    * @return Command to control shooter manually
