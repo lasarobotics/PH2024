@@ -535,17 +535,29 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Aim robot at a desired point on the field
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
+   * @param rotateRequest Desired rotate speed (ONLY USED IF POINT IS NULL) [-1.0, +1.0]
    * @param velocityCorrection Turns velocity correction on/off
-   * @param point Target point, pass in origin to signify invalid point
+   * @param point Target point, pass in null to signify invalid point
+   * @param boolean True to point back of robot to target
+   * @param velocityCorrection True to compensate for robot's own velocity
    */
-  private double aimAtPoint(double xRequest, double yRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
-    // Return if invalid point
-    if (point == null) return 0.0;
-
+  private void aimAtPoint(double xRequest, double yRequest, double rotateRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+
+    // Drive normally and return if invalid point
+    if (point == null) {
+      double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+      drive(
+        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+        Units.DegreesPerSecond.of(rotateOutput),
+        getInertialVelocity()
+      );
+      return;
+    }
 
     // Get current pose
     Pose2d currentPose = getPose();
@@ -580,8 +592,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity()
     );
-
-    return currentPose.getTranslation().getDistance(aimPoint);
   }
 
   /**
@@ -793,12 +803,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param velocityCorrectionSupplier Velocity correction flag supplier
    * @return Command that will aim at point while strafing
    */
-  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
+  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
+                                   Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
     if (pointSupplier.get() == null) return Commands.none();
     return run(() ->
       aimAtPoint(
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
+        rotateRequestSupplier.getAsDouble(),
         pointSupplier.get(),
         reversed,
         velocityCorrection
@@ -814,8 +826,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param velocityCorrectionSupplier Velocity correction flag supplier
    * @return Command that will aim at point while strafing
    */
-  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, Translation2d point, boolean reversed, boolean velocityCorrection) {
-    return aimAtPointCommand(xRequestSupplier, yRequestSupplier, () -> point, reversed, velocityCorrection);
+  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
+                                   Translation2d point, boolean reversed, boolean velocityCorrection) {
+    return aimAtPointCommand(xRequestSupplier, yRequestSupplier, rotateRequestSupplier, () -> point, reversed, velocityCorrection);
   }
 
   /**
@@ -825,7 +838,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that will aim robot at point while strafing
    */
   public Command aimAtPointCommand(Translation2d point, boolean reversed, boolean velocityCorrection) {
-    return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> point, reversed, velocityCorrection);
+    return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> 0.0, () -> point, reversed, velocityCorrection);
   }
 
   /**

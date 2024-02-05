@@ -201,7 +201,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     var objectLocation = getObjectLocation();
     if (objectLocation.isEmpty()) return;
 
-    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, getObjectLocation().get());
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
   /**

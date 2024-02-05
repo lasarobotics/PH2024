@@ -109,7 +109,7 @@ public final class Constants {
       ),
       false,
       false,
-      10.0
+      5.0
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -121,8 +121,8 @@ public final class Constants {
       false,
       false,
       Units.Degrees.of(0.5).in(Units.Radians),
-      0.0,
-      0.0,
+      Units.Degrees.of(0.0).in(Units.Radians),
+      Units.Degrees.of(70.0).in(Units.Radians),
       true
     );
     public static final FFConstants ANGLE_FF = new FFConstants(0.0, 0.78, 4.18, 0.1);
@@ -130,7 +130,7 @@ public final class Constants {
       Units.DegreesPerSecond.of(180.0),
       Units.DegreesPerSecond.of(360.0).per(Units.Second)
     );
-    public static final List<Entry<Measure<Distance>, ShooterState>> SHOOTER_MAP = Arrays.asList(
+    public static final List<Entry<Measure<Distance>,ShooterState>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
       Map.entry(Units.Meters.of(1.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
       Map.entry(Units.Meters.of(1.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),

@@ -62,22 +62,21 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Shooter state */
   public static class ShooterState {
-    public final Measure<Velocity<Distance>> shooterSpeed;
-    public final Measure<Angle> shooterAngle;
+    public final Measure<Velocity<Distance>> speed;
+    public final Measure<Angle> angle;
 
     public static final ShooterState AMP_PREP_STATE = new ShooterState(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
 
-    public ShooterState(Measure<Velocity<Distance>> shooterSpeed, Measure<Angle> shooterAngle) {
-      this.shooterSpeed = shooterSpeed;
-      this.shooterAngle = shooterAngle;
+    public ShooterState(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
+      this.speed = speed;
+      this.angle = angle;
     }
   }
 
+  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(25.0);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
-  private static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(25.0);
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Dimensionless> INTAKE_SPEED = Units.Percent.of(50.0);
-  private static final double EPSILON = 5.0;
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
@@ -101,6 +100,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private Mechanism2d m_mechanism2d;
   private MechanismLigament2d m_simShooterJoint;
+  private TrapezoidProfile m_simShooterAngleMotionProfile;
   private TrapezoidProfile.State m_simShooterAngleState;
 
   /**
@@ -109,6 +109,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
    * <p>
    * @param shooterHardware Hardware devices required by shooter
+   * @param flywheelConfig Flywheel PID config
+   * @param angleConfig Angle adjust PID config
+   * @param angleFF Angle adjust feed forward gains
+   * @param angleConstraint Angle adjust motion constraint
+   * @param flywheelDiameter Flywheel diameter
+   * @param shooterMap Shooter lookup table
+   * @param poseSupplier Robot pose supplier
+   * @param targetSupplier Speaker target supplier
    */
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
                           FFConstants angleFF, TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
@@ -127,7 +135,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_targetSupplier = targetSupplier;
 
     // Slave bottom flywheel motor to top
-    m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
+    m_bottomFlywheelMotor.follow(m_topFlywheelMotor, true);
 
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
@@ -155,7 +163,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialize sim variables
     m_mechanism2d = new Mechanism2d(1.0, 1.0);
     m_simShooterJoint = m_mechanism2d.getRoot("shooter", 0.5, 0.33).append(new MechanismLigament2d("shooter", 0.4, 1.0));
-    m_simShooterAngleState = new TrapezoidProfile.State();
+    m_simShooterAngleMotionProfile = new TrapezoidProfile(m_angleConstraint);
+    m_simShooterAngleState = new TrapezoidProfile.State(SHOOTER_ANGLE_OFFSET.in(Units.Radians), 0.0);
   }
 
   /**
@@ -184,8 +193,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     for (int i = 0; i < shooterMap.size(); i++) {
       distances[i] = shooterMap.get(i).getKey().in(Units.Meters);
-      flywheelSpeeds[i] = shooterMap.get(i).getValue().shooterSpeed.in(Units.MetersPerSecond);
-      angles[i] = shooterMap.get(i).getValue().shooterAngle.in(Units.Radians);
+      flywheelSpeeds[i] = shooterMap.get(i).getValue().speed.in(Units.MetersPerSecond);
+      angles[i] = shooterMap.get(i).getValue().angle.in(Units.Radians);
     }
 
     m_shooterFlywheelCurve = SPLINE_INTERPOLATOR.interpolate(distances, flywheelSpeeds);
@@ -198,9 +207,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void setShooterState(ShooterState state) {
     m_desiredShooterState = normalizeState(state);
-    m_topFlywheelMotor.set(m_desiredShooterState.shooterSpeed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
-      m_desiredShooterState.shooterAngle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+      m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
       m_angleConstraint,
       this::angleFFCalculator
     );
@@ -213,11 +222,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private ShooterState normalizeState(ShooterState state) {
     return new ShooterState(
-      state.shooterSpeed,
+      state.speed,
       Units.Radians.of(MathUtil.clamp(
-        m_desiredShooterState.shooterAngle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
-        0.0,
-        m_angleConfig.getUpperLimit()
+        state.angle.in(Units.Radians),
+        SHOOTER_ANGLE_OFFSET.in(Units.Radians),
+        m_angleConfig.getUpperLimit() + SHOOTER_ANGLE_OFFSET.in(Units.Radians)
       ))
     );
   }
@@ -281,7 +290,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private boolean isShooterReady() {
     return m_angleMotor.isSmoothMotionFinished() &&
-      Math.abs(m_topFlywheelMotor.getInputs().encoderVelocity - m_desiredShooterState.shooterSpeed.in(Units.MetersPerSecond)) < EPSILON;
+      Math.abs(m_topFlywheelMotor.getInputs().encoderVelocity - m_desiredShooterState.speed.in(Units.MetersPerSecond)) < m_flywheelConfig.getTolerance();
   }
 
   /**
@@ -312,18 +321,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
-    m_topFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.shooterSpeed.in(Units.MetersPerSecond);
+    m_topFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.speed.in(Units.MetersPerSecond);
 
     m_angleMotor.getInputs().absoluteEncoderPosition = m_simShooterAngleState.position;
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
 
-    m_simShooterAngleState = new TrapezoidProfile(m_angleConstraint).calculate(
+    m_simShooterAngleState = m_simShooterAngleMotionProfile.calculate(
       GlobalConstants.ROBOT_LOOP_PERIOD,
-      new TrapezoidProfile.State(m_angleMotor.getInputs().absoluteEncoderPosition, m_angleMotor.getInputs().absoluteEncoderVelocity),
-      new TrapezoidProfile.State(m_desiredShooterState.shooterAngle.in(Units.Radians), 0.0)
+      m_simShooterAngleState,
+      new TrapezoidProfile.State(m_desiredShooterState.angle.in(Units.Radians), 0.0)
     );
 
-    m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - m_angleMotor.getInputs().absoluteEncoderPosition));
+    m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - m_simShooterAngleState.position));
   }
 
   /**

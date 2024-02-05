@@ -111,20 +111,20 @@ public class RobotContainer {
    * Compose command to control controller rumble.
    * <ul>
    * <li> If the vision subsystem detects a game piece, the left side of the controller will rumble
-   * <li> If the intake has a game piece inside, the entire controller will rumble
+   * <li> If the intake has a game piece inside, the right side of the controller will rumble
    * <li> Otherwise, no rumble :(
    * </ul>
    * @return Command that will automatically make the controller rumble based on the above conditions
    */
   private Command rumbleCommand() {
     return Commands.run(() -> {
-      if (INTAKE_SUBSYSTEM.isObjectPresent()) {
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0);
-      } else if (VISION_SUBSYSTEM.getObjectLocation().isPresent()) {
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0);
-      }
-     }
-    );
+      if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
+      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
+      if (INTAKE_SUBSYSTEM.isObjectPresent())
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
+      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
+    }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
   }
 
   /**
@@ -157,18 +157,24 @@ public class RobotContainer {
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX(),
         () -> speakerSupplier().getSecond(),
-        false,
+        true,
         true
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
     );
   }
 
+  /**
+   * Command to aim at detected game object automatically, driving normally if none is detected
+   * @return Command to aim at object
+   */
   private Command aimAtObject() {
     return DRIVE_SUBSYSTEM.aimAtPointCommand(
       () -> PRIMARY_CONTROLLER.getLeftY(),
       () -> PRIMARY_CONTROLLER.getLeftX(),
+      () -> PRIMARY_CONTROLLER.getRightX(),
       () -> {
         return VISION_SUBSYSTEM.getObjectLocation().isPresent()
                 ? VISION_SUBSYSTEM.getObjectLocation().get()
