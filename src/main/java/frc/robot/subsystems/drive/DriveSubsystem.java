@@ -55,7 +55,6 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -97,10 +96,25 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.0);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
+  public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
+  public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
-  public final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
+
+  // Other settings
+  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 50;
+  private static final double TOLERANCE = 1.0;
+  private static final double TIP_THRESHOLD = 35.0;
+  private static final double BALANCED_THRESHOLD = 10.0;
+  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
+  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
+  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(0.5, 0.5, Math.toRadians(40));
+  private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
+
+  // Log
+  private static final String POSE_LOG_ENTRY = "/Pose";
+  private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
+  private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
 
 
   private ThrottleMap m_throttleMap;
@@ -118,19 +132,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_lRearModule;
   private MAXSwerveModule m_rRearModule;
   private LEDStrip m_ledStrip;
-
-  private final int INERTIAL_VELOCITY_FILTER_TAPS = 50;
-  private final double TOLERANCE = 1.0;
-  private final double TIP_THRESHOLD = 35.0;
-  private final double BALANCED_THRESHOLD = 10.0;
-  private final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
-  private final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
-  private final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(0.5, 0.5, Math.toRadians(40));
-  private final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
-
-  private final String POSE_LOG_ENTRY = "/Pose";
-  private final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
-  private final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
 
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
@@ -156,8 +157,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this
   );
 
-  Timer m_timer;
-
   /**
    * Create an instance of DriveSubsystem
    * <p>
@@ -165,12 +164,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * <p>
    * @param drivetrainHardware Hardware devices required by drivetrain
    * @param pidf PID constants
+   * @param controlCentricity Control centricity
+   * @param throttleInputCurve Spline function characterising throttle input
+   * @param turnInputCurve Spline function characterising turn input
    * @param turnScalar Scalar for turn input (degrees)
    * @param deadband Deadband for controller input [+0.001, +0.2]
    * @param lookAhead Turn PID lookahead, in number of loops
-   * @param slipRatio Traction control slip ratio [+0.01, +0.40]
-   * @param throttleInputCurve Spline function characterising throttle input
-   * @param turnInputCurve Spline function characterising turn input
    */
   public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
