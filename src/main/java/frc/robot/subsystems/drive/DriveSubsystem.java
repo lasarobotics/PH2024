@@ -536,7 +536,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
    * @param rotateRequest Desired rotate speed (ONLY USED IF POINT IS NULL) [-1.0, +1.0]
-   * @param velocityCorrection Turns velocity correction on/off
    * @param point Target point, pass in null to signify invalid point
    * @param boolean True to point back of robot to target
    * @param velocityCorrection True to compensate for robot's own velocity
@@ -797,15 +796,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Aim robot at desired point on the field, while strafing
-   * @param xRequestSupplier X axis speed supplier
-   * @param yRequestSupplier Y axis speed supplier
+   * @param xRequestSupplier X axis speed supplier [-1.0, +1.0]
+   * @param yRequestSupplier Y axis speed supplier [-1.0, +1.0]
+   * @param rotateRequestSupplier Rotate speed supplier (ONLY USED IF POINT IS NULL) [-1.0, +1.0]
    * @param pointSupplier Desired point supplier
-   * @param velocityCorrectionSupplier Velocity correction flag supplier
+   * @param reversed True to point rear of robot toward point
+   * @param velocityCorrection True to compensate for robot's own velocity
    * @return Command that will aim at point while strafing
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    if (pointSupplier.get() == null) return Commands.none();
     return run(() ->
       aimAtPoint(
         xRequestSupplier.getAsDouble(),
@@ -820,10 +820,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Aim robot at desired point on the field, while strafing
-   * @param xRequestSupplier X axis speed supplier
-   * @param yRequestSupplier Y axis speed supplier
+   * @param xRequestSupplier X axis speed supplier [-1.0, +1.0]
+   * @param yRequestSupplier Y axis speed supplier [-1.0, +1.0]
+   * @param rotateRequestSupplier Rotate speed supplier (ONLY USED IF POINT IS NULL) [-1.0, +1.0]
    * @param point Desired point
-   * @param velocityCorrectionSupplier Velocity correction flag supplier
+   * @param reversed True to point rear of robot toward point
+   * @param velocityCorrection True to compensate for robot's own velocity
    * @return Command that will aim at point while strafing
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
@@ -834,7 +836,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Aim robot at desired point on the field
    * @param point Desired point
-   * @param velocityCorrection Turns velocity correction on/off
+   * @param reversed True to point rear of robot toward point
+   * @param velocityCorrection True to compensate for robot's own velocity
    * @return Command that will aim robot at point while strafing
    */
   public Command aimAtPointCommand(Translation2d point, boolean reversed, boolean velocityCorrection) {
@@ -847,11 +850,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that aims robot
    */
   public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
-    return run(() ->
-      aimAtAngle(
-        angleRequestSupplier.getAsDouble()
-      )
-    );
+    return run(() -> aimAtAngle(angleRequestSupplier.getAsDouble()));
   }
 
   /**
@@ -862,9 +861,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that will drive robot
    */
   public Command driveCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier) {
-    return run(() ->
-      teleopPID(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble(), rotateRequestSupplier.getAsDouble())
-    );
+    return run(() -> teleopPID(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble(), rotateRequestSupplier.getAsDouble()));
   }
 
   /**
@@ -880,7 +877,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to stop robot
    */
   public Command stopCommand() {
-    return runOnce(() -> stop());
+    return runOnce(() -> {
+      stop();
+      resetRotatePID();
+    });
   }
 
   /**
