@@ -34,7 +34,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import frc.robot.subsystems.drive.PurplePathPose;
-import frc.robot.subsystems.shooter.ShooterSubsystem.ShooterState;
+import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 /**
@@ -130,19 +130,19 @@ public final class Constants {
       Units.DegreesPerSecond.of(180.0),
       Units.DegreesPerSecond.of(360.0).per(Units.Second)
     );
-    public static final List<Entry<Measure<Distance>,ShooterState>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(2.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
-      Map.entry(Units.Meters.of(2.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
-      Map.entry(Units.Meters.of(3.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.0))),
-      Map.entry(Units.Meters.of(4.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(29.5))),
-      Map.entry(Units.Meters.of(4.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(27.5))),
-      Map.entry(Units.Meters.of(5.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
-      Map.entry(Units.Meters.of(5.5), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(6.0), new ShooterState(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
+    public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
+      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
+      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
+      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
+      Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(4.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(29.5))),
+      Map.entry(Units.Meters.of(4.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(5.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
+      Map.entry(Units.Meters.of(5.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
+      Map.entry(Units.Meters.of(6.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
     );
   }
 

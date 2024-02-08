@@ -61,13 +61,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /** Shooter state */
-  public static class ShooterState {
+  public static class State {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final ShooterState AMP_PREP_STATE = new ShooterState(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
 
-    public ShooterState(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
+    public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
       this.angle = angle;
     }
@@ -94,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private SparkPIDConfig m_flywheelConfig;
   private SparkPIDConfig m_angleConfig;
 
-  private ShooterState m_desiredShooterState;
+  private State m_desiredShooterState;
   private PolynomialSplineFunction m_shooterAngleCurve;
   private PolynomialSplineFunction m_shooterFlywheelCurve;
 
@@ -120,7 +120,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
                           FFConstants angleFF, TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
-                          List<Entry<Measure<Distance>, ShooterState>> shooterMap,
+                          List<Entry<Measure<Distance>, State>> shooterMap,
                           Supplier<Pose2d> poseSupplier, Supplier<Pair<Integer,Translation2d>> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
@@ -186,7 +186,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Initialize spline functions for shooter
    * @param shooterMap List of distance and shooter state pairs
    */
-  private void initializeShooterCurves(List<Entry<Measure<Distance>, ShooterState>> shooterMap) {
+  private void initializeShooterCurves(List<Entry<Measure<Distance>, State>> shooterMap) {
     double[] distances = new double[shooterMap.size()];
     double[] flywheelSpeeds = new double[shooterMap.size()];
     double[] angles = new double[shooterMap.size()];
@@ -205,7 +205,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Set shooter to desired state
    * @param state Desired shooter state
    */
-  private void setShooterState(ShooterState state) {
+  private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
@@ -220,8 +220,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param state Desired state
    * @return Valid shooter state
    */
-  private ShooterState normalizeState(ShooterState state) {
-    return new ShooterState(
+  private State normalizeState(State state) {
+    return new State(
       state.speed,
       Units.Radians.of(MathUtil.clamp(
         state.angle.in(Units.Radians),
@@ -234,16 +234,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Reset shooter state
    */
-  private void resetShooter() {
-    setShooterState(new ShooterState(ZERO_FLYWHEEL_SPEED, SHOOTER_ANGLE_OFFSET));
+  private void resetState() {
+    setState(new State(ZERO_FLYWHEEL_SPEED, SHOOTER_ANGLE_OFFSET));
   }
 
   /**
    * Get current shooter state
    * @return Current shooter state
    */
-  private ShooterState getCurrentShooterState() {
-    return new ShooterState(
+  private State getCurrentShooterState() {
+    return new State(
       Units.MetersPerSecond.of(m_topFlywheelMotor.getInputs().encoderVelocity),
       Units.Radians.of(m_angleMotor.getInputs().absoluteEncoderPosition).plus(SHOOTER_ANGLE_OFFSET)
     );
@@ -253,12 +253,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Get shooter state based on distance to target
    * @return Shooter state for current target distance
    */
-  private ShooterState getAutomaticShooterState() {
+  private State getAutomaticShooterState() {
     var targetDistance = getTargetDistance();
     var flywheelSpeed = m_shooterFlywheelCurve.value(targetDistance.in(Units.Meters));
     var angle = m_shooterAngleCurve.value(targetDistance.in(Units.Meters));
 
-    return new ShooterState(Units.MetersPerSecond.of(flywheelSpeed), Units.Radians.of(angle));
+    return new State(Units.MetersPerSecond.of(flywheelSpeed), Units.Radians.of(angle));
   }
 
   /**
@@ -288,7 +288,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Check if shooter has reached desired state and is ready
    * @return True if ready
    */
-  private boolean isShooterReady() {
+  private boolean isReady() {
     return m_angleMotor.isSmoothMotionFinished() &&
       Math.abs(m_topFlywheelMotor.getInputs().encoderVelocity - m_desiredShooterState.speed.in(Units.MetersPerSecond)) < m_flywheelConfig.getTolerance();
   }
@@ -357,17 +357,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param stateSupplier Desired shooter state supplier
    * @return Command to control shooter manually
    */
-  public Command shootManualCommand(Supplier<ShooterState> stateSupplier) {
+  public Command shootManualCommand(Supplier<State> stateSupplier) {
     return runEnd(
       () -> {
-        if (isShooterReady()) feedStart();
+        if (isReady()) feedStart();
         else feedStop();
       },
       () -> {
         feedStop();
-        resetShooter();
+        resetState();
       }
-    ).beforeStarting(() -> setShooterState(stateSupplier.get()), this);
+    ).beforeStarting(() -> setState(stateSupplier.get()), this);
   }
 
   /**
@@ -378,8 +378,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command shootCommand(BooleanSupplier isAimed) {
     return runEnd(
       () -> {
-        setShooterState(getAutomaticShooterState());
-        if (RobotBase.isSimulation() | isShooterReady()
+        setState(getAutomaticShooterState());
+        if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
             && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()))
           feedStart();
@@ -387,7 +387,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       },
       () -> {
         feedStop();
-        resetShooter();
+        resetState();
       }
     );
   }
@@ -398,9 +398,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command prepareForAmpCommand() {
     return startEnd(
-      () -> setShooterState(ShooterState.AMP_PREP_STATE),
-      () -> resetShooter()
-    ).until(() -> isShooterReady());
+      () -> setState(State.AMP_PREP_STATE),
+      () -> resetState()
+    ).until(() -> isReady());
   }
 
   @Override
