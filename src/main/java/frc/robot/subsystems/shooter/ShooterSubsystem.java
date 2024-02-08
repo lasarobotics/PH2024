@@ -152,7 +152,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor / 60);
 
     // Initialize shooter state
-    m_desiredShooterState = getCurrentShooterState();
+    m_desiredShooterState = getCurrentState();
 
     // Set maximum shooting distance
     MAX_SHOOTING_DISTANCE = shooterMap.get(shooterMap.size() - 1).getKey();
@@ -242,7 +242,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Get current shooter state
    * @return Current shooter state
    */
-  private State getCurrentShooterState() {
+  private State getCurrentState() {
     return new State(
       Units.MetersPerSecond.of(m_topFlywheelMotor.getInputs().encoderVelocity),
       Units.Radians.of(m_angleMotor.getInputs().absoluteEncoderPosition).plus(SHOOTER_ANGLE_OFFSET)
@@ -253,7 +253,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Get shooter state based on distance to target
    * @return Shooter state for current target distance
    */
-  private State getAutomaticShooterState() {
+  private State getAutomaticState() {
     var targetDistance = getTargetDistance();
     var flywheelSpeed = m_shooterFlywheelCurve.value(targetDistance.in(Units.Meters));
     var angle = m_shooterAngleCurve.value(targetDistance.in(Units.Meters));
@@ -378,7 +378,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command shootCommand(BooleanSupplier isAimed) {
     return runEnd(
       () -> {
-        setState(getAutomaticShooterState());
+        setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
             && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()))
