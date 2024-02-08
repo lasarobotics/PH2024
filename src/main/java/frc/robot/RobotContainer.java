@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
+import frc.robot.commands.autonomous.TestAuto;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -188,7 +189,7 @@ public class RobotContainer {
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
-   */
+   */ 
   private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
@@ -202,6 +203,7 @@ public class RobotContainer {
     m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption("Leave", new LeaveAuto(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Test", new TestAuto(DRIVE_SUBSYSTEM));
   }
 
   /**
