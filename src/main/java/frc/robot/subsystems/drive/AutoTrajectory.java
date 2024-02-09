@@ -40,6 +40,9 @@ public class AutoTrajectory {
 
     // Get path
     m_auto = new Pair<String, List<PathPlannerPath>>(selectedAutoName, PathPlannerAuto.getPathGroupFromAutoFile(selectedAutoName));
+
+    for (var path : m_auto.getSecond())
+      path.preventFlipping = true;
   }
 
   /**
@@ -57,6 +60,9 @@ public class AutoTrajectory {
       pathConstraints,
       new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).getRotation())
     )));
+
+    for (var path : m_auto.getSecond())
+      path.preventFlipping = true;
   }
 
   /** Return initial pose */
@@ -73,8 +79,7 @@ public class AutoTrajectory {
       ? AutoBuilder.followPath(m_auto.getSecond().get(0))
       : new PathPlannerAuto(m_auto.getFirst());
 
-    return m_driveSubsystem.resetPoseCommand(() -> new Pose2d())
-      .andThen(m_driveSubsystem.resetPoseCommand(() -> getInitialPose()))
+    return m_driveSubsystem.resetPoseCommand(() -> getInitialPose())
       .andThen(autoCommand)
       .andThen(() -> m_driveSubsystem.resetRotatePID())
       .andThen(m_driveSubsystem.stopCommand())
