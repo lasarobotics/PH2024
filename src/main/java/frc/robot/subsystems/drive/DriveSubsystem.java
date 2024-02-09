@@ -437,16 +437,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Reset drive encoders
-   */
-  private void resetEncoders() {
-    m_lFrontModule.resetDriveEncoder();
-    m_rFrontModule.resetDriveEncoder();
-    m_lRearModule.resetDriveEncoder();
-    m_rRearModule.resetDriveEncoder();
-  }
-
-  /**
    * Get current module states
    * @return Array of swerve module states
    */
@@ -699,7 +689,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param pose Pose to set robot to
    */
   private void resetPose(Pose2d pose) {
-    resetEncoders();
     m_poseEstimator.resetPosition(
       getRotation2d(),
       getModulePositions(),
@@ -913,6 +902,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command resetPoseCommand(Supplier<Pose2d> poseSupplier) {
     return runOnce(() -> resetPose(poseSupplier.get()));
+  }
+
+  public void resetPosePathPlanner(Pose2d pose) {
+    return;
   }
 
   /**
