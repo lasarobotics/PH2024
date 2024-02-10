@@ -403,6 +403,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     ).until(() -> isReady());
   }
 
+  /**
+   * Whether a game piece is in the intake
+   * @return The value of the roller motor's forward limit switch
+   */
+  public boolean isObjectPresent() {
+    return m_indexerMotor.getInputs().forwardLimitSwitch;
+  }
+
   @Override
   public void close() {
     m_topFlywheelMotor.close();
