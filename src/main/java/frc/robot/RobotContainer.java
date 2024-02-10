@@ -8,6 +8,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -111,11 +112,8 @@ public class RobotContainer {
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
-    // DPAD up - raise climber arms
-    PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
-
-    // DPAD down - lower climber arms
-    PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
+    // X button - Manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
   }
 
   /**
@@ -203,11 +201,22 @@ public class RobotContainer {
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
-   */ 
+   */
   private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
       : Constants.Field.RED_SPEAKER;
+  }
+
+  /**
+   * Manually retrieve a desired shooter state from the dashboard
+   * @return Shooter state with the desired speed and angle
+   */
+  private ShooterSubsystem.State dashboardStateSupplier() {
+    return new ShooterSubsystem.State(
+      Units.MetersPerSecond.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0)),
+      Units.Radians.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0))
+    );
   }
 
   /**
@@ -243,5 +252,7 @@ public class RobotContainer {
     Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
     autoModeChooser();
     SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0);
   }
 }

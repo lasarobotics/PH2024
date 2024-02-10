@@ -211,5 +211,7 @@ public final class Constants {
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
+    public static final String SMARTDASHBOARD_SHOOTER_SPEED = "Shooter Speed";
+    public static final String SMARTDASHBOARD_SHOOTER_ANGLE = "Shooter Angle";
   }
 }
