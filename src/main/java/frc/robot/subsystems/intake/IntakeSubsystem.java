@@ -36,13 +36,13 @@ public class IntakeSubsystem extends SubsystemBase {
   public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
     m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
-    
+
     ROLLER_VELOCITY = rollerVelocity;
   }
-  
+
   /**
    * Initialize hardware devices for intake subsystem
-   * 
+   *
    * @return Hardware object containing all necessary devices for this subsystem
    */
   public static Hardware initializeHardware() {
@@ -71,7 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     m_rollerMotor.periodic();
   }
-  
+
   /**
    * Intake game piece from ground
    * @return Command to run the roller motor
@@ -86,13 +86,5 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public Command outtakeCommand() {
     return startEnd(() -> outtake(), () -> stop());
-  }
-
-  /**
-   * Whether a game piece is in the intake
-   * @return The value of the roller motor's forward limit switch
-   */
-  public boolean isObjectPresent() {
-    return m_rollerMotor.getInputs().forwardLimitSwitch;
   }
 }

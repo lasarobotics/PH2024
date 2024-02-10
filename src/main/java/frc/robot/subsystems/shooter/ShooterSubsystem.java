@@ -66,6 +66,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Angle> angle;
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
+    public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -300,6 +304,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.set(+INTAKE_SPEED.in(Units.Percent));
   }
 
+  private void feedReverse() {
+    m_indexerMotor.set(-INTAKE_SPEED.in(Units.Percent));
+  }
+
   /**
    * Stop feeding
    */
@@ -353,6 +361,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Reverse note from shoter into intake
+   * @return Command to outtake note in shooter
+   */
+  public Command outtakeCommand() {
+    return startEnd(
+      () -> feedReverse(),
+      () -> feedStop()
+    ); 
+  }
+
+  /**
    * Shoot by manually setting shooter state
    * @param stateSupplier Desired shooter state supplier
    * @return Command to control shooter manually
@@ -401,6 +420,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       () -> setState(State.AMP_PREP_STATE),
       () -> resetState()
     ).until(() -> isReady());
+  }
+
+  /**
+   * Whether a game piece is in the intake
+   * @return The value of the roller motor's forward limit switch
+   */
+  public boolean isObjectPresent() {
+    return m_indexerMotor.getInputs().forwardLimitSwitch;
   }
 
   @Override

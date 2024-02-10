@@ -8,6 +8,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -112,6 +113,9 @@ public class RobotContainer {
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
+    // X button - Manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+
     // DPAD up - raise climber arms
     PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
 
@@ -133,7 +137,7 @@ public class RobotContainer {
       if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-      if (INTAKE_SUBSYSTEM.isObjectPresent())
+      if (SHOOTER_SUBSYSTEM.isObjectPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
     }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
@@ -157,7 +161,11 @@ public class RobotContainer {
    * @return Command that will spit out a note from ground intake
    */
   private Command outtakeCommand() {
-    return INTAKE_SUBSYSTEM.outtakeCommand();
+    return Commands.parallel(
+      rumbleCommand(),
+      INTAKE_SUBSYSTEM.outtakeCommand(),
+      SHOOTER_SUBSYSTEM.outtakeCommand()
+    );
   }
 
   /**
@@ -208,6 +216,17 @@ public class RobotContainer {
   }
 
   /**
+   * Manually retrieve a desired shooter state from the dashboard
+   * @return Shooter state with the desired speed and angle
+   */
+  private ShooterSubsystem.State dashboardStateSupplier() {
+    return new ShooterSubsystem.State(
+      Units.MetersPerSecond.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0)),
+      Units.Radians.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0))
+    );
+  }
+
+  /**
    * Add auto modes to chooser
    */
   private void autoModeChooser() {
@@ -240,5 +259,7 @@ public class RobotContainer {
     Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
     autoModeChooser();
     SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0);
   }
 }
