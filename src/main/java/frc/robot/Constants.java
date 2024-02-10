@@ -153,7 +153,7 @@ public final class Constants {
         0.01,
         0.0,
         0.0,
-        1 / (Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60)
+        1 / Spark.MotorKind.NEO_VORTEX.getMaxRPM()
       ),
       false,
       false,
