@@ -145,7 +145,11 @@ public class RobotContainer {
    * @return Command that will spit out a note from ground intake
    */
   private Command outtakeCommand() {
-    return INTAKE_SUBSYSTEM.outtakeCommand();
+    return Commands.parallel(
+      rumbleCommand(),
+      INTAKE_SUBSYSTEM.outtakeCommand(),
+      SHOOTER_SUBSYSTEM.outtakeCommand()
+    );
   }
 
   /**

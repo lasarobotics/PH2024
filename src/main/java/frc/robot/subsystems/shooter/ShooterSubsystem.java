@@ -300,6 +300,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.set(+INTAKE_SPEED.in(Units.Percent));
   }
 
+  private void feedReverse() {
+    m_indexerMotor.set(-INTAKE_SPEED.in(Units.Percent));
+  }
+
   /**
    * Stop feeding
    */
@@ -350,6 +354,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         feedStop();
       }
     );
+  }
+
+  /**
+   * Reverse note from shoter into intake
+   * @return Command to outtake note in shooter
+   */
+  public Command outtakeCommand() {
+    return startEnd(
+      () -> feedReverse(),
+      () -> feedStop()
+    ); 
   }
 
   /**
