@@ -149,6 +149,10 @@ public final class Constants {
     public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(90);
   }
 
+  public static class Climber {
+    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(80);
+  }
+
   public static class DriveHardware {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 2);
@@ -197,6 +201,11 @@ public final class Constants {
 
   public static class IntakeHardware {
     public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
+  }
+
+  public static class ClimberHardware {
+    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 11);
+    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 12);
   }
 
   public static class SmartDashboard {

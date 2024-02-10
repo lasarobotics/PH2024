@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.commands.autonomous.TestAuto;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -51,6 +52,10 @@ public class RobotContainer {
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
+  );
+  private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(
+    ClimberSubsystem.initializeHardware(),
+    Constants.Climber.CLIMBER_VELOCITY
   );
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
@@ -105,6 +110,12 @@ public class RobotContainer {
 
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+
+    // DPAD up - raise climber arms
+    PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
+
+    // DPAD down - lower climber arms
+    PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
   /**
