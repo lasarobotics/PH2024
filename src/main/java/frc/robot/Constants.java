@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
@@ -161,6 +162,10 @@ public final class Constants {
     );
   }
 
+  public static class Climber {
+    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(80);
+  }
+
   public static class DriveHardware {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 2);
@@ -209,6 +214,11 @@ public final class Constants {
 
   public static class IntakeHardware {
     public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
+  }
+
+  public static class ClimberHardware {
+    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 11);
+    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 12);
   }
 
   public static class SmartDashboard {
