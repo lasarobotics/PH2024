@@ -121,7 +121,7 @@ public class RobotContainer {
       if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-      if (INTAKE_SUBSYSTEM.isObjectPresent())
+      if (SHOOTER_SUBSYSTEM.isObjectPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
     }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
