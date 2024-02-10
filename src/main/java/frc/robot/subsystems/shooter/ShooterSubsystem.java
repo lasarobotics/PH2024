@@ -66,6 +66,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Angle> angle;
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
+    public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
