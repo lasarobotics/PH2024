@@ -90,8 +90,10 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Right trigger button - aim and shoot at speaker
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
+    // Right trigger button - aim and shoot at speaker, shooting regardless if speaker tag is visible if center of DPAD is pressed
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(
+      shootCommand(PRIMARY_CONTROLLER.povCenter().getAsBoolean())
+    );
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
@@ -149,7 +151,7 @@ public class RobotContainer {
   }
 
   /**
-   * Command to outtake a note
+   * Compose command to outtake a note
    * @return Command that will spit out a note from ground intake
    */
   private Command outtakeCommand() {
@@ -160,11 +162,12 @@ public class RobotContainer {
     );
   }
 
-  /**
+ /**
    * Compose command to shoot note
+   * @param ignoreTarget Shoot regardless if speaker tag is visible
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand() {
+  private Command shootCommand(boolean ignoreTarget) {
     return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
@@ -174,7 +177,19 @@ public class RobotContainer {
         true,
         true
       ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), ignoreTarget)
+    );
+  }
+
+  /**
+   * Compose command to feed a note through the robot
+   * @return Command that will run the intake, indexer, and flywheels at the same time with limit switches disabled
+   */
+  private Command feedThroughCommand() {
+    return Commands.parallel(
+      rumbleCommand(),
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.feedCommand()
     );
   }
 
