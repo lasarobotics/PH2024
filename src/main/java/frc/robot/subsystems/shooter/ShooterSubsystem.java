@@ -373,6 +373,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       }
     );
   }
+  
+  /**
+   * Intake a game piece from the ground intake to be later fed to the shooter with no limit switches
+   * @return Command to feed through the shooter
+   */
+  public Command feedCommand() {
+    return startEnd(() -> feedStart(), () -> feedStop());
+  }
 
   /**
    * Reverse note from shoter into intake
@@ -406,15 +414,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Shoot automatically based on current location
    * @param isAimed Is robot aimed at target
+   * @param ignoreTarget Shoot regardless if speaker tag is visible
    * @return Command to automatically shoot note
    */
-  public Command shootCommand(BooleanSupplier isAimed) {
+  public Command shootCommand(BooleanSupplier isAimed, boolean ignoreTarget) {
     return runEnd(
       () -> {
+        boolean targetVisible = VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst());
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()))
+            && (targetVisible | ignoreTarget))
           feedStart();
         else feedStop();
       },
