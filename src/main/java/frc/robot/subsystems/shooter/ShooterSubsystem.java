@@ -84,6 +84,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(40.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
+  private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
+  private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
+  private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
@@ -337,7 +340,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
 
-    Logger.recordOutput(getName() + "/Mechanism2d", m_mechanism2d);
+    var currentState = getCurrentState();
+    m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - currentState.angle.in(Units.Radians)));
+
+    Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
+    Logger.recordOutput(getName() + SHOOTER_STATE_FLYWHEEL_SPEED, currentState.speed.in(Units.MetersPerSecond));
+    Logger.recordOutput(getName() + SHOOTER_STATE_ANGLE_DEGREES, currentState.angle.in(Units.Degrees));
   }
 
   @Override
@@ -373,7 +381,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       }
     );
   }
-  
+
   /**
    * Intake a game piece from the ground intake to be later fed to the shooter with no limit switches
    * @return Command to feed through the shooter
@@ -414,17 +422,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Shoot automatically based on current location
    * @param isAimed Is robot aimed at target
-   * @param ignoreTarget Shoot regardless if speaker tag is visible
+   * @param override Shoot even if target tag is not visible
    * @return Command to automatically shoot note
    */
-  public Command shootCommand(BooleanSupplier isAimed, boolean ignoreTarget) {
+  public Command shootCommand(BooleanSupplier isAimed, boolean override) {
     return runEnd(
       () -> {
-        boolean targetVisible = VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst());
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && (targetVisible | ignoreTarget))
+            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override)
           feedStart();
         else feedStop();
       },
@@ -433,6 +440,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         resetState();
       }
     );
+  }
+
+ /**
+   * Shoot automatically based on current location, checking if target tag is visible
+   * @param isAimed Is robot aimed at target
+   * @return Command to automatically shoot note
+   */
+  public Command shootCommand(BooleanSupplier isAimed) {
+    return shootCommand(isAimed, false);
   }
 
   /**

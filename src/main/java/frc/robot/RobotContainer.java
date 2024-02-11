@@ -114,16 +114,13 @@ public class RobotContainer {
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
-    // X button - Manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
+    // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
 
-    // Y button - Feed a note through the intake and shooter
-    PRIMARY_CONTROLLER.y().whileTrue(feedThroughCommand());
-
-    // DPAD up - raise climber arms
+    // DPAD up - raise climber hooks
     PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
 
-    // DPAD down - lower climber arms
+    // DPAD down - lower climber hooks
     PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
@@ -174,10 +171,10 @@ public class RobotContainer {
 
  /**
    * Compose command to shoot note
-   * @param ignoreTarget Shoot regardless if speaker tag is visible
+   * @param override Shoot even if target tag is not visible
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand(boolean ignoreTarget) {
+  private Command shootCommand(boolean override) {
     return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
@@ -187,20 +184,26 @@ public class RobotContainer {
         true,
         true
       ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), ignoreTarget)
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
     );
   }
 
   /**
    * Compose command to feed a note through the robot
-   * @return Command that will run the intake, indexer, and flywheels at the same time with limit switches disabled
    */
   private Command feedThroughCommand() {
     return Commands.parallel(
       rumbleCommand(),
       INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.feedCommand()
+      SHOOTER_SUBSYSTEM.feedCommand(),
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), true)
     );
+  }
+
+  /**
+   * @return Command that will automatically aim and shoot note
+  private Command shootCommand() {
+    return shootCommand(false);
   }
 
   /**
@@ -225,7 +228,7 @@ public class RobotContainer {
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
-   */ 
+   */
   private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
@@ -276,7 +279,7 @@ public class RobotContainer {
     Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
     autoModeChooser();
     SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
-    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0);
-    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0.0);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0.0);
   }
 }
