@@ -98,7 +98,7 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.0);
+    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.01,
@@ -108,7 +108,7 @@ public final class Constants {
       ),
       false,
       false,
-      5.0
+      50.0
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -118,13 +118,13 @@ public final class Constants {
         0.0
       ),
       false,
-      false,
+      true,
       Units.Degrees.of(0.5).in(Units.Radians),
       Units.Degrees.of(0.0).in(Units.Radians),
       Units.Degrees.of(70.0).in(Units.Radians),
       true
     );
-    public static final FFConstants ANGLE_FF = new FFConstants(0.0, 0.78, 4.18, 0.1);
+    public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(180.0),
       Units.DegreesPerSecond.of(360.0).per(Units.Second)
@@ -204,8 +204,8 @@ public final class Constants {
   }
 
   public static class ClimberHardware {
-    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 11);
-    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 12);
+    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 80);
+    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 81);
   }
 
   public static class SmartDashboard {

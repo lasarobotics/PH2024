@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 16.0,
+        "y": 7.41
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 15.04728546947705,
+        "y": 7.713866785500604
+      },
+      "isLocked": false,
+      "linkedName": "start pos red"
+    },
+    {
+      "anchor": {
+        "x": 14.522433468998933,
+        "y": 6.998368341453132
+      },
+      "prevControl": {
+        "x": 14.92138842285393,
+        "y": 7.235851610073233
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "after shoot preload red"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.3,
+    "maxAcceleration": 4.3,
+    "maxAngularVelocity": 1080.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 142.52791547759028,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "red",
+  "previewStartingState": {
+    "rotation": -179.11150303842916,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

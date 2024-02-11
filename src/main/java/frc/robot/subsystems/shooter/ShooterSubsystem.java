@@ -77,10 +77,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(25.0);
+  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(19.5);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
-  private static final Measure<Dimensionless> INTAKE_SPEED = Units.Percent.of(50.0);
+  private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
@@ -139,7 +139,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_targetSupplier = targetSupplier;
 
     // Slave bottom flywheel motor to top
-    m_bottomFlywheelMotor.follow(m_topFlywheelMotor, true);
+    m_topFlywheelMotor.setInverted(false);
+    m_bottomFlywheelMotor.follow(m_topFlywheelMotor, false);
 
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
@@ -212,11 +213,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
-    m_angleMotor.smoothMotion(
-      m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
-      m_angleConstraint,
-      this::angleFFCalculator
-    );
+    // m_angleMotor.smoothMotion(
+      // m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+      // m_angleConstraint,
+      // this::angleFFCalculator
+    // );
   }
 
   /**
@@ -301,11 +302,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Feed game piece to flywheels
    */
   private void feedStart() {
-    m_indexerMotor.set(+INTAKE_SPEED.in(Units.Percent));
+    m_indexerMotor.set(+INDEXER_SPEED.in(Units.Percent));
   }
 
   private void feedReverse() {
-    m_indexerMotor.set(-INTAKE_SPEED.in(Units.Percent));
+    m_indexerMotor.set(-INDEXER_SPEED.in(Units.Percent));
   }
 
   /**
