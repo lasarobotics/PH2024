@@ -12,6 +12,7 @@ import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import com.revrobotics.CANSparkBase.ControlType;
 
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -28,16 +29,27 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  private Spark m_rollerMotor;
-
+  private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(30.0);
   private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
 
-  /** Creates a new IntakeSubsystem. */
+  private Spark m_rollerMotor;
+
+  /**
+   * Create an instance of IntakeSubsystem
+   * <p>
+   * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
+   * <p>
+   * @param shooterHardware Hardware devices required by intake
+   * @param flywheelConfig Roller PID config
+   * @param rollerVelocity Desired roller velocity
+   */
   public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
+    ROLLER_VELOCITY = rollerVelocity;
+
     this.m_rollerMotor = intakeHardware.rollerMotor;
     m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
 
-    ROLLER_VELOCITY = rollerVelocity;
+    m_rollerMotor.setSmartCurrentLimit((int)ROLLER_CURRENT_LIMIT.in(Units.Amps));
   }
 
   /**

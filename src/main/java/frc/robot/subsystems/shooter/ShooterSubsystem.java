@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -77,13 +78,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(19.5);
+  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(20.0);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
+  private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(40.0);
+  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
+  private final Measure<Velocity<Distance>> MAX_FLYWHEEL_SPEED;
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -127,6 +131,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
                           List<Entry<Measure<Distance>, State>> shooterMap,
                           Supplier<Pose2d> poseSupplier, Supplier<Pair<Integer,Translation2d>> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
+    MAX_FLYWHEEL_SPEED = Units.MetersPerSecond.of((shooterHardware.topFlywheelMotor.getKind().getMaxRPM() / 60) * (flywheelDiameter.in(Units.Meters) * Math.PI));
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
     this.m_bottomFlywheelMotor = shooterHardware.bottomFlywheelMotor;
     this.m_angleMotor = shooterHardware.angleMotor;
@@ -139,8 +144,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_targetSupplier = targetSupplier;
 
     // Slave bottom flywheel motor to top
-    m_topFlywheelMotor.setInverted(false);
-    m_bottomFlywheelMotor.follow(m_topFlywheelMotor, false);
+    m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
 
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
@@ -155,6 +159,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     var angleConversionFactor = Math.PI * 2;
     m_angleMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor);
     m_angleMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor / 60);
+
+    // Set current limits
+    m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
+    m_bottomFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
+    m_angleMotor.setSmartCurrentLimit((int)ANGLE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
 
     // Initialize shooter state
     m_desiredShooterState = getCurrentState();
@@ -214,9 +223,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     // m_angleMotor.smoothMotion(
-      // m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
-      // m_angleConstraint,
-      // this::angleFFCalculator
+    //   m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+    //   m_angleConstraint,
+    //   this::angleFFCalculator
     // );
   }
 
@@ -227,7 +236,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private State normalizeState(State state) {
     return new State(
-      state.speed,
+      Units.MetersPerSecond.of(MathUtil.clamp(
+        state.speed.in(Units.MetersPerSecond),
+        -MAX_FLYWHEEL_SPEED.in(Units.MetersPerSecond),
+        +MAX_FLYWHEEL_SPEED.in(Units.MetersPerSecond)
+      )),
       Units.Radians.of(MathUtil.clamp(
         state.angle.in(Units.Radians),
         SHOOTER_ANGLE_OFFSET.in(Units.Radians),
@@ -369,7 +382,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return startEnd(
       () -> feedReverse(),
       () -> feedStop()
-    ); 
+    );
   }
 
   /**
@@ -424,8 +437,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Whether a game piece is in the intake
-   * @return The value of the roller motor's forward limit switch
+   * Whether a game piece is in the indexer
+   * @return The value of the indexer motor's forward limit switch
    */
   public boolean isObjectPresent() {
     return m_indexerMotor.getInputs().forwardLimitSwitch;
