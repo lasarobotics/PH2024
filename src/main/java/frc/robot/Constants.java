@@ -107,7 +107,7 @@ public final class Constants {
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI / 60))
       ),
       false,
-      false,
+      true,
       50.0
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
@@ -120,8 +120,8 @@ public final class Constants {
       false,
       true,
       Units.Degrees.of(0.5).in(Units.Radians),
-      Units.Degrees.of(0.0).in(Units.Radians),
-      Units.Degrees.of(70.0).in(Units.Radians),
+      0.0,
+      0.6,
       true
     );
     public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
@@ -166,9 +166,13 @@ public final class Constants {
     public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 
+  public static class IntakeHardware {
+    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
+  }
+
   public static class ShooterHardware {
     public static final Spark.ID TOP_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 11);
-    public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 12);
+    public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Bottom", 12);
     public static final Spark.ID ANGLE_MOTOR_ID = new Spark.ID("ShooterHardware/Angle", 13);
     public static final Spark.ID INDEXER_MOTOR_ID = new Spark.ID("ShooterHardware/Indexer", 14);
   }
@@ -199,13 +203,9 @@ public final class Constants {
     public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);
   }
 
-  public static class IntakeHardware {
-    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
-  }
-
   public static class ClimberHardware {
-    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 80);
-    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 81);
+    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 15);
+    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 16);
   }
 
   public static class SmartDashboard {

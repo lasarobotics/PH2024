@@ -32,8 +32,6 @@ public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
-
-    ROLLER_VELOCITY = rollerVelocity;
   }
 
   /**
