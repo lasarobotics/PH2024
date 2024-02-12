@@ -54,6 +54,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -252,11 +253,26 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_currentHeading = new Rotation2d();
 
     // Initalise PurplePathClient
-    m_purplePathClient = new PurplePathClient(this::getPose, getPathConstraints());
+    m_purplePathClient = new PurplePathClient(this);
 
     // Initialise field
     m_field = new Field2d();
     SmartDashboard.putData(m_field);
+
+    // Configure PathPlanner auto builder
+    AutoBuilder.configureHolonomic(
+      this::getPose,
+      this::resetPose,
+      this::getChassisSpeeds,
+      this::autoDrive,
+      m_pathFollowerConfig,
+      () -> {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) return alliance.get() == DriverStation.Alliance.Red;
+        return false;
+      },
+      this
+    );
 
     // Setup path logging callback
     PathPlannerLogging.setLogActivePathCallback((poses) -> {
@@ -740,21 +756,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     updatePose();
     smartDashboard();
     logOutputs();
-  }
-
-  /**
-   * Configure AutoBuilder for PathPlannerLib
-   */
-  public void configureAutoBuilder() {
-    AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::resetPose,
-      this::getChassisSpeeds,
-      this::autoDrive,
-      m_pathFollowerConfig,
-      () -> false,
-      this
-    );
   }
 
   /**

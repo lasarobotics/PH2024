@@ -341,8 +341,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.periodic();
 
     var currentState = getCurrentState();
-    m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - currentState.angle.in(Units.Radians)));
-
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
     Logger.recordOutput(getName() + SHOOTER_STATE_FLYWHEEL_SPEED, currentState.speed.in(Units.MetersPerSecond));
     Logger.recordOutput(getName() + SHOOTER_STATE_ANGLE_DEGREES, currentState.angle.in(Units.Degrees));
