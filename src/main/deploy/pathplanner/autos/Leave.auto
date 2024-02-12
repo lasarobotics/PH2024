@@ -14,12 +14,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Leave-Blue"
+            "pathName": "Leave"
           }
         }
       ]
     }
   },
-  "folder": "Leave",
+  "folder": null,
   "choreoAuto": false
 }
