@@ -20,6 +20,7 @@ import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -66,11 +67,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(90.0));
-    public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(90.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(55.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(55.0));
+    public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -81,8 +82,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(20.0);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
-  private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(40.0);
-  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
+  private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
+  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(30.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
@@ -163,6 +164,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor);
     m_angleMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor / 60);
 
+    m_topFlywheelMotor.setIdleMode(IdleMode.kCoast);
+    m_bottomFlywheelMotor.setIdleMode(IdleMode.kCoast);
+    m_angleMotor.setIdleMode(IdleMode.kCoast);
+
     // Set current limits
     m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
     m_bottomFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
@@ -225,11 +230,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
-    // m_angleMotor.smoothMotion(
-    //   m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
-    //   m_angleConstraint,
-    //   this::angleFFCalculator
-    // );
+    m_angleMotor.smoothMotion(
+      m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+      m_angleConstraint,
+      this::angleFFCalculator
+    );
   }
 
   /**
@@ -409,6 +414,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       () -> {
         if (isReady()) feedStart();
         else feedStop();
+        //feedStart();
       },
       () -> {
         feedStop();

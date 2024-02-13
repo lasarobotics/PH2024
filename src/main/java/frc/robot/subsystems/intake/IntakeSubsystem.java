@@ -10,9 +10,9 @@ import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
@@ -29,7 +29,6 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  private static final Measure<Current> ROLLER_CURRENT_LIMIT = Units.Amps.of(30.0);
   private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
 
   private Spark m_rollerMotor;
@@ -45,11 +44,13 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
     ROLLER_VELOCITY = rollerVelocity;
-
     this.m_rollerMotor = intakeHardware.rollerMotor;
+
+    // Initialize PID
     m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
 
-    m_rollerMotor.setSmartCurrentLimit((int)ROLLER_CURRENT_LIMIT.in(Units.Amps));
+    // Set idle mode
+    m_rollerMotor.setIdleMode(IdleMode.kCoast);
   }
 
   /**
@@ -59,7 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public static Hardware initializeHardware() {
     Hardware intakeHardware = new Hardware(
-      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO_VORTEX)
     );
     return intakeHardware;
   }

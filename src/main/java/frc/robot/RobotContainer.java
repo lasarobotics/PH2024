@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.commands.autonomous.TestAuto;
-import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -53,10 +52,6 @@ public class RobotContainer {
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_CONFIG,
     Constants.Intake.ROLLER_VELOCITY
-  );
-  private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(
-    ClimberSubsystem.initializeHardware(),
-    Constants.Climber.CLIMBER_VELOCITY
   );
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
@@ -113,12 +108,6 @@ public class RobotContainer {
 
     // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
-
-    // DPAD up - raise climber hooks
-    PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
-
-    // DPAD down - lower climber hooks
-    PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
   /**
