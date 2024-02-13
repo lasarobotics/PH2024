@@ -101,14 +101,14 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.01,
-        0.0,
-        0.0,
-        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI / 60))
+        0.12,
+        1e-3,
+        3.0,
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI))
       ),
       false,
       true,
-      50.0
+      0.5
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -130,9 +130,9 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
       Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
       Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
       Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),

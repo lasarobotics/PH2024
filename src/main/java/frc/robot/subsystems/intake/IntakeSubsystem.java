@@ -8,6 +8,7 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
@@ -32,6 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
+    ROLLER_VELOCITY = rollerVelocity;
   }
 
   /**
@@ -41,7 +43,7 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public static Hardware initializeHardware() {
     Hardware intakeHardware = new Hardware(
-      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO_VORTEX)
     );
     return intakeHardware;
   }
