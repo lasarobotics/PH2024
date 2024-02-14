@@ -198,7 +198,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Hardware shooterHardware = new Hardware(
       new Spark(Constants.ShooterHardware.TOP_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.BOTTOM_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
-      new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO_VORTEX),
+      new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO),
       new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO)
     );
 
