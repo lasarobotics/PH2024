@@ -83,7 +83,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
-  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(30.0);
+  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
@@ -164,6 +164,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor);
     m_angleMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor / 60);
 
+    // Set idle mode
     m_topFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_bottomFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_angleMotor.setIdleMode(IdleMode.kCoast);
@@ -414,7 +415,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       () -> {
         if (isReady()) feedStart();
         else feedStop();
-        //feedStart();
       },
       () -> {
         feedStop();
