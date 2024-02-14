@@ -5,16 +5,13 @@
 package frc.robot.subsystems.intake;
 
 import org.lasarobotics.hardware.revrobotics.Spark;
-import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
-import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
-import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -30,12 +27,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Spark m_rollerMotor;
 
-  private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
+  private final Measure<Dimensionless> ROLLER_VELOCITY;
 
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
+  public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
-    m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
     
     ROLLER_VELOCITY = rollerVelocity;
   }
@@ -54,12 +50,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Tells the robot to intake
   private void intake() {
-    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Tells the robot to outtake
   private void outtake() {
-    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Stop the robot
