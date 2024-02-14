@@ -6,7 +6,6 @@ package frc.robot.subsystems.shooter;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
@@ -36,13 +35,11 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -277,18 +274,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Get shooter state based on distance to target
-   * @return Shooter state for current target distance
-   */
-  private State getAutomaticState() {
-    var targetDistance = getTargetDistance();
-    var flywheelSpeed = m_shooterFlywheelCurve.value(targetDistance.in(Units.Meters));
-    var angle = m_shooterAngleCurve.value(targetDistance.in(Units.Meters));
-
-    return new State(Units.MetersPerSecond.of(flywheelSpeed), Units.Radians.of(angle));
-  }
-
-  /**
    * Feed forward calculator for shooter angle
    * @param state Current motion profile state
    * @return Feed forward voltage to apply
@@ -309,15 +294,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         MAX_SHOOTING_DISTANCE.in(Units.Meters)
       )
     );
-  }
-
-  /**
-   * Check if shooter has reached desired state and is ready
-   * @return True if ready
-   */
-  private boolean isReady() {
-    return m_angleMotor.isSmoothMotionFinished() &&
-      Math.abs(m_topFlywheelMotor.getInputs().encoderVelocity - m_desiredShooterState.speed.in(Units.MetersPerSecond)) < m_flywheelConfig.getTolerance();
   }
 
   /**
@@ -376,11 +352,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command intakeCommand() {
     return startEnd(
       () -> {
-        m_indexerMotor.enableForwardLimitSwitch();
         feedStart();
       },
       () -> {
-        m_indexerMotor.disableForwardLimitSwitch();
         feedStop();
       }
     );
@@ -395,7 +369,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Reverse note from shoter into intake
+   * Reverse note from shooter into intake
    * @return Command to outtake note in shooter
    */
   public Command outtakeCommand() {
@@ -406,64 +380,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Shoot by manually setting shooter state
-   * @param stateSupplier Desired shooter state supplier
-   * @return Command to control shooter manually
-   */
-  public Command shootManualCommand(Supplier<State> stateSupplier) {
-    return runEnd(
-      () -> {
-        if (isReady()) feedStart();
-        else feedStop();
-      },
-      () -> {
-        feedStop();
-        resetState();
-      }
-    ).beforeStarting(() -> setState(stateSupplier.get()), this);
-  }
-
-  /**
    * Shoot automatically based on current location
    * @param isAimed Is robot aimed at target
    * @param override Shoot even if target tag is not visible
    * @return Command to automatically shoot note
    */
-  public Command shootCommand(BooleanSupplier isAimed, boolean override) {
+  public Command shootCommand(Supplier<State> suppliedState) {
     return runEnd(
       () -> {
-        setState(getAutomaticState());
-        if (RobotBase.isSimulation() | isReady()
-            && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override)
-          feedStart();
-        else feedStop();
+        setState(suppliedState.get());
       },
       () -> {
-        feedStop();
         resetState();
       }
     );
-  }
-
- /**
-   * Shoot automatically based on current location, checking if target tag is visible
-   * @param isAimed Is robot aimed at target
-   * @return Command to automatically shoot note
-   */
-  public Command shootCommand(BooleanSupplier isAimed) {
-    return shootCommand(isAimed, false);
-  }
-
-  /**
-   * Move shooter to amp position
-   * @return Command that prepares shooter for scoring in the amp
-   */
-  public Command prepareForAmpCommand() {
-    return startEnd(
-      () -> setState(State.AMP_PREP_STATE),
-      () -> resetState()
-    ).until(() -> isReady());
   }
 
   /**

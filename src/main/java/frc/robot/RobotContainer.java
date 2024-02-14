@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -85,65 +84,17 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(false));
+    // Right trigger button - Run shooter
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(SHOOTER_SUBSYSTEM.shootCommand(() -> dashboardStateSupplier()));
 
-    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(true));
-
-    // Left trigger button - aim at game piece and intake
-    PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
+    // Left trigger button - Intake
+    PRIMARY_CONTROLLER.leftTrigger().whileTrue(INTAKE_SUBSYSTEM.intakeCommand());
 
     // Left bumper button - outtake game piece
     PRIMARY_CONTROLLER.leftBumper().whileTrue(outtakeCommand());
 
-    // A button - go to amp
-    PRIMARY_CONTROLLER.a().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.AMP,
-        SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-        Commands.none()
-      )
-    );
-
-    // B button - go to source
-    PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
-
-    // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
-    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
-  }
-
-  /**
-   * Compose command to control controller rumble.
-   * <ul>
-   * <li> If the vision subsystem detects a game piece, the left side of the controller will rumble
-   * <li> If the intake has a game piece inside, the right side of the controller will rumble
-   * <li> Otherwise, no rumble :(
-   * </ul>
-   * @return Command that will automatically make the controller rumble based on the above conditions
-   */
-  private Command rumbleCommand() {
-    return Commands.run(() -> {
-      if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-      if (SHOOTER_SUBSYSTEM.isObjectPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
-    }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
-  }
-
-  /**
-   * Compose command to intake a note
-   * @return Command that will automatically intake a note and prepare it for feeding inside the shooter motor
-   */
-  private Command intakeCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      aimAtObject(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-    );
+    // X button - Run indexer forward
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.feedCommand());
   }
 
   /**
@@ -152,72 +103,11 @@ public class RobotContainer {
    */
   private Command outtakeCommand() {
     return Commands.parallel(
-      rumbleCommand(),
       INTAKE_SUBSYSTEM.outtakeCommand(),
       SHOOTER_SUBSYSTEM.outtakeCommand()
     );
   }
 
- /**
-   * Compose command to shoot note
-   * @param override Shoot even if target tag is not visible
-   * @return Command that will automatically aim and shoot note
-   */
-  private Command shootCommand(boolean override) {
-    return Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX(),
-        () -> speakerSupplier().getSecond(),
-        true,
-        true
-      ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
-    );
-  }
-
-  /**
-   * Compose command to feed a note through the robot
-   */
-  private Command feedThroughCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.feedCommand(),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), true)
-    );
-  }
-
-  /**
-   * @return Command that will automatically aim and shoot note
-  private Command shootCommand() {
-    return shootCommand(false);
-  }
-
-  /**
-   * Command to aim at detected game object automatically, driving normally if none is detected
-   * @return Command to aim at object
-   */
-  private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointCommand(
-      () -> PRIMARY_CONTROLLER.getLeftY(),
-      () -> PRIMARY_CONTROLLER.getLeftX(),
-      () -> PRIMARY_CONTROLLER.getRightX(),
-      () -> {
-        return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-                ? VISION_SUBSYSTEM.getObjectLocation().get()
-                : null;
-      },
-      false,
-      false
-    );
-  }
-
-  /**
-   * Get correct speaker for current alliance
-   * @return Location of appropriate speaker
-   */
   private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
