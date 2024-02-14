@@ -69,6 +69,9 @@ public class RobotContainer {
       )
     );
 
+    // Configure auto builder
+    DRIVE_SUBSYSTEM.configureAutoBuilder();
+
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Bind buttons and triggers

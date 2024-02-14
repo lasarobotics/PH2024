@@ -259,21 +259,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_field = new Field2d();
     SmartDashboard.putData(m_field);
 
-    // Configure PathPlanner auto builder
-    AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::resetPose,
-      this::getChassisSpeeds,
-      this::autoDrive,
-      m_pathFollowerConfig,
-      () -> {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) return alliance.get() == DriverStation.Alliance.Red;
-        return false;
-      },
-      this
-    );
-
     // Setup path logging callback
     PathPlannerLogging.setLogActivePathCallback((poses) -> {
       if (poses.size() < 1) return;
@@ -756,6 +741,25 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     updatePose();
     smartDashboard();
     logOutputs();
+  }
+
+  /**
+   * Configure PathPlanner auto builder
+   */
+  public void configureAutoBuilder() {
+    AutoBuilder.configureHolonomic(
+      this::getPose,
+      this::resetPose,
+      this::getChassisSpeeds,
+      this::autoDrive,
+      m_pathFollowerConfig,
+      () -> {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) return alliance.get() == DriverStation.Alliance.Red;
+        return false;
+      },
+      this
+    );
   }
 
   /**
