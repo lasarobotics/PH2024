@@ -82,10 +82,11 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Right trigger button - aim and shoot at speaker, shooting regardless if speaker tag is visible if center of DPAD is pressed
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(
-      shootCommand(PRIMARY_CONTROLLER.povCenter().getAsBoolean())
-    );
+    // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(false));
+
+    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
+    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(true));
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
