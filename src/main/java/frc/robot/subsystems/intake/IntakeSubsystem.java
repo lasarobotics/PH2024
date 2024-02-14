@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Tells the robot to intake
   private void intake() {
-    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
+    m_rollerMotor.set(+ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Tells the robot to outtake
