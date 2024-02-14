@@ -5,17 +5,14 @@
 package frc.robot.subsystems.intake;
 
 import org.lasarobotics.hardware.revrobotics.Spark;
-import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
-import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 
-import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -29,25 +26,15 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
-
   private Spark m_rollerMotor;
 
-  /**
-   * Create an instance of IntakeSubsystem
-   * <p>
-   * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
-   * <p>
-   * @param shooterHardware Hardware devices required by intake
-   * @param flywheelConfig Roller PID config
-   * @param rollerVelocity Desired roller velocity
-   */
-  public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
+  private final Measure<Dimensionless> ROLLER_VELOCITY;
+
+  /** Creates a new IntakeSubsystem. */
+  public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
+    this.m_rollerMotor = intakeHardware.rollerMotor;
     ROLLER_VELOCITY = rollerVelocity;
     this.m_rollerMotor = intakeHardware.rollerMotor;
-
-    // Initialize PID
-    m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
 
     // Set idle mode
     m_rollerMotor.setIdleMode(IdleMode.kCoast);
@@ -67,12 +54,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Tells the robot to intake
   private void intake() {
-    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(+ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Tells the robot to outtake
   private void outtake() {
-    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Stop the robot

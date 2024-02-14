@@ -28,12 +28,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
@@ -148,18 +146,7 @@ public final class Constants {
   }
 
   public static class Intake {
-    public static final Measure<Velocity<Angle>> ROLLER_VELOCITY = Units.RPM.of(4000);
-    public static final SparkPIDConfig ROLLER_CONFIG = new SparkPIDConfig(
-      new PIDConstants(
-        1.8e-4,
-        0.0,
-        0.0,
-        1 / Spark.MotorKind.NEO_VORTEX.getMaxRPM()
-      ),
-      false,
-      false,
-      10.0
-    );
+    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(90);
   }
 
   public static class Climber {

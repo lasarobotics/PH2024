@@ -50,7 +50,6 @@ public class RobotContainer {
   );
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
     IntakeSubsystem.initializeHardware(),
-    Constants.Intake.ROLLER_CONFIG,
     Constants.Intake.ROLLER_VELOCITY
   );
 
