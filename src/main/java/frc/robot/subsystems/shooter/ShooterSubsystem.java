@@ -79,12 +79,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(20.0);
+  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(5.0);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
-  private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(25.0);
+  private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
+  private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(20.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
@@ -322,9 +323,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Feed game piece to flywheels
+   * @param slow True to run slowly
    */
-  private void feedStart() {
-    m_indexerMotor.set(+INDEXER_SPEED.in(Units.Percent));
+  private void feedStart(boolean slow) {
+    m_indexerMotor.set(slow ? +INDEXER_SLOW_SPEED.in(Units.Percent) : +INDEXER_SPEED.in(Units.Percent));
   }
 
   private void feedReverse() {
@@ -377,7 +379,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return startEnd(
       () -> {
         m_indexerMotor.enableForwardLimitSwitch();
-        feedStart();
+        feedStart(true);
       },
       () -> {
         m_indexerMotor.disableForwardLimitSwitch();
@@ -391,7 +393,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to feed through the shooter
    */
   public Command feedCommand() {
-    return startEnd(() -> feedStart(), () -> feedStop());
+    return startEnd(() -> feedStart(false), () -> feedStop());
   }
 
   /**
@@ -413,7 +415,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command shootManualCommand(Supplier<State> stateSupplier) {
     return runEnd(
       () -> {
-        if (isReady()) feedStart();
+        if (isReady()) feedStart(false);
         else feedStop();
       },
       () -> {
@@ -436,7 +438,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
             && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override)
-          feedStart();
+          feedStart(false);
         else feedStop();
       },
       () -> {
