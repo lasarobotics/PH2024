@@ -77,6 +77,11 @@ public final class Constants {
     public static final double CONTROLLER_DEADBAND = 0.1;
   }
 
+  public static class NamedCommands {
+    public static final String INTAKE_COMMAND_NAME = "intake";
+    public static final String SHOOT_COMMAND_NAME = "shoot";
+  }
+
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.10;

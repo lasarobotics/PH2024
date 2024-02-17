@@ -435,13 +435,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param override Shoot even if target tag is not visible
    * @return Command to automatically shoot note
    */
-  public Command shootCommand(BooleanSupplier isAimed, boolean override) {
+  public Command shootCommand(BooleanSupplier isAimed, BooleanSupplier override) {
     return runEnd(
       () -> {
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override)
+            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override.getAsBoolean())
           feedStart(false);
         else feedStop();
       },
@@ -458,7 +458,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to automatically shoot note
    */
   public Command shootCommand(BooleanSupplier isAimed) {
-    return shootCommand(isAimed, false);
+    return shootCommand(isAimed, () -> false);
   }
 
   /**

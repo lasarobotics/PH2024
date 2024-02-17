@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
+
+import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
@@ -18,9 +21,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
-import frc.robot.commands.autonomous.TestAuto;
+import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -72,6 +74,10 @@ public class RobotContainer {
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
+    // Register Named Commands
+    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, intakeCommand());
+    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, shootCommand(() -> false));
+
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Bind buttons and triggers
@@ -86,10 +92,10 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
     // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(false));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> false));
 
     // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(true));
+    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> true));
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
@@ -163,7 +169,7 @@ public class RobotContainer {
    * @param override Shoot even if target tag is not visible
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand(boolean override) {
+  private Command shootCommand(BooleanSupplier override) {
     return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
@@ -185,7 +191,7 @@ public class RobotContainer {
       rumbleCommand(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.feedCommand(),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), true)
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), () -> true)
     );
   }
 
@@ -241,8 +247,8 @@ public class RobotContainer {
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
-    m_automodeChooser.addOption("Leave", new LeaveAuto(DRIVE_SUBSYSTEM));
-    m_automodeChooser.addOption("Test", new TestAuto(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Leave", new AutoTrajectory(DRIVE_SUBSYSTEM, "Leave").getCommand());
+    m_automodeChooser.addOption("Preload + 3", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 3").getCommand());
   }
 
   /**
