@@ -8,11 +8,27 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7319714345034103,
-        "y": 6.2154201523599
+        "x": 2.4134371253887674,
+        "y": 6.462445222139314
       },
       "isLocked": false,
       "linkedName": "Pickup first note blue"
+    },
+    {
+      "anchor": {
+        "x": 2.554990507331036,
+        "y": 5.862536185456876
+      },
+      "prevControl": {
+        "x": 2.253971780788205,
+        "y": 6.030028763316528
+      },
+      "nextControl": {
+        "x": 3.1233644170112997,
+        "y": 5.546282069263308
+      },
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,8 +36,8 @@
         "y": 4.9638782657846985
       },
       "prevControl": {
-        "x": 3.122231436985196,
-        "y": 5.2833459294150735
+        "x": 2.3515276736053607,
+        "y": 5.240088238984543
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +46,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.4,
+      "waypointRelativePos": 0.8,
       "rotationDegrees": -42.93006019188974,
       "rotateFast": false
     }

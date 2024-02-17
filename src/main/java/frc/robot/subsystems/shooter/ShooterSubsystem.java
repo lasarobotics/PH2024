@@ -441,7 +441,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override.getAsBoolean())
+            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override.getAsBoolean()
+            && getTargetDistance().lte(MAX_SHOOTING_DISTANCE) | override.getAsBoolean())
           feedStart(false);
         else feedStop();
       },

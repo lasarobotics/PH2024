@@ -80,6 +80,12 @@ public final class Constants {
   public static class NamedCommands {
     public static final String INTAKE_COMMAND_NAME = "intake";
     public static final String SHOOT_COMMAND_NAME = "shoot";
+    public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
+  }
+
+  public static class AutoNames {
+    public static final String LEAVE = "Leave";
+    public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
   }
 
   public static class Drive {
