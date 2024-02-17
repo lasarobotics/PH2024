@@ -197,12 +197,6 @@ public class RobotContainer {
   }
 
   /**
-   * @return Command that will automatically aim and shoot note
-  private Command shootCommand() {
-    return shootCommand(false);
-  }
-
-  /**
    * Command to aim at detected game object automatically, driving normally if none is detected
    * @return Command to aim at object
    */
