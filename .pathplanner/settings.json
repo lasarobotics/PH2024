@@ -3,12 +3,12 @@
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
-    "Leave",
-    "red",
-    "blue"
+    "blue",
+    "red"
   ],
   "autoFolders": [
-    "Leave"
+    "Leave",
+    "Ring side"
   ],
   "defaultMaxVel": 4.3,
   "defaultMaxAccel": 4.3,

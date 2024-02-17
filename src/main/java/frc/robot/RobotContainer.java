@@ -9,6 +9,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -17,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.autonomous.LeaveAuto;
 import frc.robot.commands.autonomous.SimpleAuto;
@@ -51,7 +51,6 @@ public class RobotContainer {
   );
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
     IntakeSubsystem.initializeHardware(),
-    Constants.Intake.ROLLER_CONFIG,
     Constants.Intake.ROLLER_VELOCITY
   );
 
@@ -73,7 +72,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("shoot", SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed()).withTimeout(1));
 
-    // Setup AutoBuilder
+    // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
@@ -89,8 +88,11 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Right trigger button - aim and shoot at speaker
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
+    // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(false));
+
+    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
+    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(true));
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
@@ -109,6 +111,9 @@ public class RobotContainer {
 
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+
+    // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
   }
 
   /**
@@ -125,7 +130,7 @@ public class RobotContainer {
       if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-      if (INTAKE_SUBSYSTEM.isObjectPresent())
+      if (SHOOTER_SUBSYSTEM.isObjectPresent())
         PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
       else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
     }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
@@ -145,18 +150,23 @@ public class RobotContainer {
   }
 
   /**
-   * Command to outtake a note
+   * Compose command to outtake a note
    * @return Command that will spit out a note from ground intake
    */
   private Command outtakeCommand() {
-    return INTAKE_SUBSYSTEM.outtakeCommand();
+    return Commands.parallel(
+      rumbleCommand(),
+      INTAKE_SUBSYSTEM.outtakeCommand(),
+      SHOOTER_SUBSYSTEM.outtakeCommand()
+    );
   }
 
-  /**
+ /**
    * Compose command to shoot note
+   * @param override Shoot even if target tag is not visible
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand() {
+  private Command shootCommand(boolean override) {
     return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
@@ -166,8 +176,26 @@ public class RobotContainer {
         true,
         true
       ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
     );
+  }
+
+  /**
+   * Compose command to feed a note through the robot
+   */
+  private Command feedThroughCommand() {
+    return Commands.parallel(
+      rumbleCommand(),
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.feedCommand(),
+      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), true)
+    );
+  }
+
+  /**
+   * @return Command that will automatically aim and shoot note
+  private Command shootCommand() {
+    return shootCommand(false);
   }
 
   /**
@@ -192,7 +220,7 @@ public class RobotContainer {
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
-   */ 
+   */
   private static Pair<Integer,Translation2d> speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
@@ -200,10 +228,21 @@ public class RobotContainer {
   }
 
   /**
+   * Manually retrieve a desired shooter state from the dashboard
+   * @return Shooter state with the desired speed and angle
+   */
+  private ShooterSubsystem.State dashboardStateSupplier() {
+    return new ShooterSubsystem.State(
+      Units.MetersPerSecond.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0.0)),
+      Units.Degrees.of(SmartDashboard.getNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0.0))
+    );
+  }
+
+  /**
    * Add auto modes to chooser
    */
   private void autoModeChooser() {
-    m_automodeChooser.setDefaultOption("Do nothing", new SequentialCommandGroup());
+    m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption("Leave", new LeaveAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption("Test", new TestAuto(DRIVE_SUBSYSTEM));
@@ -232,5 +271,7 @@ public class RobotContainer {
     Shuffleboard.selectTab(Constants.SmartDashboard.SMARTDASHBOARD_DEFAULT_TAB);
     autoModeChooser();
     SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, m_automodeChooser);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_SPEED, 0.0);
+    SmartDashboard.putNumber(Constants.SmartDashboard.SMARTDASHBOARD_SHOOTER_ANGLE, 0.0);
   }
 }

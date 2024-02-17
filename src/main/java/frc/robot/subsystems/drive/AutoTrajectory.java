@@ -5,7 +5,6 @@
 package frc.robot.subsystems.drive;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -15,8 +14,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class AutoTrajectory {
@@ -32,17 +29,8 @@ public class AutoTrajectory {
   public AutoTrajectory(DriveSubsystem driveSubsystem, String autoName) {
     this.m_driveSubsystem = driveSubsystem;
 
-    String selectedAutoName = autoName + "-Blue";
-    Optional<Alliance> ally = DriverStation.getAlliance();
-    if (ally.isPresent()) {
-      if (ally.get() == Alliance.Red) selectedAutoName = autoName + "-Red";
-    }
-
     // Get path
-    m_auto = new Pair<String, List<PathPlannerPath>>(selectedAutoName, PathPlannerAuto.getPathGroupFromAutoFile(selectedAutoName));
-
-    for (var path : m_auto.getSecond())
-      path.preventFlipping = true;
+    m_auto = new Pair<String, List<PathPlannerPath>>(autoName, PathPlannerAuto.getPathGroupFromAutoFile(autoName));
   }
 
   /**
@@ -60,9 +48,6 @@ public class AutoTrajectory {
       pathConstraints,
       new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).getRotation())
     )));
-
-    for (var path : m_auto.getSecond())
-      path.preventFlipping = true;
   }
 
   /** Return initial pose */

@@ -5,16 +5,14 @@
 package frc.robot.subsystems.intake;
 
 import org.lasarobotics.hardware.revrobotics.Spark;
-import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
-import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 
-import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -30,36 +28,38 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Spark m_rollerMotor;
 
-  private final Measure<Velocity<Angle>> ROLLER_VELOCITY;
+  private final Measure<Dimensionless> ROLLER_VELOCITY;
 
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(Hardware intakeHardware, SparkPIDConfig config, Measure<Velocity<Angle>> rollerVelocity) {
+  public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
-    m_rollerMotor.initializeSparkPID(config, FeedbackSensor.NEO_ENCODER);
-    
     ROLLER_VELOCITY = rollerVelocity;
+    this.m_rollerMotor = intakeHardware.rollerMotor;
+
+    // Set idle mode
+    m_rollerMotor.setIdleMode(IdleMode.kCoast);
   }
-  
+
   /**
    * Initialize hardware devices for intake subsystem
-   * 
+   *
    * @return Hardware object containing all necessary devices for this subsystem
    */
   public static Hardware initializeHardware() {
     Hardware intakeHardware = new Hardware(
-      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO_VORTEX)
     );
     return intakeHardware;
   }
 
   // Tells the robot to intake
   private void intake() {
-    m_rollerMotor.set(ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(+ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Tells the robot to outtake
   private void outtake() {
-    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.RPM), ControlType.kVelocity);
+    m_rollerMotor.set(-ROLLER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
   // Stop the robot
@@ -71,7 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     m_rollerMotor.periodic();
   }
-  
+
   /**
    * Intake game piece from ground
    * @return Command to run the roller motor
@@ -86,13 +86,5 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public Command outtakeCommand() {
     return startEnd(() -> outtake(), () -> stop());
-  }
-
-  /**
-   * Whether a game piece is in the intake
-   * @return The value of the roller motor's forward limit switch
-   */
-  public boolean isObjectPresent() {
-    return m_rollerMotor.getInputs().forwardLimitSwitch;
   }
 }

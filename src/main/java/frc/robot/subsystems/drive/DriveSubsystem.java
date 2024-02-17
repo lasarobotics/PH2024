@@ -54,6 +54,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -93,8 +94,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.0);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(30.0);
+  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(0.9);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(45.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -252,7 +253,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_currentHeading = new Rotation2d();
 
     // Initalise PurplePathClient
-    m_purplePathClient = new PurplePathClient(this::getPose, getPathConstraints());
+    m_purplePathClient = new PurplePathClient(this);
 
     // Initialise field
     m_field = new Field2d();
@@ -284,7 +285,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
@@ -300,7 +301,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
@@ -316,7 +317,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
@@ -332,7 +333,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
@@ -743,7 +744,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Configure AutoBuilder for PathPlannerLib
+   * Configure PathPlanner auto builder
    */
   public void configureAutoBuilder() {
     AutoBuilder.configureHolonomic(
@@ -752,7 +753,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       this::getChassisSpeeds,
       this::autoDrive,
       m_pathFollowerConfig,
-      () -> false,
+      () -> {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) return alliance.get() == DriverStation.Alliance.Red;
+        return false;
+      },
       this
     );
   }

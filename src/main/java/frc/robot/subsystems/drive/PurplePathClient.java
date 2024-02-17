@@ -13,15 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.Supplier;
 
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.JSONObject;
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathHolonomic;
 import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.path.RotationTarget;
@@ -43,16 +41,14 @@ public class PurplePathClient {
 
   private final String URI;
 
-  private Supplier<Pose2d> m_poseSupplier;
-  private PathConstraints m_pathConstraints;
+  private DriveSubsystem m_driveSubsystem;
   private HttpURLConnection m_serverConnection;
   private boolean m_isConnected;
   private boolean m_connectivityCheckEnabled;
   private Notifier m_periodicNotifier;
 
-  public PurplePathClient(Supplier<Pose2d> poseSupplier, PathConstraints pathConstraints) {
-    this.m_poseSupplier = poseSupplier;
-    this.m_pathConstraints = pathConstraints;
+  public PurplePathClient(DriveSubsystem driveSubsystem) {
+    this.m_driveSubsystem = driveSubsystem;
     this.m_isConnected = false;
     this.m_connectivityCheckEnabled = true;
 
@@ -98,6 +94,23 @@ public class PurplePathClient {
 
     // Return response
     return jsonResponse;
+  }
+
+  /**
+   * Get PathPlanner command to drive robot
+   * @param path Desired robot path
+   * @return Underlying PathPlanner command to use
+   */
+  private Command getPathPlannerCommand(PathPlannerPath path) {
+    return new FollowPathHolonomic(
+      path,
+      m_driveSubsystem::getPose,
+      m_driveSubsystem::getChassisSpeeds,
+      m_driveSubsystem::autoDrive,
+      m_driveSubsystem.getPathFollowerConfig(),
+      () -> false,
+      m_driveSubsystem
+    );
   }
 
   /**
@@ -150,12 +163,12 @@ public class PurplePathClient {
     // Generate path
     PathPlannerPath path = PathPlannerPath.fromPathPoints(
       waypoints,
-      m_pathConstraints,
+      m_driveSubsystem.getPathConstraints(),
       new GoalEndState(
         isClose ? 0.0
                 : Math.min(
-                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
-                    Math.sqrt(2 * m_pathConstraints.getMaxAccelerationMpsSq() * distance)
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * distance)
                 ),
         finalApproachPose.getRotation()
       )
@@ -165,10 +178,10 @@ public class PurplePathClient {
     Logger.recordOutput(getClass().getSimpleName() + FINAL_APPROACH_POSE_LOG_ENTRY, finalApproachPose);
 
     // Return path following command
-    return isClose ? AutoBuilder.followPath(path).alongWith(parallelCommand)
+    return isClose ? getPathPlannerCommand(path).alongWith(parallelCommand)
                    : Commands.sequence(
-                      AutoBuilder.followPath(path),
-                      AutoBuilder.followPath(finalApproachPath).alongWith(parallelCommand)
+                      getPathPlannerCommand(path),
+                      getPathPlannerCommand(finalApproachPath).alongWith(parallelCommand)
                      );
   }
 
@@ -193,7 +206,7 @@ public class PurplePathClient {
    * @return Trajectory command
    */
   public Command getTrajectoryCommand(PurplePathPose goal, Command parallelCommand) {
-    return getCommand(m_poseSupplier.get(), goal, parallelCommand);
+    return getCommand(m_driveSubsystem.getPose(), goal, parallelCommand);
   }
 
   /**

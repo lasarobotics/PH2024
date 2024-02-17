@@ -11,7 +11,7 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 public class TestAuto extends SequentialCommandGroup {
   /** Creates a new Leave auto */
   public TestAuto(DriveSubsystem driveSubsystem) {
-    AutoTrajectory auto = new AutoTrajectory(driveSubsystem, "test");
+    AutoTrajectory auto = new AutoTrajectory(driveSubsystem, "Test");
 
     addCommands(
       auto.getCommand()

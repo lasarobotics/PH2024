@@ -28,11 +28,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
@@ -79,8 +78,8 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.12;
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0);
+    public static final double DRIVE_SLIP_RATIO = 0.10;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -99,17 +98,17 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.0);
+    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.01,
-        0.0,
-        0.0,
-        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI / 60))
+        0.12,
+        1e-3,
+        3.0,
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI))
       ),
       false,
-      false,
-      5.0
+      true,
+      0.5
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -119,21 +118,21 @@ public final class Constants {
         0.0
       ),
       false,
-      false,
+      true,
       Units.Degrees.of(0.5).in(Units.Radians),
-      Units.Degrees.of(0.0).in(Units.Radians),
-      Units.Degrees.of(70.0).in(Units.Radians),
+      0.0,
+      0.6,
       true
     );
-    public static final FFConstants ANGLE_FF = new FFConstants(0.0, 0.78, 4.18, 0.1);
+    public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(180.0),
       Units.DegreesPerSecond.of(360.0).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(65.0))),
-      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
       Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
       Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
       Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
@@ -147,18 +146,11 @@ public final class Constants {
   }
 
   public static class Intake {
-    public static final Measure<Velocity<Angle>> ROLLER_VELOCITY = Units.RPM.of(5000);
-    public static final SparkPIDConfig ROLLER_CONFIG = new SparkPIDConfig(
-      new PIDConstants(
-        0.01,
-        0.0,
-        0.0,
-        1 / (Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60)
-      ),
-      false,
-      false,
-      10.0
-    );
+    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(90);
+  }
+
+  public static class Climber {
+    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(80);
   }
 
   public static class DriveHardware {
@@ -174,9 +166,13 @@ public final class Constants {
     public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 
+  public static class IntakeHardware {
+    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
+  }
+
   public static class ShooterHardware {
     public static final Spark.ID TOP_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 11);
-    public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Top", 12);
+    public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Bottom", 12);
     public static final Spark.ID ANGLE_MOTOR_ID = new Spark.ID("ShooterHardware/Angle", 13);
     public static final Spark.ID INDEXER_MOTOR_ID = new Spark.ID("ShooterHardware/Indexer", 14);
   }
@@ -207,12 +203,15 @@ public final class Constants {
     public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);
   }
 
-  public static class IntakeHardware {
-    public static final Spark.ID ROLLER_MOTOR_ID = new Spark.ID("IntakeHardware/Roller", 10);
+  public static class ClimberHardware {
+    public static final Spark.ID LEFT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Left", 15);
+    public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 16);
   }
 
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
+    public static final String SMARTDASHBOARD_SHOOTER_SPEED = "Shooter Speed";
+    public static final String SMARTDASHBOARD_SHOOTER_ANGLE = "Shooter Angle";
   }
 }
