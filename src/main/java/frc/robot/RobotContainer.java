@@ -71,6 +71,8 @@ public class RobotContainer {
       )
     );
 
+    NamedCommands.registerCommand("shoot", SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed()).withTimeout(1));
+
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 

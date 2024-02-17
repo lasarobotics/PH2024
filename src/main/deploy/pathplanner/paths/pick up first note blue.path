@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 2.015554507299491,
+        "y": 7.087976481717375
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.135760153216735,
-        "y": 6.756735974409449
+        "x": 2.087565879392411,
+        "y": 7.026252448494873
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "After shoot preload"
     },
     {
       "anchor": {
-        "x": 2.742681752104576,
-        "y": 6.727352637182952
+        "x": 2.74,
+        "y": 6.73
       },
       "prevControl": {
-        "x": 2.1506486651366163,
-        "y": 6.556277908872782
+        "x": 2.1260334827695035,
+        "y": 6.699704967458573
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Pickup first note blue"
     }
   ],
   "rotationTargets": [],
@@ -43,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "blue",
   "previewStartingState": {
-    "rotation": 38.484716731200486,
+    "rotation": 39.61068824002659,
     "velocity": 0
   },
   "useDefaultConstraints": true
