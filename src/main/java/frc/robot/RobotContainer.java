@@ -71,8 +71,6 @@ public class RobotContainer {
       )
     );
 
-    NamedCommands.registerCommand("shoot", SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed()).withTimeout(1));
-
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
@@ -250,7 +248,7 @@ public class RobotContainer {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption("Leave", new AutoTrajectory(DRIVE_SUBSYSTEM, "Leave").getCommand());
-    m_automodeChooser.addOption("Preload + 3", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 3").getCommand());
+    m_automodeChooser.addOption("Preload + 3 Ring", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 3 Ring").getCommand());
   }
 
   /**
