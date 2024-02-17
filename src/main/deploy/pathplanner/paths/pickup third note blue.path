@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 2.22,
-        "y": 4.96
+        "y": 4.9638782657846985
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.427869350588231,
-        "y": 4.18328553962711
+        "y": 4.187163805411808
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "pickup second note blue"
     },
     {
       "anchor": {
@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "blue",
   "previewStartingState": {
     "rotation": -17.697748346149556,
     "velocity": 0

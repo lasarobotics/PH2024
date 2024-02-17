@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
@@ -69,6 +70,8 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getRightX()
       )
     );
+
+    NamedCommands.registerCommand("shoot", SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed()).withTimeout(1));
 
     // Setup AutoBuilder
     DRIVE_SUBSYSTEM.configureAutoBuilder();

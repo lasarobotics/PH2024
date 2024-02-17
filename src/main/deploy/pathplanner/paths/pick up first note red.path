@@ -3,38 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 14.522433468998933,
+        "y": 6.998368341453132
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4302234240629197,
-        "y": 8.019539470998586
+        "x": 14.368189120510241,
+        "y": 6.880174285065021
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "after shoot preload red"
     },
     {
       "anchor": {
-        "x": 2.7771400676729927,
-        "y": 6.595066777187126
+        "x": 13.766527957187908,
+        "y": 6.7057597562359605
       },
       "prevControl": {
-        "x": 3.176696190445953,
-        "y": 7.326665347527124
+        "x": 13.90643397699994,
+        "y": 6.4995126137416745
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "pickup first note red"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -61.80283488562476,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -45,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -156.49752213236349,
+    "rotation": 165.018367427609,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "red",
   "previewStartingState": {
-    "rotation": -145.0,
+    "rotation": 145.7590320633175,
     "velocity": 0
   },
   "useDefaultConstraints": true

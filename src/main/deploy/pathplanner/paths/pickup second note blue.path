@@ -12,7 +12,7 @@
         "y": 6.2154201523599
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Pickup first note blue"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "pickup second note blue"
     }
   ],
   "rotationTargets": [
@@ -49,7 +49,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "blue",
   "previewStartingState": {
     "rotation": 24.707053675495473,
     "velocity": 0
