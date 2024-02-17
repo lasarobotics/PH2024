@@ -21,6 +21,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkLimitSwitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -189,6 +190,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_simShooterJoint = m_mechanism2d.getRoot("shooter", 0.5, 0.33).append(new MechanismLigament2d("shooter", 0.4, 1.0));
     m_simShooterAngleMotionProfile = new TrapezoidProfile(m_angleConstraint);
     m_simShooterAngleState = new TrapezoidProfile.State(SHOOTER_ANGLE_OFFSET.in(Units.Radians), 0.0);
+
+    // Set limit switches to normally closed
+    m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
   }
 
   /**
