@@ -799,7 +799,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return run(() ->
+    return runEnd(() ->
       aimAtPoint(
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
@@ -807,8 +807,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         pointSupplier.get(),
         reversed,
         velocityCorrection
-      )
-    ).finallyDo(() -> resetRotatePID());
+      ),
+      () -> resetRotatePID()
+    );
   }
 
   /**
