@@ -104,7 +104,7 @@ public class ShooterSubsystemTest {
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_angleMotor, times(1)).smoothMotion(
-      AdditionalMatchers.eq(state.angle.minus(ShooterSubsystem.SHOOTER_ANGLE_OFFSET).in(Units.Radians), DELTA),
+      AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
       ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
       ArgumentMatchers.any()
     );
