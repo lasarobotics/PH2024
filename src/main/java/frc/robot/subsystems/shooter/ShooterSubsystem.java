@@ -80,7 +80,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
-  public static final Measure<Angle> SHOOTER_ANGLE_OFFSET = Units.Degrees.of(5.0);
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
@@ -171,6 +170,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_angleMotor.setIdleMode(IdleMode.kCoast);
 
+    // Set limit switch type
+    m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
+
     // Set current limits
     m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
     m_bottomFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
@@ -189,10 +191,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_mechanism2d = new Mechanism2d(1.0, 1.0);
     m_simShooterJoint = m_mechanism2d.getRoot("shooter", 0.5, 0.33).append(new MechanismLigament2d("shooter", 0.4, 1.0));
     m_simShooterAngleMotionProfile = new TrapezoidProfile(m_angleConstraint);
-    m_simShooterAngleState = new TrapezoidProfile.State(SHOOTER_ANGLE_OFFSET.in(Units.Radians), 0.0);
-
-    // Set limit switches to normally closed
-    m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
+    m_simShooterAngleState = new TrapezoidProfile.State(m_angleConfig.getLowerLimit(), 0.0);
   }
 
   /**
@@ -237,7 +236,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredShooterState = normalizeState(state);
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
-      m_desiredShooterState.angle.minus(SHOOTER_ANGLE_OFFSET).in(Units.Radians),
+      m_desiredShooterState.angle.in(Units.Radians),
       m_angleConstraint,
       this::angleFFCalculator
     );
@@ -257,8 +256,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       )),
       Units.Radians.of(MathUtil.clamp(
         state.angle.in(Units.Radians),
-        SHOOTER_ANGLE_OFFSET.in(Units.Radians),
-        m_angleConfig.getUpperLimit() + SHOOTER_ANGLE_OFFSET.in(Units.Radians)
+        m_angleConfig.getLowerLimit(),
+        m_angleConfig.getUpperLimit()
       ))
     );
   }
@@ -267,7 +266,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(ZERO_FLYWHEEL_SPEED, SHOOTER_ANGLE_OFFSET));
+    setState(new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit())));
   }
 
   /**
@@ -277,7 +276,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private State getCurrentState() {
     return new State(
       Units.MetersPerSecond.of(m_topFlywheelMotor.getInputs().encoderVelocity),
-      Units.Radians.of(m_angleMotor.getInputs().absoluteEncoderPosition).plus(SHOOTER_ANGLE_OFFSET)
+      Units.Radians.of(m_angleMotor.getInputs().absoluteEncoderPosition)
     );
   }
 
@@ -333,6 +332,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.set(slow ? +INDEXER_SLOW_SPEED.in(Units.Percent) : +INDEXER_SPEED.in(Units.Percent));
   }
 
+  /**
+   * Reverse indexer
+   */
   private void feedReverse() {
     m_indexerMotor.set(-INDEXER_SPEED.in(Units.Percent));
   }
