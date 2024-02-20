@@ -17,7 +17,6 @@ import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
-import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 
 import edu.wpi.first.math.Pair;
@@ -135,10 +134,9 @@ public final class Constants {
       1.04,
       true
     );
-    public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
-      Units.DegreesPerSecond.of(360.0*10),
-      Units.DegreesPerSecond.of(360.0*15).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 10),
+      Units.DegreesPerSecond.of(360.0 * 15).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),

@@ -15,17 +15,14 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
-import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.SparkLimitSwitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -41,7 +38,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -102,7 +98,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private Spark m_angleMotor;
   private Spark m_indexerMotor;
 
-  private ElevatorFeedforward m_angleFF;
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
   private Supplier<Pair<Integer,Translation2d>> m_targetSupplier;
@@ -135,7 +130,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param targetSupplier Speaker target supplier
    */
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
-                          FFConstants angleFF, TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
+                          TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
                           List<Entry<Measure<Distance>, State>> shooterMap,
                           Supplier<Pose2d> poseSupplier, Supplier<Pair<Integer,Translation2d>> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
@@ -146,7 +141,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_indexerMotor = shooterHardware.indexerMotor;
     this.m_flywheelConfig = flywheelConfig;
     this.m_angleConfig = angleConfig;
-    this.m_angleFF = new ElevatorFeedforward(angleFF.kS, angleFF.kG, angleFF.kV, angleFF.kA);
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
@@ -295,15 +289,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Feed forward calculator for shooter angle
-   * @param state Current motion profile state
-   * @return Feed forward voltage to apply
-   */
-  private double angleFFCalculator(TrapezoidProfile.State state) {
-    return m_angleFF.calculate(state.velocity, state.position);
-  }
-
-  /**
    * Get distance to target, clamped to maximum shooting distance
    * @return Distance to target
    */
@@ -407,7 +392,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         m_indexerMotor.enableReverseLimitSwitch();
         feedReverse();
         setState(State.SOURCE_INTAKE_STATE);
-      }, 
+      },
       () -> {
         m_indexerMotor.disableReverseLimitSwitch();
         feedStop();

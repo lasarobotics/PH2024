@@ -72,7 +72,6 @@ public class ShooterSubsystemTest {
       m_shooterHardware,
       Constants.Shooter.FLYWHEEL_CONFIG,
       Constants.Shooter.ANGLE_CONFIG,
-      Constants.Shooter.ANGLE_FF,
       Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
       Constants.Shooter.FLYWHEEL_DIAMETER,
       Constants.Shooter.SHOOTER_MAP,
