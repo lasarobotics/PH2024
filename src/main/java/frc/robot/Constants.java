@@ -90,7 +90,7 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.10;
+    public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -130,7 +130,7 @@ public final class Constants {
       ),
       false,
       true,
-      Units.Degrees.of(0.3).in(Units.Radians),
+      Units.Degrees.of(0.5).in(Units.Radians),
       0.15,
       1.04,
       true
@@ -138,7 +138,7 @@ public final class Constants {
     public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0*10),
-      Units.DegreesPerSecond.of(360.0*8).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0*15).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
