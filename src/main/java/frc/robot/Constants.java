@@ -123,22 +123,22 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.1,
+        3,
         0.0,
         0.0,
         0.0
       ),
       false,
       true,
-      Units.Degrees.of(0.5).in(Units.Radians),
-      0.0,
-      0.6,
+      Units.Degrees.of(0.3).in(Units.Radians),
+      0.15,
+      1.04,
       true
     );
     public static final FFConstants ANGLE_FF = new FFConstants(0.2, 0.02, 72.31, 0.0);
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
-      Units.DegreesPerSecond.of(180.0),
-      Units.DegreesPerSecond.of(360.0).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0*10),
+      Units.DegreesPerSecond.of(360.0*8).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),

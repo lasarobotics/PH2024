@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -118,6 +119,10 @@ public class RobotContainer {
 
     // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+
+    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> ShooterSubsystem.State.SPEAKER_SCORE_STATE));
+    PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
+    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
   }
 
   /**
@@ -191,8 +196,7 @@ public class RobotContainer {
     return Commands.parallel(
       rumbleCommand(),
       INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.feedCommand(),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), () -> true)
+      SHOOTER_SUBSYSTEM.feedThroughCommand(() -> DRIVE_SUBSYSTEM.isAimed())
     );
   }
 

@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -68,11 +69,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(55.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(0.0), Units.Degrees.of(55.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(60.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(3.0), Units.Degrees.of(60.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(54.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
+    public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10), Units.Degrees.of(55.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -89,6 +91,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
+  private static final String SHOOTER_DESIRED_STATE_ANGLE = "/DesiredState/Angle";
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
@@ -162,16 +165,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set angle adjust conversion factor
     var angleConversionFactor = Math.PI * 2;
-    m_angleMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor);
-    m_angleMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, angleConversionFactor / 60);
+    m_angleMotor.setPositionConversionFactor(FeedbackSensor.THROUGH_BORE_ENCODER, angleConversionFactor);
+    m_angleMotor.setVelocityConversionFactor(FeedbackSensor.THROUGH_BORE_ENCODER, angleConversionFactor / 60);
 
     // Set idle mode
     m_topFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_bottomFlywheelMotor.setIdleMode(IdleMode.kCoast);
-    m_angleMotor.setIdleMode(IdleMode.kCoast);
+    m_angleMotor.setIdleMode(IdleMode.kBrake);
 
     // Set limit switch type
-    m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
+    // m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
 
     // Set current limits
     m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
@@ -237,8 +240,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
       m_desiredShooterState.angle.in(Units.Radians),
-      m_angleConstraint,
-      this::angleFFCalculator
+      m_angleConstraint
     );
   }
 
@@ -266,7 +268,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit())));
+    setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle));
   }
 
   /**
@@ -358,6 +360,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
     Logger.recordOutput(getName() + SHOOTER_STATE_FLYWHEEL_SPEED, currentState.speed.in(Units.MetersPerSecond));
     Logger.recordOutput(getName() + SHOOTER_STATE_ANGLE_DEGREES, currentState.angle.in(Units.Degrees));
+    Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_ANGLE, m_desiredShooterState.angle.in(Units.Degrees));
   }
 
   @Override
@@ -395,11 +398,41 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Intake a game piece from the source via the shooter
+   * @return Command that intakes via the shooter
+   */
+  public Command sourceIntakeCommand() {
+    return startEnd(
+      () -> {
+        m_indexerMotor.enableReverseLimitSwitch();
+        feedReverse();
+        setState(State.SOURCE_INTAKE_STATE);
+      }, 
+      () -> {
+        m_indexerMotor.disableReverseLimitSwitch();
+        feedStop();
+        resetState();
+      }
+    );
+  }
+
+  /**
    * Intake a game piece from the ground intake to be later fed to the shooter with no limit switches
    * @return Command to feed through the shooter
    */
   public Command feedCommand() {
     return startEnd(() -> feedStart(false), () -> feedStop());
+  }
+
+  public Command feedThroughCommand(BooleanSupplier isAimed) {
+    return startEnd(() -> {
+      feedStart(false);
+      setState(new State(Units.MetersPerSecond.of(2.0), m_desiredShooterState.angle));
+    },
+    () -> {
+      feedStop();
+      resetState();
+    });
   }
 
   /**
