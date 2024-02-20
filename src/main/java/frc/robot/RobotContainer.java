@@ -93,10 +93,10 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
     // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> false));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
 
-    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> true));
+    // Right bumper button - amp shoot, also use for outtake
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(ShooterSubsystem.State.AMP_SCORE_STATE));
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
@@ -117,9 +117,12 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
     // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
-    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(ShooterSubsystem.State.SPEAKER_SCORE_STATE));
 
-    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> ShooterSubsystem.State.SPEAKER_SCORE_STATE));
+    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
+    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> true));
+
+    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
     PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
   }
@@ -169,7 +172,7 @@ public class RobotContainer {
     );
   }
 
- /**
+  /**
    * Compose command to shoot note
    * @param override Shoot even if target tag is not visible
    * @return Command that will automatically aim and shoot note
@@ -186,6 +189,14 @@ public class RobotContainer {
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
     );
+  }
+
+  /**
+   * Compose command to shoot note, checking if tag is visible and robot is in range
+   * @return Command that will automatically aim and shoot note
+   */
+  private Command shootCommand() {
+    return shootCommand(() -> false);
   }
 
   /**

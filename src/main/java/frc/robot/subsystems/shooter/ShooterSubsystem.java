@@ -66,11 +66,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Angle> angle;
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(60.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(3.0), Units.Degrees.of(60.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(60.0));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(54.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10), Units.Degrees.of(55.0));
+    public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -447,6 +447,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         resetState();
       }
     ).beforeStarting(() -> setState(stateSupplier.get()), this);
+  }
+
+  /**
+   * Shoot by manually setting shooter state
+   * @param state Desired shooter state
+   * @return Command to control shooter manually
+   */
+  public Command shootManualCommand(State state) {
+    return shootManualCommand(() -> state);
   }
 
   /**

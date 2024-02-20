@@ -103,7 +103,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
   // Other settings
-  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 50;
+  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
   private static final double TOLERANCE = 1.0;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
@@ -170,7 +170,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param turnInputCurve Spline function characterising turn input
    * @param turnScalar Scalar for turn input (degrees)
    * @param deadband Deadband for controller input [+0.001, +0.2]
-   * @param lookAhead Turn PID lookahead, in number of loops
+   * @param lookAhead Rotate PID lookahead, in number of loops
    */
   public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
