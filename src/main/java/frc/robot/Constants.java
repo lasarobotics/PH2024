@@ -135,8 +135,8 @@ public final class Constants {
       true
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
-      Units.DegreesPerSecond.of(360.0 * 10),
-      Units.DegreesPerSecond.of(360.0 * 15).per(Units.Second)
+      Units.DegreesPerSecond.of(180.0),
+      Units.DegreesPerSecond.of(180.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
