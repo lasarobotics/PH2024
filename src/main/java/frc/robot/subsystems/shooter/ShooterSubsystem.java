@@ -461,7 +461,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Shoot automatically based on current location
    * @param isAimed Is robot aimed at target
-   * @param override Shoot even if target tag is not visible
+   * @param override Shoot even if target tag is not visible and not in range
    * @return Command to automatically shoot note
    */
   public Command shootCommand(BooleanSupplier isAimed, BooleanSupplier override) {
@@ -492,6 +492,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Shoot note into speaker from subwoofer
+   * @return Command to shoot note when parked against the subwoofer
+   */
+  public Command shootSpeakerCommand() {
+    return shootManualCommand(State.SPEAKER_SCORE_STATE);
+  }
+
+  /**
    * Move shooter to amp position
    * @return Command that prepares shooter for scoring in the amp
    */
@@ -500,6 +508,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       () -> setState(State.AMP_PREP_STATE),
       () -> resetState()
     ).until(() -> isReady());
+  }
+
+  /**
+   * Score note in amp
+   * @return Command that shoots note into amp
+   */
+  public Command scoreAmpCommand() {
+    return shootManualCommand(State.AMP_SCORE_STATE);
   }
 
   /**

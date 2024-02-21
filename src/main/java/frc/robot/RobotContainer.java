@@ -95,8 +95,8 @@ public class RobotContainer {
     // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
     PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
 
-    // Right bumper button - amp shoot, also use for outtake
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(ShooterSubsystem.State.AMP_SCORE_STATE));
+    // Right bumper button - amp score, also use for outtake
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
 
     // Left trigger button - aim at game piece and intake
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
@@ -109,15 +109,15 @@ public class RobotContainer {
       DRIVE_SUBSYSTEM.goToPoseCommand(
         Constants.Field.AMP,
         SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-        Commands.none()
+        SHOOTER_SUBSYSTEM.scoreAmpCommand()
       )
     );
 
     // B button - go to source
     PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
 
-    // X button - manually aim the shooter at a desired flywheel speed and angle retrieved from the SmartDashboard
-    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(ShooterSubsystem.State.SPEAKER_SCORE_STATE));
+    // X button - shoot note into speaker from against the subwoofer
+    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
     // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
     PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> true));
