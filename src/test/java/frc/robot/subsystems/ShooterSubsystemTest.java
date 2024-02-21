@@ -104,8 +104,7 @@ public class ShooterSubsystemTest {
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_angleMotor, times(1)).smoothMotion(
       AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
-      ArgumentMatchers.any()
+      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT)
     );
   }
 }
