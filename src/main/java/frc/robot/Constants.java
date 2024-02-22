@@ -136,21 +136,18 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(180.0),
-      Units.DegreesPerSecond.of(180.0 * 10).per(Units.Second)
+      Units.DegreesPerSecond.of(180.0 * 20).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
-      Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
-      Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
-      Map.entry(Units.Meters.of(3.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.0))),
-      Map.entry(Units.Meters.of(4.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(29.5))),
-      Map.entry(Units.Meters.of(4.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(27.5))),
-      Map.entry(Units.Meters.of(5.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
-      Map.entry(Units.Meters.of(5.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(6.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
+      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(49.0))),
+      Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
+      Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
+      Map.entry(Units.Meters.of(3.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(33.5))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.5))),
+      Map.entry(Units.Meters.of(4.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.5), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(28.25)))
     );
   }
 

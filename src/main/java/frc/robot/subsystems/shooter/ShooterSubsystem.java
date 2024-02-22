@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkLimitSwitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -65,8 +66,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(60.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(60.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+2.5), Units.Degrees.of(55.0));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(54.0));
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
@@ -83,7 +84,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
-  private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(20.0);
+  private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
@@ -166,14 +167,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_topFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_bottomFlywheelMotor.setIdleMode(IdleMode.kCoast);
     m_angleMotor.setIdleMode(IdleMode.kBrake);
-
-    // Set limit switch type
-    // m_indexerMotor.setLimitSwitchType(SparkLimitSwitch.Type.kNormallyClosed);
+    m_indexerMotor.setIdleMode(IdleMode.kBrake);
 
     // Set current limits
     m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
     m_bottomFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
     m_angleMotor.setSmartCurrentLimit((int)ANGLE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
+
+    // Disable indexer hard limits
+    m_indexerMotor.disableForwardLimitSwitch();
+    m_indexerMotor.disableReverseLimitSwitch();
 
     // Initialize shooter state
     m_desiredShooterState = getCurrentState();
@@ -200,7 +203,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       new Spark(Constants.ShooterHardware.TOP_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.BOTTOM_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO),
-      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO, SparkLimitSwitch.Type.kNormallyOpen)
     );
 
     return shooterHardware;
@@ -372,14 +375,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command intakeCommand() {
     return startEnd(
       () -> {
-        m_indexerMotor.enableForwardLimitSwitch();
         feedStart(true);
       },
       () -> {
-        m_indexerMotor.disableForwardLimitSwitch();
         feedStop();
       }
-    );
+    ).until(() -> isObjectPresent());
   }
 
   /**
@@ -389,12 +390,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command sourceIntakeCommand() {
     return startEnd(
       () -> {
-        m_indexerMotor.enableReverseLimitSwitch();
         feedReverse();
         setState(State.SOURCE_INTAKE_STATE);
       },
       () -> {
-        m_indexerMotor.disableReverseLimitSwitch();
         feedStop();
         resetState();
       }

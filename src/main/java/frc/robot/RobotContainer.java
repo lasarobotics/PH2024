@@ -102,7 +102,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
 
     // Left bumper button - outtake game piece
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(outtakeCommand());
+    PRIMARY_CONTROLLER.leftBumper().whileTrue(SHOOTER_SUBSYSTEM.sourceIntakeCommand());
 
     // A button - go to amp
     PRIMARY_CONTROLLER.a().whileTrue(
@@ -125,6 +125,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
     PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
+    PRIMARY_CONTROLLER.povDown().whileTrue(outtakeCommand());
   }
 
   /**
