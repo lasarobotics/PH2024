@@ -20,7 +20,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.SparkLimitSwitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -203,7 +202,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       new Spark(Constants.ShooterHardware.TOP_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.BOTTOM_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO),
-      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO, SparkLimitSwitch.Type.kNormallyOpen)
+      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO)
     );
 
     return shooterHardware;
@@ -324,9 +323,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Reverse indexer
+   * @param slow True to run slowly
    */
-  private void feedReverse() {
-    m_indexerMotor.set(-INDEXER_SPEED.in(Units.Percent));
+  private void feedReverse(boolean slow) {
+    m_indexerMotor.set(slow ? -INDEXER_SLOW_SPEED.in(Units.Percent) : -INDEXER_SPEED.in(Units.Percent));
   }
 
   /**
@@ -390,14 +390,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command sourceIntakeCommand() {
     return startEnd(
       () -> {
-        feedReverse();
+        feedReverse(true);
         setState(State.SOURCE_INTAKE_STATE);
       },
       () -> {
         feedStop();
         resetState();
       }
-    );
+    ).until(() -> isObjectPresent());
   }
 
   /**
@@ -420,12 +420,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Reverse note from shoter into intake
+   * Reverse note from shooter into intake
    * @return Command to outtake note in shooter
    */
   public Command outtakeCommand() {
     return startEnd(
-      () -> feedReverse(),
+      () -> feedReverse(false),
       () -> feedStop()
     );
   }
