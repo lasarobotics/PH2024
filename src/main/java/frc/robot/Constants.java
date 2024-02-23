@@ -118,7 +118,7 @@ public final class Constants {
       ),
       false,
       true,
-      0.4
+      0.5
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
