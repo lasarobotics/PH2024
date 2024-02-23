@@ -23,6 +23,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -78,6 +79,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  private static final int FLYWHEEL_SPEED_FILTER_TAPS = 20;
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
@@ -108,6 +110,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private State m_desiredShooterState;
   private PolynomialSplineFunction m_shooterAngleCurve;
   private PolynomialSplineFunction m_shooterFlywheelCurve;
+  private LinearFilter m_flywheelSpeedFilter;
 
   private Mechanism2d m_mechanism2d;
   private MechanismLigament2d m_simShooterJoint;
@@ -144,6 +147,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
+    this.m_flywheelSpeedFilter = LinearFilter.singlePoleIIR(
+      GlobalConstants.ROBOT_LOOP_PERIOD * FLYWHEEL_SPEED_FILTER_TAPS,
+      GlobalConstants.ROBOT_LOOP_PERIOD
+    );
 
     // Slave bottom flywheel motor to top
     m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
@@ -343,6 +350,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomFlywheelMotor.periodic();
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
+
+    m_topFlywheelMotor.getInputs().encoderVelocity = m_flywheelSpeedFilter.calculate(m_topFlywheelMotor.getInputs().encoderVelocity);
 
     var currentState = getCurrentState();
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
