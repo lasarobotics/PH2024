@@ -75,9 +75,9 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     // Register Named Commands
-    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, intakeCommand());
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, shootCommand(() -> false));
-    NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand());
+    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, intakeCommand().withTimeout(2));
+    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, shootCommand(() -> false).withTimeout(5));
+    NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -155,7 +155,7 @@ public class RobotContainer {
   private Command intakeCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      aimAtObject(),
+      // aimAtObject(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     );
@@ -259,6 +259,7 @@ public class RobotContainer {
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption(Constants.AutoNames.LEAVE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
+    m_automodeChooser.addOption("Preload + 1", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 1").getCommand());
   }
 
   /**

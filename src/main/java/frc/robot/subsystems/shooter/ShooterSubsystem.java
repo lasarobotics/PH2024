@@ -350,7 +350,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomFlywheelMotor.periodic();
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
-
+    
     m_topFlywheelMotor.getInputs().encoderVelocity = m_flywheelSpeedFilter.calculate(m_topFlywheelMotor.getInputs().encoderVelocity);
 
     var currentState = getCurrentState();
