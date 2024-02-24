@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.74,
-        "y": 6.73
+        "x": 2.8179669391920243,
+        "y": 6.902804382049867
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4134371253887674,
-        "y": 6.462445222139314
+        "x": 2.4914040645807916,
+        "y": 6.63524960418918
       },
       "isLocked": false,
       "linkedName": "Pickup first note blue"

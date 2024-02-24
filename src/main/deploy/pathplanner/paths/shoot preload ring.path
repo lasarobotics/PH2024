@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 2.015554507299491,
-        "y": 7.087976481717375
+        "x": 2.2933126568007527,
+        "y": 6.5118855049740185
       },
       "prevControl": {
-        "x": 1.9126811185953203,
-        "y": 7.283435920255299
+        "x": 2.190439268096582,
+        "y": 6.707344943511943
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "After shoot preload"
     }
   ],
   "rotationTargets": [
@@ -45,7 +45,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 41.39153114743369,
+    "rotation": 34.63367739654949,
     "rotateFast": false
   },
   "reversed": false,

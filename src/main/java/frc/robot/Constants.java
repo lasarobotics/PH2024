@@ -88,15 +88,15 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.10;
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0, 0.0);
+    public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
     private static final double DRIVE_THROTTLE_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
-    private static final double DRIVE_THROTTLE_INPUT_CURVE_Y[] = { 0.0, 0.042, 0.168, 0.378, 0.672, 1.050, 1.512, 2.508, 2.688, 3.402, 4.325 };
+    private static final double DRIVE_THROTTLE_INPUT_CURVE_Y[] = { 0.0, 0.052, 0.207, 0.465, 0.827, 1.293, 1.862, 2.534, 3.310, 4.189, 5.172 };
     private static final double DRIVE_TURN_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
     private static final double DRIVE_TURN_INPUT_CURVE_Y[] = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
 
@@ -111,18 +111,20 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.13,
-        5e-4,
-        2.9,
-        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI))
+        0.005,
+        0.0,
+        0.001,
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
+        0.1
       ),
       false,
       true,
-      0.5
+      0.4
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         3.0,
+        0.0,
         0.0,
         0.0,
         0.0
@@ -136,26 +138,23 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(180.0),
-      Units.DegreesPerSecond.of(180.0 * 10).per(Units.Second)
+      Units.DegreesPerSecond.of(180.0 * 20).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
-      Map.entry(Units.Meters.of(2.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
-      Map.entry(Units.Meters.of(2.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
-      Map.entry(Units.Meters.of(3.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.0))),
-      Map.entry(Units.Meters.of(4.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(29.5))),
-      Map.entry(Units.Meters.of(4.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(27.5))),
-      Map.entry(Units.Meters.of(5.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(26.0))),
-      Map.entry(Units.Meters.of(5.5), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(6.0), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(24.2)))
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(49.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(33.5))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.5))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(28.25)))
     );
   }
 
   public static class Intake {
-    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(90);
+    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(95);
   }
 
   public static class Climber {

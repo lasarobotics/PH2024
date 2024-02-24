@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.015554507299491,
-        "y": 7.087976481717375
+        "x": 2.2933126568007527,
+        "y": 6.5118855049740185
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.087565879392411,
-        "y": 7.026252448494873
+        "x": 2.3653240288936725,
+        "y": 6.4501614717515166
       },
       "isLocked": false,
       "linkedName": "After shoot preload"
     },
     {
       "anchor": {
-        "x": 2.74,
-        "y": 6.73
+        "x": 2.8179669391920243,
+        "y": 6.902804382049867
       },
       "prevControl": {
-        "x": 2.1260334827695035,
-        "y": 6.699704967458573
+        "x": 2.6327948395245167,
+        "y": 6.74849429899361
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 21.097784474548142,
+    "rotation": 37.056528189409626,
     "rotateFast": false
   },
   "reversed": false,
