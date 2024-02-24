@@ -234,6 +234,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
+
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
       m_desiredShooterState.angle.in(Units.Radians),
@@ -247,6 +248,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Valid shooter state
    */
   private State normalizeState(State state) {
+    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) return new State(ZERO_FLYWHEEL_SPEED, state.angle);
     return new State(
       Units.MetersPerSecond.of(MathUtil.clamp(
         state.speed.in(Units.MetersPerSecond),
