@@ -49,7 +49,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Ring Side",
+  "folder": null,
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
