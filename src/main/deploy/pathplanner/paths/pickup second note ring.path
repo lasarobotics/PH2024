@@ -54,7 +54,7 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.3,
+    "maxVelocity": 0.3,
     "maxAcceleration": 4.3,
     "maxAngularVelocity": 1080.0,
     "maxAngularAcceleration": 360.0
@@ -65,10 +65,10 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Ring Side",
+  "folder": null,
   "previewStartingState": {
     "rotation": 24.707053675495473,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
