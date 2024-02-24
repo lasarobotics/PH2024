@@ -4,6 +4,6 @@ right trigger: speaker auto shoot
 right bumper: amp shoot
 
 x: close speaker shot
-click left stick: override speaker isReady
+click right stick: override speaker isReady
 
 dpad up/down: climb
