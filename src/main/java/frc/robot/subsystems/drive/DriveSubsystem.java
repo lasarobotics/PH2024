@@ -914,11 +914,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public Command goToPoseCommand(PurplePathPose goal, Command parallelCommand, Command endCommand) {
     goal.calculateFinalApproach(getPathConstraints());
     return Commands.sequence(
-      defer(() ->
-        m_purplePathClient.getTrajectoryCommand(goal, parallelCommand)
-        .finallyDo(() -> resetRotatePID())
-      ),
-      runOnce(() -> stop()),
+      defer(() -> m_purplePathClient.getTrajectoryCommand(goal, parallelCommand)),
+      stopCommand(),
       Commands.parallel(driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), endCommand)
     );
   }

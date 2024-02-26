@@ -15,6 +15,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class AutoTrajectory {
   DriveSubsystem m_driveSubsystem;
@@ -64,10 +65,11 @@ public class AutoTrajectory {
       ? AutoBuilder.followPath(m_auto.getSecond().get(0))
       : new PathPlannerAuto(m_auto.getFirst());
 
-    return m_driveSubsystem.resetPoseCommand(() -> getInitialPose())
-      .andThen(autoCommand)
-      .andThen(() -> m_driveSubsystem.resetRotatePID())
-      .andThen(m_driveSubsystem.stopCommand())
-      .andThen(m_driveSubsystem.lockCommand());
+    return Commands.sequence(
+      m_driveSubsystem.resetPoseCommand(() -> getInitialPose()),
+      autoCommand,
+      m_driveSubsystem.stopCommand(),
+      m_driveSubsystem.lockCommand()
+    );
   }
 }
