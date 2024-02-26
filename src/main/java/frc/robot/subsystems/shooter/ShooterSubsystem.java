@@ -170,9 +170,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.setIdleMode(IdleMode.kBrake);
 
     // Set current limits
-    m_topFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
-    m_bottomFlywheelMotor.setSmartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
-    m_angleMotor.setSmartCurrentLimit((int)ANGLE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
+    m_topFlywheelMotor.setSmartCurrentLimit(FLYWHEEL_CURRENT_LIMIT);
+    m_bottomFlywheelMotor.setSmartCurrentLimit(FLYWHEEL_CURRENT_LIMIT);
+    m_angleMotor.setSmartCurrentLimit(ANGLE_MOTOR_CURRENT_LIMIT);
 
     // Disable indexer hard limits
     m_indexerMotor.disableForwardLimitSwitch();
