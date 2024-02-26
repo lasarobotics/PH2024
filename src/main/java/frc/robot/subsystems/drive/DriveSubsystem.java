@@ -73,20 +73,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule rFrontModule;
     MAXSwerveModule lRearModule;
     MAXSwerveModule rRearModule;
-    LEDStrip ledStrip;
 
     public Hardware(NavX2 navx,
                     MAXSwerveModule lFrontModule,
                     MAXSwerveModule rFrontModule,
                     MAXSwerveModule lRearModule,
-                    MAXSwerveModule rRearModule,
-                    LEDStrip ledStrip) {
+                    MAXSwerveModule rRearModule) {
       this.navx = navx;
       this.lFrontModule = lFrontModule;
       this.rFrontModule = rFrontModule;
       this.lRearModule = lRearModule;
       this.rRearModule = rRearModule;
-      this.ledStrip = ledStrip;
     }
   }
 
@@ -132,7 +129,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_rFrontModule;
   private MAXSwerveModule m_lRearModule;
   private MAXSwerveModule m_rRearModule;
-  private LEDStrip m_ledStrip;
+  
 
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
@@ -144,15 +141,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MedianFilter m_xVelocityFilter;
   private MedianFilter m_yVelocityFilter;
 
+  
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
-    () -> m_ledStrip.set(Pattern.RED_STROBE),
+    () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
     () -> antiTip(),
     (interrupted) -> {
-      m_ledStrip.set(Pattern.GREEN_SOLID);
+      LEDSubsystem.getInstance().startOverride(Pattern.GREEN_STROBE);;
       resetRotatePID();
       stop();
       lock();
-      m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
+      LEDSubsystem.getInstance().startOverride(Pattern.BLUE_STROBE);
     },
     this::isBalanced,
     this
@@ -183,7 +181,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
     this.m_lRearModule = drivetrainHardware.lRearModule;
     this.m_rRearModule = drivetrainHardware.rRearModule;
-    this.m_ledStrip = drivetrainHardware.ledStrip;
     this.m_controlCentricity = controlCentricity;
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
@@ -234,11 +231,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Setup anti-tip command
     new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
-    // Register LED strip with LED subsystem
-    LEDSubsystem.getInstance().add(m_ledStrip);
-
-    // Set LED strip to team color
-    m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
+   
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
@@ -345,9 +338,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
-    LEDStrip ledStrip = new LEDStrip(LEDStrip.initializeHardware(Constants.DriveHardware.LED_STRIP_ID));
 
-    Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule, ledStrip);
+    Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 
     return drivetrainHardware;
   }

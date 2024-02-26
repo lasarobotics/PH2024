@@ -139,8 +139,7 @@ public class AntiTipCommandTest {
         DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
-      ),
-      m_ledStrip
+      )
     );
 
     // Create DriveSubsystem object

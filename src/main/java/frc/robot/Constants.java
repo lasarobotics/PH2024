@@ -171,7 +171,6 @@ public final class Constants {
     public static final Spark.ID LEFT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Rotate", 7);
     public static final Spark.ID RIGHT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Drive", 8);
     public static final Spark.ID RIGHT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Rotate", 9);
-    public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 
   public static class IntakeHardware {
@@ -183,6 +182,8 @@ public final class Constants {
     public static final Spark.ID BOTTOM_FLYWHEEL_MOTOR_ID = new Spark.ID("ShooterHardware/Flywheel/Bottom", 12);
     public static final Spark.ID ANGLE_MOTOR_ID = new Spark.ID("ShooterHardware/Angle", 13);
     public static final Spark.ID INDEXER_MOTOR_ID = new Spark.ID("ShooterHardware/Indexer", 14);
+    public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("ShooterHardware/LEDStrip", 0, 200);
+
   }
 
   public static class VisionHardware {
