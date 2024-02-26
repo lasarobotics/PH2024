@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.util.Precision;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
@@ -20,7 +21,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.SparkLimitSwitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -203,7 +203,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       new Spark(Constants.ShooterHardware.TOP_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.BOTTOM_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO),
-      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO, SparkLimitSwitch.Type.kNormallyOpen)
+      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO)
     );
 
     return shooterHardware;
@@ -234,6 +234,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
+
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     m_angleMotor.smoothMotion(
       m_desiredShooterState.angle.in(Units.Radians),
@@ -247,6 +248,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Valid shooter state
    */
   private State normalizeState(State state) {
+    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) return new State(ZERO_FLYWHEEL_SPEED, state.angle);
     return new State(
       Units.MetersPerSecond.of(MathUtil.clamp(
         state.speed.in(Units.MetersPerSecond),
@@ -311,7 +313,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private boolean isReady() {
     return m_angleMotor.isSmoothMotionFinished() &&
-      Math.abs(m_topFlywheelMotor.getInputs().encoderVelocity - m_desiredShooterState.speed.in(Units.MetersPerSecond)) < m_flywheelConfig.getTolerance();
+      Precision.equals(m_topFlywheelMotor.getInputs().encoderVelocity, m_desiredShooterState.speed.in(Units.MetersPerSecond), m_flywheelConfig.getTolerance());
   }
 
   /**
@@ -324,9 +326,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Reverse indexer
+   * @param slow True to run slowly
    */
-  private void feedReverse() {
-    m_indexerMotor.set(-INDEXER_SPEED.in(Units.Percent));
+  private void feedReverse(boolean slow) {
+    m_indexerMotor.set(slow ? -INDEXER_SLOW_SPEED.in(Units.Percent) : -INDEXER_SPEED.in(Units.Percent));
   }
 
   /**
@@ -390,14 +393,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command sourceIntakeCommand() {
     return startEnd(
       () -> {
-        feedReverse();
+        feedReverse(true);
         setState(State.SOURCE_INTAKE_STATE);
       },
       () -> {
         feedStop();
         resetState();
       }
-    );
+    ).until(() -> isObjectPresent());
   }
 
   /**
@@ -420,12 +423,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Reverse note from shoter into intake
+   * Reverse note from shooter into intake
    * @return Command to outtake note in shooter
    */
   public Command outtakeCommand() {
     return startEnd(
-      () -> feedReverse(),
+      () -> feedReverse(false),
       () -> feedStop()
     );
   }
@@ -482,7 +485,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
  /**
-   * Shoot automatically based on current location, checking if target tag is visible
+   * Shoot automatically based on current location, checking if target tag is visible and robot is in range
    * @param isAimed Is robot aimed at target
    * @return Command to automatically shoot note
    */

@@ -29,6 +29,7 @@ import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
+@SuppressWarnings("unused")
 public class RobotContainer {
   private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
     DriveSubsystem.initializeHardware(),
@@ -75,9 +76,9 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     // Register Named Commands
-    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, intakeCommand());
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, shootCommand(() -> false));
-    NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand());
+    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, intakeCommand().withTimeout(2));
+    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, shootCommand(() -> false).withTimeout(5));
+    NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -92,8 +93,9 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Right trigger button - aim and shoot at speaker, shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand());
+    // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
+    // Click right stick to override and shoot now
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.rightStick().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -104,7 +106,7 @@ public class RobotContainer {
     // Left bumper button - outtake game piece
     PRIMARY_CONTROLLER.leftBumper().whileTrue(SHOOTER_SUBSYSTEM.sourceIntakeCommand());
 
-    // A button - go to amp
+    // A button - go to amp and score
     PRIMARY_CONTROLLER.a().whileTrue(
       DRIVE_SUBSYSTEM.goToPoseCommand(
         Constants.Field.AMP,
@@ -113,8 +115,14 @@ public class RobotContainer {
       )
     );
 
-    // B button - go to source
-    PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
+    // B button - go to source and intake game piece
+    PRIMARY_CONTROLLER.b().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.SOURCE,
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+      )
+    );
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
@@ -155,7 +163,7 @@ public class RobotContainer {
   private Command intakeCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      aimAtObject(),
+      // aimAtObject(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     );
@@ -259,6 +267,7 @@ public class RobotContainer {
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption(Constants.AutoNames.LEAVE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
+    m_automodeChooser.addOption("Preload + 1", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 1").getCommand());
   }
 
   /**

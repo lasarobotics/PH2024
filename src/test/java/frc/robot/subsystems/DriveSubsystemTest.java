@@ -76,10 +76,10 @@ public class DriveSubsystemTest {
     when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
     when(m_rRearRotateMotor.getInputs()).thenReturn(sparkInputs);
 
-    when(m_lFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
-    when(m_rFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
-    when(m_lRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
-    when(m_rRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_lFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO_VORTEX);
+    when(m_rFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO_VORTEX);
+    when(m_lRearDriveMotor.getKind()).thenReturn(MotorKind.NEO_VORTEX);
+    when(m_rRearDriveMotor.getKind()).thenReturn(MotorKind.NEO_VORTEX);
 
     when(m_lFrontDriveMotor.getID()).thenReturn(Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID);
     when(m_lFrontRotateMotor.getID()).thenReturn(Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID);
