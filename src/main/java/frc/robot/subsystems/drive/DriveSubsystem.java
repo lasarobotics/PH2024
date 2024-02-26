@@ -17,7 +17,6 @@ import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
-import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.GlobalConstants;
@@ -129,7 +128,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_rFrontModule;
   private MAXSwerveModule m_lRearModule;
   private MAXSwerveModule m_rRearModule;
-  
+
 
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
@@ -141,16 +140,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MedianFilter m_xVelocityFilter;
   private MedianFilter m_yVelocityFilter;
 
-  
+
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
     () -> antiTip(),
     (interrupted) -> {
-      LEDSubsystem.getInstance().startOverride(Pattern.GREEN_STROBE);;
       resetRotatePID();
       stop();
       lock();
-      LEDSubsystem.getInstance().startOverride(Pattern.BLUE_STROBE);
+      LEDSubsystem.getInstance().endOverride();
     },
     this::isBalanced,
     this
@@ -231,7 +229,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Setup anti-tip command
     new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
-   
+
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);

@@ -115,7 +115,7 @@ public final class Constants {
         5e-4,
         2.9,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.0
+        10e-4
       ),
       false,
       true,
