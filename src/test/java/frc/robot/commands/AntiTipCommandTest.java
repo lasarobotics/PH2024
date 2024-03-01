@@ -49,8 +49,6 @@ public class AntiTipCommandTest {
   private Spark m_lRearDriveMotor, m_lRearRotateMotor;
   private Spark m_rRearDriveMotor, m_rRearRotateMotor;
 
-  private LEDStrip m_ledStrip;
-
   @BeforeEach
   public void setup() {
     // Create mock hardware devices
@@ -63,7 +61,6 @@ public class AntiTipCommandTest {
     m_lRearRotateMotor = mock(Spark.class);
     m_rRearDriveMotor = mock(Spark.class);
     m_rRearRotateMotor = mock(Spark.class);
-    m_ledStrip = mock(LEDStrip.class);
 
 
     NavX2InputsAutoLogged navxInputs = new NavX2InputsAutoLogged();

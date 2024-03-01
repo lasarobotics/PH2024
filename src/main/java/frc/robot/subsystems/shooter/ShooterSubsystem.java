@@ -361,6 +361,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
 
+    if (isObjectPresent()) m_ledStrip.set(Pattern.GREEN_SOLID);
+    else m_ledStrip.set(Pattern.OFF);
+
     var currentState = getCurrentState();
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
     Logger.recordOutput(getName() + SHOOTER_STATE_FLYWHEEL_SPEED, currentState.speed.in(Units.MetersPerSecond));
