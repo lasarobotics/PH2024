@@ -190,7 +190,7 @@ public final class Constants {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
       new Translation3d(0.381, 0.133, 0.102),
-      new Rotation3d(0.0, Math.toRadians(-20.0), 0.0)
+      new Rotation3d(0.0, Math.toRadians(-20.0), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
@@ -198,7 +198,7 @@ public final class Constants {
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
       new Translation3d(0.148, 0.2667, 0.47),
-      new Rotation3d(0.0, Math.toRadians(-25.0), Math.toRadians(+180.0))
+      new Rotation3d(0.0, Math.toRadians(-25.0), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);
