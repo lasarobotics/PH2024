@@ -147,6 +147,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_bottomFlywheelMotor = shooterHardware.bottomFlywheelMotor;
     this.m_angleMotor = shooterHardware.angleMotor;
     this.m_indexerMotor = shooterHardware.indexerMotor;
+    this.m_ledStrip = shooterHardware.ledStrip;
     this.m_flywheelConfig = flywheelConfig;
     this.m_angleConfig = angleConfig;
     this.m_angleConstraint = angleConstraint;
