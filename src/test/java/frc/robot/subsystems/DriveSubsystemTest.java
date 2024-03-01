@@ -23,7 +23,6 @@ import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
-import org.lasarobotics.led.LEDStrip;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
@@ -47,7 +46,6 @@ public class DriveSubsystemTest {
   private Spark m_rFrontDriveMotor, m_rFrontRotateMotor;
   private Spark m_lRearDriveMotor, m_lRearRotateMotor;
   private Spark m_rRearDriveMotor, m_rRearRotateMotor;
-  private LEDStrip m_ledStrip;
 
   @BeforeEach
   public void setup() {
@@ -61,7 +59,6 @@ public class DriveSubsystemTest {
     m_lRearRotateMotor = mock(Spark.class);
     m_rRearDriveMotor = mock(Spark.class);
     m_rRearRotateMotor = mock(Spark.class);
-    m_ledStrip = mock(LEDStrip.class);
 
     NavX2InputsAutoLogged navxInputs = new NavX2InputsAutoLogged();
     when(m_navx.getInputs()).thenReturn(navxInputs);
@@ -136,8 +133,7 @@ public class DriveSubsystemTest {
         DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
         Constants.Drive.DRIVE_SLIP_RATIO
-      ),
-      m_ledStrip
+      )
     );
 
     // Create DriveSubsystem object

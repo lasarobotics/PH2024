@@ -16,6 +16,9 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
+import org.lasarobotics.led.LEDStrip;
+import org.lasarobotics.led.LEDStrip.Pattern;
+import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -49,15 +52,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     private Spark bottomFlywheelMotor;
     private Spark angleMotor;
     private Spark indexerMotor;
+    private LEDStrip ledStrip;
 
     public Hardware(Spark lSlaveMotor,
                     Spark rMasterMotor,
                     Spark angleMotor,
-                    Spark indexerMotor) {
+                    Spark indexerMotor,
+                    LEDStrip ledStrip) {
       this.topFlywheelMotor = lSlaveMotor;
       this.bottomFlywheelMotor = rMasterMotor;
       this.angleMotor = angleMotor;
       this.indexerMotor = indexerMotor;
+      this.ledStrip = ledStrip;
     }
   }
 
@@ -98,6 +104,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private Spark m_bottomFlywheelMotor;
   private Spark m_angleMotor;
   private Spark m_indexerMotor;
+  private LEDStrip m_ledStrip;
 
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
@@ -181,6 +188,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialize shooter state
     m_desiredShooterState = getCurrentState();
 
+     // Register LED strip with LED subsystem
+     LEDSubsystem.getInstance().add(m_ledStrip);
+
+     // Set LED strip to team color
+     m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
+
     // Set maximum shooting distance
     MAX_SHOOTING_DISTANCE = shooterMap.get(shooterMap.size() - 1).getKey();
 
@@ -203,7 +216,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       new Spark(Constants.ShooterHardware.TOP_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.BOTTOM_FLYWHEEL_MOTOR_ID, MotorKind.NEO_VORTEX),
       new Spark(Constants.ShooterHardware.ANGLE_MOTOR_ID, MotorKind.NEO),
-      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO)
+      new Spark(Constants.ShooterHardware.INDEXER_MOTOR_ID, MotorKind.NEO),
+      new LEDStrip(LEDStrip.initializeHardware(Constants.ShooterHardware.LED_STRIP_ID))
     );
 
     return shooterHardware;

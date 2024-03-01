@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
+import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
@@ -40,6 +41,7 @@ public class ShooterSubsystemTest {
   private Spark m_bottomFlywheelMotor;
   private Spark m_angleMotor;
   private Spark m_indexerMotor;
+  private LEDStrip m_ledStrip;
 
   @BeforeEach
   public void setup() {
@@ -49,6 +51,7 @@ public class ShooterSubsystemTest {
     m_bottomFlywheelMotor = mock(Spark.class);
     m_angleMotor = mock(Spark.class);
     m_indexerMotor = mock(Spark.class);
+    m_ledStrip = mock(LEDStrip.class);
 
     SparkInputsAutoLogged sparkInputs = new SparkInputsAutoLogged();
     when(m_topFlywheelMotor.getInputs()).thenReturn(sparkInputs);
@@ -66,7 +69,7 @@ public class ShooterSubsystemTest {
     when(m_indexerMotor.getID()).thenReturn(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID);
 
     // Create hardware object using mock devices
-    m_shooterHardware = new ShooterSubsystem.Hardware(m_topFlywheelMotor, m_bottomFlywheelMotor, m_angleMotor, m_indexerMotor);
+    m_shooterHardware = new ShooterSubsystem.Hardware(m_topFlywheelMotor, m_bottomFlywheelMotor, m_angleMotor, m_indexerMotor, m_ledStrip);
 
     m_shooterSubsystem = new ShooterSubsystem(
       m_shooterHardware,
