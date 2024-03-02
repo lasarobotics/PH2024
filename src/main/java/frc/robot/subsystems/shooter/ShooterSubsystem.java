@@ -263,19 +263,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Valid shooter state
    */
   private State normalizeState(State state) {
-    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) return new State(ZERO_FLYWHEEL_SPEED, state.angle);
-    return new State(
-      Units.MetersPerSecond.of(MathUtil.clamp(
+    Measure<Velocity<Distance>> clampedSpeed;
+    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01))
+      clampedSpeed = ZERO_FLYWHEEL_SPEED;
+    else {
+      clampedSpeed = Units.MetersPerSecond.of(MathUtil.clamp(
         state.speed.in(Units.MetersPerSecond),
         -MAX_FLYWHEEL_SPEED.in(Units.MetersPerSecond),
         +MAX_FLYWHEEL_SPEED.in(Units.MetersPerSecond)
-      )),
-      Units.Radians.of(MathUtil.clamp(
-        state.angle.in(Units.Radians),
-        m_angleConfig.getLowerLimit(),
-        m_angleConfig.getUpperLimit()
-      ))
-    );
+      ));
+    }
+    Measure<Angle> clampedAngle = Units.Radians.of(MathUtil.clamp(
+      state.angle.in(Units.Radians),
+      m_angleConfig.getLowerLimit(),
+      m_angleConfig.getUpperLimit()
+    ));
+    
+    return new State(clampedSpeed, clampedAngle);
   }
 
   /**

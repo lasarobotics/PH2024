@@ -127,7 +127,7 @@ public class ShooterSubsystemTest {
 
     // Try to set shooter state
     Measure<Angle> illegalHighAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()).plus(Units.Degrees.of(30.0));
-    var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(0.0), illegalHighAngle);
+    var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(+15.0), illegalHighAngle);
     var command = m_shooterSubsystem.shootManualCommand(() -> state);
     command.initialize();
 
@@ -150,7 +150,7 @@ public class ShooterSubsystemTest {
 
     // Try to set shooter state
     Measure<Angle> illegalLowAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()).minus(Units.Degrees.of(30.0));
-    var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(0.0), illegalLowAngle);
+    var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(+15.0), illegalLowAngle);
     var command = m_shooterSubsystem.shootManualCommand(() -> state);
     command.initialize();
 
