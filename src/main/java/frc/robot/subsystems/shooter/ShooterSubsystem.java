@@ -189,11 +189,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialize shooter state
     m_desiredShooterState = getCurrentState();
 
-     // Register LED strip with LED subsystem
-     LEDSubsystem.getInstance().add(m_ledStrip);
+    // Register LED strip with LED subsystem
+    LEDSubsystem.getInstance().add(m_ledStrip);
 
-     // Set LED strip to team color
-     m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
+    // Set LED strip to team color
+    m_ledStrip.set(Pattern.TEAM_COLOR_SOLID);
 
     // Set maximum shooting distance
     MAX_SHOOTING_DISTANCE = shooterMap.get(shooterMap.size() - 1).getKey();

@@ -140,7 +140,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MedianFilter m_xVelocityFilter;
   private MedianFilter m_yVelocityFilter;
 
-
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
     () -> antiTip(),
@@ -228,8 +227,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Setup anti-tip command
     new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
-
-
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(pidf.kP, 0.0, pidf.kD, AIM_PID_CONSTRAINT, pidf.period);
@@ -335,7 +332,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
-
 
     Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 
