@@ -131,7 +131,7 @@ public final class Constants {
       ),
       false,
       true,
-      Units.Degrees.of(0.3).in(Units.Radians),
+      Units.Degrees.of(0.2).in(Units.Radians),
       0.40,
       1.04,
       true
