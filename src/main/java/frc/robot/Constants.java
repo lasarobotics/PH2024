@@ -111,7 +111,7 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.02,
+        0.12,
         0.0,
         0.0,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
@@ -119,11 +119,11 @@ public final class Constants {
       ),
       false,
       true,
-      0.5
+      0.2
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        3.0,
+        1.0,
         0.0,
         0.0,
         0.0,
