@@ -24,7 +24,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -43,7 +42,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -254,7 +252,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredShooterState = normalizeState(state);
 
     m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
-    // m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition, 0.1, ArbFFUnits.kVoltage);
     m_angleMotor.smoothMotion(
       m_desiredShooterState.angle.in(Units.Radians),
       m_angleConstraint

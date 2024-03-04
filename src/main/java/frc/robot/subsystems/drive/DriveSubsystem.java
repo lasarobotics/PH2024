@@ -56,7 +56,6 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.RuntimeType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -65,7 +64,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
@@ -107,8 +105,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
-  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1, 1, Math.toRadians(1));
+  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
+  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(1.0));
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -474,7 +472,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
       // Add vision measurements to pose estimator
       for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-        // if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
+        if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
         m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
       }
     }
@@ -484,8 +482,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    // Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
-    // Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
+    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
   /**
@@ -708,7 +706,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
-    logOutputs();
   }
 
   @Override
