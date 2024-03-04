@@ -73,7 +73,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+2.5), Units.Degrees.of(55.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(54.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(53.0));
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(53.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
@@ -340,7 +340,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param slow True to run slowly
    */
   private void feedStart(boolean slow) {
-    System.out.println("feeding...");
     m_indexerMotor.set(slow ? +INDEXER_SLOW_SPEED.in(Units.Percent) : +INDEXER_SPEED.in(Units.Percent));
   }
 
