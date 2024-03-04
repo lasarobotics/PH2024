@@ -159,7 +159,7 @@ public final class Constants {
   }
 
   public static class Climber {
-    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(80);
+    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(50);
   }
 
   public static class DriveHardware {
