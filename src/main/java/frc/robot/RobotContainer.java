@@ -22,7 +22,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.ClimberHardware;
 import frc.robot.commands.autonomous.SimpleAuto;
+import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -56,9 +58,13 @@ public class RobotContainer {
     Constants.Intake.ROLLER_VELOCITY
   );
 
+  private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(ClimberSubsystem.initializeHardware(), Constants.Climber.CLIMBER_VELOCITY);
+
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final CommandXboxController SECONDARY_CONTROLLER = new CommandXboxController(Constants.HID.SECONDARY_CONTROLLER_PORT);
+
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
@@ -81,6 +87,8 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
+
+
 
     // Bind buttons and triggers
     configureBindings();
@@ -133,7 +141,10 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
     PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
-    PRIMARY_CONTROLLER.povDown().whileTrue(outtakeCommand());
+    //PRIMARY_CONTROLLER.povDown().whileTrue(outtakeCommand());
+
+    SECONDARY_CONTROLLER.button(1).whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
+    SECONDARY_CONTROLLER.button(2).whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
   /**

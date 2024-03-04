@@ -123,22 +123,22 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        1.0,
+        2.0,
+        0.005,
         0.0,
         0.0,
-        0.0,
-        0.0
+        0.035
       ),
       false,
       true,
-      Units.Degrees.of(0.2).in(Units.Radians),
+      Units.Degrees.of(0.5).in(Units.Radians),
       0.40,
       1.04,
       true
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
-      Units.DegreesPerSecond.of(180.0),
-      Units.DegreesPerSecond.of(180.0 * 20).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0),
+      Units.DegreesPerSecond.of(180.0 * 5).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
@@ -189,16 +189,16 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(0.381, 0.133, 0.102),
-      new Rotation3d(0.0, Math.toRadians(-20.0), Math.toRadians(+180.0))
+      new Translation3d(0.0762, 0.267, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-21.198), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-      new Translation3d(0.148, 0.2667, 0.47),
-      new Rotation3d(0.0, Math.toRadians(-25.0), 0.0)
+      new Translation3d(-0.0762, 0.267, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-21.198), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);

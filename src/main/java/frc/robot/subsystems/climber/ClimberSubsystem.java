@@ -8,6 +8,7 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
@@ -31,7 +32,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private Spark m_rClimberMotor;
 
   private final Measure<Dimensionless> CLIMBER_VELOCITY;
-  
+
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem(Hardware climberHardware, Measure<Dimensionless> climberVelocity) {
     this.m_lClimberMotor = climberHardware.lClimberMotor;
@@ -41,6 +42,9 @@ public class ClimberSubsystem extends SubsystemBase {
 
     m_lClimberMotor.enableReverseLimitSwitch();
     m_rClimberMotor.enableReverseLimitSwitch();
+
+    m_lClimberMotor.setIdleMode(IdleMode.kBrake);
+    m_rClimberMotor.setIdleMode(IdleMode.kBrake);
 
     CLIMBER_VELOCITY = climberVelocity;
   }
@@ -81,7 +85,7 @@ public class ClimberSubsystem extends SubsystemBase {
    * @return Command to run the climber motors
    */
   public Command raiseClimberCommand() {
-    return startEnd(() -> raiseClimber(), () -> stop());
+    return runEnd(() -> raiseClimber(), () -> stop());
   }
 
   /**
@@ -89,7 +93,7 @@ public class ClimberSubsystem extends SubsystemBase {
    * @return Command to run the climber motors in the reverse direction
    */
   public Command lowerClimberCommand() {
-    return startEnd(() -> lowerClimber(), () -> stop());
+    return runEnd(() -> lowerClimber(), () -> stop());
   }
 
   @Override
