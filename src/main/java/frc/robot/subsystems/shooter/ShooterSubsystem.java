@@ -25,11 +25,10 @@ import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
@@ -109,7 +108,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
-  private Supplier<Pair<Integer,Translation2d>> m_targetSupplier;
+  private Supplier<AprilTag> m_targetSupplier;
 
   private SparkPIDConfig m_flywheelConfig;
   private SparkPIDConfig m_angleConfig;
@@ -141,7 +140,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
                           TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
                           List<Entry<Measure<Distance>, State>> shooterMap,
-                          Supplier<Pose2d> poseSupplier, Supplier<Pair<Integer,Translation2d>> targetSupplier) {
+                          Supplier<Pose2d> poseSupplier, Supplier<AprilTag> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
     MAX_FLYWHEEL_SPEED = Units.MetersPerSecond.of((shooterHardware.topFlywheelMotor.getKind().getMaxRPM() / 60) * (flywheelDiameter.in(Units.Meters) * Math.PI));
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
@@ -320,7 +319,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private Measure<Distance> getTargetDistance() {
     return Units.Meters.of(
       MathUtil.clamp(
-        m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().getSecond()),
+        m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().pose.toPose2d().getTranslation()),
         MIN_SHOOTING_DISTANCE.in(Units.Meters),
         MAX_SHOOTING_DISTANCE.in(Units.Meters)
       )
@@ -341,6 +340,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param slow True to run slowly
    */
   private void feedStart(boolean slow) {
+    System.out.println("feeding...");
     m_indexerMotor.set(slow ? +INDEXER_SLOW_SPEED.in(Units.Percent) : +INDEXER_SPEED.in(Units.Percent));
   }
 
@@ -496,7 +496,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTagIDs().contains(m_targetSupplier.get().getFirst()) | override.getAsBoolean()
+            && VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get()) | override.getAsBoolean()
             && getTargetDistance().lte(MAX_SHOOTING_DISTANCE) | override.getAsBoolean())
           feedStart(false);
         else feedStop();

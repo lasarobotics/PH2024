@@ -9,9 +9,8 @@ import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
-import edu.wpi.first.math.Pair;
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -22,7 +21,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.ClimberHardware;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
@@ -203,7 +201,7 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX(),
-        () -> speakerSupplier().getSecond(),
+        () -> speakerSupplier().pose.getTranslation().toTranslation2d(),
         true,
         true
       ),
@@ -253,7 +251,7 @@ public class RobotContainer {
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
    */
-  private static Pair<Integer,Translation2d> speakerSupplier() {
+  private static AprilTag speakerSupplier() {
     return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
       ? Constants.Field.BLUE_SPEAKER
       : Constants.Field.RED_SPEAKER;
