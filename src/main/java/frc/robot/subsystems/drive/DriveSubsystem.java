@@ -274,7 +274,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
@@ -290,7 +290,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
@@ -306,7 +306,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
@@ -322,7 +322,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
