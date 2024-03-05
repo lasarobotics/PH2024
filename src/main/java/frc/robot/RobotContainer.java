@@ -55,8 +55,7 @@ public class RobotContainer {
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
-
-  private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(ClimberSubsystem.initializeHardware(), Constants.Climber.CLIMBER_VELOCITY);
+  //private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(ClimberSubsystem.initializeHardware(), Constants.Climber.CLIMBER_VELOCITY);
 
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
@@ -85,8 +84,6 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
-
-
 
     // Bind buttons and triggers
     configureBindings();
@@ -138,11 +135,10 @@ public class RobotContainer {
 
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
-    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
-    //PRIMARY_CONTROLLER.povDown().whileTrue(outtakeCommand());
+    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseToVisionCommand());
 
-    SECONDARY_CONTROLLER.button(1).whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
-    SECONDARY_CONTROLLER.button(2).whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
+    //SECONDARY_CONTROLLER.button(1).whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
+    //SECONDARY_CONTROLLER.button(2).whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
   /**

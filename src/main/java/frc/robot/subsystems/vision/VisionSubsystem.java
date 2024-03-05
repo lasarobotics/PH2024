@@ -156,6 +156,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     for (var camera : m_apriltagCameras) {
       var result = camera.getLatestEstimatedPose();
       if (result == null) continue;
+      if (result.targetsUsed.size() < 2) continue;
       result.targetsUsed.forEach((photonTrackedTarget) -> {
         var tag = getTag(photonTrackedTarget.getFiducialId());
         if (tag.isPresent()) {

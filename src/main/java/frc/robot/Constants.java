@@ -89,7 +89,7 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
@@ -112,15 +112,15 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.12,
+        0.2,
         0.0,
         0.0,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.2
+        0.0
       ),
       false,
       true,
-      0.2
+      0.15
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -139,7 +139,7 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(180.0 * 5).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
@@ -199,7 +199,7 @@ public final class Constants {
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
       new Translation3d(-0.0762, 0.267, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.198), 0.0)
+      new Rotation3d(0.0, Math.toRadians(-24.0), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);

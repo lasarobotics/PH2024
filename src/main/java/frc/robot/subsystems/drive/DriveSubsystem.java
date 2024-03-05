@@ -91,8 +91,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.1);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(12.0);
+  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(8.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -106,7 +106,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(1.0));
+  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -173,7 +173,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                         double turnScalar, double deadband, double lookAhead) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(3.0));
     this.m_navx = drivetrainHardware.navx;
     this.m_lFrontModule = drivetrainHardware.lFrontModule;
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
@@ -472,7 +472,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
       // Add vision measurements to pose estimator
       for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-        if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
+        //if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
         m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
       }
     }
@@ -686,6 +686,23 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  private void resetPoseToVision() {
+    // Get vision estimated poses
+    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
+
+    // Exit if no valid vision pose estimates
+    if (visionEstimatedRobotPoses.isEmpty()) return;
+
+    // Add vision measurements to pose estimator
+    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
+      m_poseEstimator.resetPosition(
+        getRotation2d(),
+        getModulePositions(),
+        visionEstimatedRobotPose.estimatedPose.toPose2d()
+      );
+    }
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -706,6 +723,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
+    //logOutputs();
   }
 
   @Override
@@ -898,8 +916,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     return runOnce(() -> resetPose(poseSupplier.get()));
   }
 
-  public void resetPosePathPlanner(Pose2d pose) {
-    return;
+  /**
+   * Reset pose estimator to vision estimated pose
+   * @return Command to reset pose to current vision estimated pose
+   */
+  public Command resetPoseToVisionCommand() {
+    return runOnce(() -> resetPoseToVision());
   }
 
   /**
@@ -949,8 +971,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public PathConstraints getPathConstraints() {
     return new PathConstraints(
-      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-      DRIVE_AUTO_ACCELERATION.in(Units.MetersPerSecondPerSecond),
+      2.0,
+      0.5,
       DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
       DRIVE_ROTATE_ACCELERATION.magnitude()
     );
