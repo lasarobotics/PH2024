@@ -24,3 +24,29 @@ The vision subsystem runs a separate thread on the roboRIO, getting the latest p
 Key points:
 * X86 Mini PC used as coprocessor (MinisForum UM560XT)
 * PhotonVision
+
+### [Shooter Subsystem](src/main/java/frc/robot/subsystems/shooter/ShooterSubsystem.java)
+The shooter subsystem is composed of 4 motors, with two flywheels each being driven by a NEO Vortex, as well as an indexer motor which transports a note from the ground intake into the shooter and an angle motor which adjusts the shooter's angle with a leadscrew mechanism (both controlled by a NEO). The indexer motor is also attached to a beam break, which is used to stop the intake when an object is present. 
+The shooter subsystem interfaces with the vision subsystem, waiting until an AprilTag is visible before shooting and adjusting the shooter's angle and flywheel speeds based off an interpolated curve of shooter states and the robot's estimated pose. The shooter also waits for the drive subsystem to orient the drivetrain towards the target. Aiming automatically accounts for the robot's velocity.
+We also implement smooth motion, generating and executing a trapezoid motion profile as the shooter moves between states. Finally, the shooter subsystem allows the robot to intake from source.
+
+Key points:
+* Powered by 4 brushless motors, with the flywheels using NEO Vortex motors while the angle and indexer use NEOs
+* Limit switch for object presence detection, lead screw mechanism for angle adjustment
+* Interfaces with vision for automating aiming, waiting for the robot to be oriented and calculating the correct state based on estimated pose while accounting for current velocity
+* Smooth motion with a trapezoid motion profile
+* Intake from source
+
+### [Intake Subsystem](src/main/java/frc/robot/subsystems/Intake/IntakeSubsystem.java)
+The intake subsystem powers a ground intake that feeds the note to the shooter and is composed of one NEO Vortex brushless motor.
+
+Key points:
+* Ground intake powered by a NEO Vortex brushless motor
+* Feeds notes to the shooter subsystem
+
+### [Climber Subsystem](src/main/java/frc/robot/subsystems/Climber/ClimberSubsystem.java)
+The climber subsystem controls two telescoping arms on each side with two brushless NEO motors. We also use beam breaks to act as hard limits for the climber.
+
+Key points:
+* Two telescoping arms each powered by a brushless NEO motor
+* Limit switches to safeguard mechanism
