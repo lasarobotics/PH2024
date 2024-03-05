@@ -206,6 +206,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_simShooterJoint = m_mechanism2d.getRoot("shooter", 0.5, 0.33).append(new MechanismLigament2d("shooter", 0.4, 1.0));
     m_simShooterAngleMotionProfile = new TrapezoidProfile(m_angleConstraint);
     m_simShooterAngleState = new TrapezoidProfile.State(m_angleConfig.getLowerLimit(), 0.0);
+
+    // Register LED strip with LED subsystem
+    LEDSubsystem.getInstance().add(m_ledStrip);
+
+    // Set LEDs to team color
+    m_ledStrip.set(Pattern.TEAM_COLOR_BREATHE);
   }
 
   /**
@@ -357,10 +363,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomFlywheelMotor.periodic();
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
-
-    // Set LED color
-    if (isObjectPresent()) m_ledStrip.set(Pattern.GREEN_SOLID);
-    else m_ledStrip.set(Pattern.OFF);
 
     // Log outputs
     var currentState = getCurrentState();
