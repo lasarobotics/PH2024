@@ -115,13 +115,13 @@ public class RobotContainer {
     );
 
     // B button - go to source and intake game piece
-    PRIMARY_CONTROLLER.b().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.SOURCE,
-        SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
-        SHOOTER_SUBSYSTEM.sourceIntakeCommand()
-      )
-    );
+    // PRIMARY_CONTROLLER.b().whileTrue(
+    //   DRIVE_SUBSYSTEM.goToPoseCommand(
+    //     Constants.Field.SOURCE,
+    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
+    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+    //   )
+    // );
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());

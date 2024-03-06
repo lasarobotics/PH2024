@@ -18,6 +18,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /** Create a camera */
@@ -85,6 +86,12 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
   public void run() {
     // Return if camera or field layout failed to load
     if (m_poseEstimator == null || m_camera == null) return;
+
+    // Put camera connected indicator on SmartDashboard
+    SmartDashboard.putBoolean(m_camera.getName(), m_camera.isConnected());
+
+    // Return if camera is not connected
+    if (!m_camera.isConnected()) return;
 
     // Update and log inputs
     PhotonPipelineResult pipelineResult = m_camera.getLatestResult();

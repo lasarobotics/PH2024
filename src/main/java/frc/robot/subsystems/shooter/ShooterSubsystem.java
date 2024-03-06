@@ -40,6 +40,7 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -95,6 +96,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
   private static final String SHOOTER_DESIRED_STATE_ANGLE = "/DesiredState/Angle";
   private static final String SHOOTER_DESIRED_STATE_SPEED = "/DesiredState/FlywheelSpeed";
+  private static final String SHOOTER_TARGET_DISTANCE = "/TargetDistance";
+  private static final String SHOOTER_NOTE_INSIDE_INDICATOR = "Note";
 
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
@@ -378,6 +381,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.periodic();
     m_indexerMotor.periodic();
 
+    // Put note indicator on SmartDashboard
+    SmartDashboard.putBoolean(SHOOTER_NOTE_INSIDE_INDICATOR, isObjectPresent());
+
     // Log outputs
     var currentState = getCurrentState();
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
@@ -385,6 +391,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + SHOOTER_STATE_ANGLE_DEGREES, currentState.angle.in(Units.Degrees));
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_ANGLE, m_desiredShooterState.angle.in(Units.Degrees));
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_SPEED, m_desiredShooterState.speed.in(Units.MetersPerSecond));
+    Logger.recordOutput(getName() + SHOOTER_TARGET_DISTANCE, getTargetDistance());
   }
 
   @Override
