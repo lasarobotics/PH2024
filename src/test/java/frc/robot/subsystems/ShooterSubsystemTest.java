@@ -110,9 +110,9 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
+    verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT)
+      ArgumentMatchers.eq(ControlType.kPosition)
     );
   }
 
@@ -133,9 +133,9 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
+    verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getUpperLimit(), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT)
+      ArgumentMatchers.eq(ControlType.kPosition)
     );
   }
 
@@ -156,9 +156,9 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
+    verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getLowerLimit(), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT)
+      ArgumentMatchers.eq(ControlType.kPosition)
     );
   }
 
@@ -167,8 +167,8 @@ public class ShooterSubsystemTest {
   @DisplayName("Test if the shooter runs the indexer when the shooter is at the correct state")
   public void runIndexer() {
     // Hardcode sensor values
+    SparkInputsAutoLogged flywheelInputs = new SparkInputsAutoLogged();
     SparkInputsAutoLogged angleInputs = new SparkInputsAutoLogged();
-    when(m_angleMotor.getInputs()).thenReturn(angleInputs);
 
     // Try to set shooter state
     var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(30.0));
@@ -176,15 +176,16 @@ public class ShooterSubsystemTest {
     command.initialize();
 
     // Set the shooter to be at the correct state
-    SparkInputsAutoLogged flywheelInputs = new SparkInputsAutoLogged();
     flywheelInputs.encoderVelocity = state.speed.in(Units.MetersPerSecond);
+    angleInputs.absoluteEncoderPosition = state.angle.in(Units.Radians);
     when(m_topFlywheelMotor.getInputs()).thenReturn(flywheelInputs);
     when(m_angleMotor.isSmoothMotionFinished()).thenReturn(true);
+    when(m_angleMotor.getInputs()).thenReturn(angleInputs);
 
     // Execute the command when the state is ready
     command.execute();
     command.execute();
-    
+
     // Verify that motors are being driven with expected values
     verify(m_indexerMotor, times(1)).set(AdditionalMatchers.eq(+INDEXER_SPEED.in(Units.Percent), DELTA));
   }
