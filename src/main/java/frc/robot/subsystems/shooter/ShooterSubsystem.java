@@ -255,12 +255,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
+
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) m_topFlywheelMotor.stopMotor();
     else m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
-    // m_angleMotor.smoothMotion(
-    //   m_desiredShooterState.angle.in(Units.Radians),
-    //   m_angleConstraint
-    // );
     m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
   }
 
@@ -330,8 +327,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if ready
    */
   private boolean isReady() {
-    return Precision.equals(m_angleMotor.getInputs().absoluteEncoderPosition, m_desiredShooterState.angle.in(Units.Radians), m_angleConfig.getTolerance()) &&
-      Precision.equals(m_topFlywheelMotor.getInputs().encoderVelocity, m_desiredShooterState.speed.in(Units.MetersPerSecond), m_flywheelConfig.getTolerance());
+    return
+      Precision.equals(
+        m_angleMotor.getInputs().absoluteEncoderPosition,
+        m_desiredShooterState.angle.in(Units.Radians),
+        m_angleConfig.getTolerance()
+      ) &&
+      Precision.equals(
+        m_topFlywheelMotor.getInputs().encoderVelocity,
+        m_desiredShooterState.speed.in(Units.MetersPerSecond),
+        m_flywheelConfig.getTolerance()
+      );
   }
 
   /**
