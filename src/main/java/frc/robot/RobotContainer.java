@@ -55,13 +55,9 @@ public class RobotContainer {
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
-  //private static final ClimberSubsystem CLIMBER_SUBSYSTEM = new ClimberSubsystem(ClimberSubsystem.initializeHardware(), Constants.Climber.CLIMBER_VELOCITY);
-
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
-  private static final CommandXboxController SECONDARY_CONTROLLER = new CommandXboxController(Constants.HID.SECONDARY_CONTROLLER_PORT);
-
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
@@ -131,14 +127,10 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
     // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> true));
+    PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
-    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseToVisionCommand());
-
-    //SECONDARY_CONTROLLER.button(1).whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
-    //SECONDARY_CONTROLLER.button(2).whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
   }
 
   /**
@@ -162,26 +154,23 @@ public class RobotContainer {
   }
 
   /**
-   * Compose command to intake a note
+   * Compose command to intake a note and rumble controller appropriately
    * @return Command that will automatically intake a note and prepare it for feeding inside the shooter motor
    */
   private Command intakeCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      // aimAtObject(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     );
   }
 
   /**
-   * Intake until an object is present
+   * Intake until an object is present in autonomous
    * @return Command to intake until an object is present
    */
   private Command autoIntakeCommand() {
     return Commands.parallel(
-      // rumbleCommand(),
-      // aimAtObject(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());

@@ -116,14 +116,14 @@ public final class Constants {
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.2,
-        0.0,
+        0.001,
         0.0,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.0
+        0.2
       ),
       false,
       true,
-      0.15
+      0.1
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
@@ -135,7 +135,7 @@ public final class Constants {
       ),
       false,
       true,
-      Units.Degrees.of(0.5).in(Units.Radians),
+      Units.Degrees.of(0.2).in(Units.Radians),
       0.40,
       1.04,
       true

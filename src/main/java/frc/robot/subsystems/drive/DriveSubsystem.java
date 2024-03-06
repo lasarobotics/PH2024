@@ -103,7 +103,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double TOLERANCE = 1.0;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
-  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.3;
+  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
@@ -172,7 +172,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                         double turnScalar, double deadband, double lookAhead) {
     setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(2.0));
     this.m_navx = drivetrainHardware.navx;
     this.m_lFrontModule = drivetrainHardware.lFrontModule;
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
@@ -971,8 +971,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public PathConstraints getPathConstraints() {
     return new PathConstraints(
-      2.0,
-      0.5,
+      DRIVE_MAX_LINEAR_SPEED.times(0.8).in(Units.MetersPerSecond),
+      DRIVE_AUTO_ACCELERATION.in(Units.MetersPerSecondPerSecond),
       DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
       DRIVE_ROTATE_ACCELERATION.magnitude()
     );
