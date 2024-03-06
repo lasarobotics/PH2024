@@ -1,5 +1,5 @@
 {
-  "robotWidth": 0.7112,
+  "robotWidth": 0.71,
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
@@ -10,8 +10,8 @@
     "Ring side"
   ],
   "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 2.75,
-  "defaultMaxAngVel": 1080.0,
-  "defaultMaxAngAccel": 360.0,
+  "defaultMaxAccel": 2.0,
+  "defaultMaxAngVel": 2160.0,
+  "defaultMaxAngAccel": 2160.0,
   "maxModuleSpeed": 4.5
 }
