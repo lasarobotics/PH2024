@@ -9,9 +9,9 @@
     "Leave",
     "Ring side"
   ],
-  "defaultMaxVel": 0.3,
-  "defaultMaxAccel": 4.3,
+  "defaultMaxVel": 4.5,
+  "defaultMaxAccel": 2.75,
   "defaultMaxAngVel": 1080.0,
   "defaultMaxAngAccel": 360.0,
-  "maxModuleSpeed": 4.3
+  "maxModuleSpeed": 4.5
 }

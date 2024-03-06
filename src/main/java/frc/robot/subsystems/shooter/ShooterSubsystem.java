@@ -404,7 +404,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         m_indexerMotor.disableForwardLimitSwitch();
         feedStop();
       }
-    );
+    ).until(() -> isObjectPresent());
   }
 
   /**
@@ -423,7 +423,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         feedStop();
         resetState();
       }
-    );
+    ).until(() -> isObjectPresent());
   }
 
   /**

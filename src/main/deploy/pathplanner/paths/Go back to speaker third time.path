@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.25634889866271,
-        "y": 5.597021986033711
+        "x": 2.663656856135768,
+        "y": 4.145797564778087
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4620956760764785,
-        "y": 5.761619407953803
+        "x": 2.1698645903557474,
+        "y": 4.649877169428525
       },
       "isLocked": false,
-      "linkedName": "At speaker"
+      "linkedName": "pickup third note blue"
     },
     {
       "anchor": {
-        "x": 2.9002656501553608,
-        "y": 7.067401803976541
+        "x": 1.295440786370295,
+        "y": 5.555162990025228
       },
       "prevControl": {
-        "x": 2.7562429059695215,
-        "y": 6.96452841527237
+        "x": 1.748083696668647,
+        "y": 5.3082668571352185
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 37.056528189409626,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0.3710653176571972,
+    "rotation": -21.97450799147199,
     "velocity": 0
   },
   "useDefaultConstraints": true

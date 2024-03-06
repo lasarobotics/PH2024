@@ -36,6 +36,9 @@ public class IntakeSubsystem extends SubsystemBase {
     ROLLER_VELOCITY = rollerVelocity;
     this.m_rollerMotor = intakeHardware.rollerMotor;
 
+    // Reset motor to defaults
+    m_rollerMotor.restoreFactoryDefaults();
+
     // Set idle mode
     m_rollerMotor.setIdleMode(IdleMode.kCoast);
   }
@@ -86,5 +89,13 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public Command outtakeCommand() {
     return startEnd(() -> outtake(), () -> stop());
+  }
+
+  /**
+   * Stops the intake
+   * @return Command to stop the intake
+   */
+  public Command stopCommand() {
+    return run(() -> stop());
   }
 }

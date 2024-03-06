@@ -88,8 +88,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   // Drive specs
-  public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.62);
-  public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.62);
+  public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.5588);
+  public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(8.0);
@@ -463,18 +463,19 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Update current heading
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
 
+    // Skip vision if autonomous
+    //if (RobotState.isAutonomous()) return;
+
     // Get estimated poses from VisionSubsystem
-    if (!RobotState.isAutonomous()) {
-      var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
+    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
 
-      // Exit if no valid vision pose estimates
-      if (visionEstimatedRobotPoses.isEmpty()) return;
+    // Exit if no valid vision pose estimates
+    if (visionEstimatedRobotPoses.isEmpty()) return;
 
-      // Add vision measurements to pose estimator
-      for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-        //if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
-        m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
-      }
+    // Add vision measurements to pose estimator
+    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
+      //if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
+      m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
     }
   }
 
@@ -723,7 +724,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
-    //logOutputs();
+    // logOutputs();
   }
 
   @Override
@@ -750,7 +751,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Configure PathPlanner auto builder
+   * Configure ber auto builder
    */
   public void configureAutoBuilder() {
     AutoBuilder.configureHolonomic(
