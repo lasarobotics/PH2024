@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8916480940798073,
-        "y": 5.575737667766062
+        "x": 1.8920045364900873,
+        "y": 5.597021986033711
       },
       "isLocked": false,
       "linkedName": "At speaker"
     },
     {
       "anchor": {
-        "x": 2.663656856135768,
-        "y": 5.597021986033711
+        "x": 2.699244695401507,
+        "y": 5.55
       },
       "prevControl": {
-        "x": 2.4944555023708608,
-        "y": 5.557296699261859
+        "x": 2.5300433416365995,
+        "y": 5.5102747132281475
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 2.0,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 2160.0,
     "maxAngularAcceleration": 2160.0
   },

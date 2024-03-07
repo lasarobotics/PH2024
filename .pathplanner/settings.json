@@ -10,7 +10,7 @@
     "Ring side"
   ],
   "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 2.0,
+  "defaultMaxAccel": 2.5,
   "defaultMaxAngVel": 2160.0,
   "defaultMaxAngAccel": 2160.0,
   "maxModuleSpeed": 4.5

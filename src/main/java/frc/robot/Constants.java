@@ -82,6 +82,7 @@ public final class Constants {
     public static final String START_INTAKE_COMMAND_NAME = "start intake";
     public static final String STOP_INTAKE_COMMAND_NAME = "stop intake";
     public static final String SHOOT_COMMAND_NAME = "shoot";
+    public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
   }
 

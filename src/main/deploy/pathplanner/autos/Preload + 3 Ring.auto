@@ -37,9 +37,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Go back to speaker first time"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "spinup"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Go back to speaker first time"
+                }
+              }
+            ]
           }
         },
         {
@@ -68,9 +81,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Go back to speaker"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "spinup"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Go back to speaker"
+                }
+              }
+            ]
           }
         },
         {
@@ -99,9 +125,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Go back to speaker third time"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "spinup"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Go back to speaker third time"
+                }
+              }
+            ]
           }
         },
         {

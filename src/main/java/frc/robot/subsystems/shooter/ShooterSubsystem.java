@@ -102,6 +102,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final Measure<Distance> MIN_SHOOTING_DISTANCE = Units.Meters.of(0.0);
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
   private final Measure<Velocity<Distance>> MAX_FLYWHEEL_SPEED;
+  private final Measure<Velocity<Distance>> SPINUP_SPEED = Units.MetersPerSecond.of(10.0);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -562,6 +563,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command scoreAmpCommand() {
     return shootManualCommand(State.AMP_SCORE_STATE);
+  }
+
+  /**
+   * Spin up flywheel
+   * @return Command that spins up flywheel
+   */
+  public Command spinupCommand() {
+    return run(() -> setState(new State(SPINUP_SPEED, m_desiredShooterState.angle)));
   }
 
   /**
