@@ -29,6 +29,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -55,6 +56,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -91,7 +93,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(9.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(50.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -133,6 +135,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
   private boolean m_isTractionControlEnabled = true;
+  private Pose2d m_origin;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
@@ -260,6 +263,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set VisionSubsystem pose supplier for simulation
     VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
+
+    // Fix origin based on alliance
+    setOriginForAlliance();
   }
 
   /**
@@ -339,6 +345,34 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Set field origin for alliance
+   * <p>
+   * ONLY USED FOR TELEOP DRIVING
+   */
+  private void setOriginForAlliance() {
+    System.out.println("Waiting to get alliance from driver station...");
+    Supplier<AllianceStationID> allianceStationIDSupplier;
+    if (RobotBase.isSimulation()) allianceStationIDSupplier = () -> DriverStationSim.getAllianceStationId();
+    else allianceStationIDSupplier = () -> DriverStation.getRawAllianceStation();
+
+    // Fix origin based on alliance
+    while (allianceStationIDSupplier.get().equals(AllianceStationID.Unknown)) continue;
+    switch (allianceStationIDSupplier.get()) {
+      case Red1:
+      case Red2:
+      case Red3:
+        m_origin = new Pose2d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH, GlobalConstants.ROTATION_PI);
+        break;
+      case Blue1:
+      case Blue2:
+      case Blue3:
+      default:
+        m_origin = new Pose2d();
+    }
+    System.out.println("Origin set, continuing...");
+  }
+
+  /**
    * Set swerve modules
    * @param moduleStates Array of calculated module states
    */
@@ -384,7 +418,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().getRotation(),
+      getPose().relativeTo(m_origin).getRotation(),
       m_controlCentricity
     );
 
@@ -412,7 +446,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().getRotation(),
+      getPose().relativeTo(m_origin).getRotation(),
       m_controlCentricity
     );
 

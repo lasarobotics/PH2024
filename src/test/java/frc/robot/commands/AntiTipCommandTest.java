@@ -29,7 +29,10 @@ import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -50,6 +53,11 @@ public class AntiTipCommandTest {
 
   @BeforeEach
   public void setup() {
+    HAL.initialize(500, 0);
+
+    // Set alliance station
+    DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+
     // Create mock hardware devices
     m_navx = mock(NavX2.class);
     m_lFrontDriveMotor = mock(Spark.class);
