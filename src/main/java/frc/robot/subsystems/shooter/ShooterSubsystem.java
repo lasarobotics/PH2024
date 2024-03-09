@@ -88,7 +88,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   private static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(60.0);
-  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
+  private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(30.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
@@ -208,7 +208,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(SPINUP_SPEED, state.angle);
+      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
       setState(state);
     }));
 

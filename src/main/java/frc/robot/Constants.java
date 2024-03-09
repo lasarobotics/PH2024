@@ -94,7 +94,7 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(6.0, 0.0, 0.1, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 50.0;
     public static final double DRIVE_LOOKAHEAD = 6;
@@ -125,15 +125,15 @@ public final class Constants {
       ),
       false,
       true,
-      0.1
+      0.15
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        2.0,
+        3.0,
         0.012,
         0.0,
         0.0,
-        0.026
+        0.035
       ),
       false,
       true,

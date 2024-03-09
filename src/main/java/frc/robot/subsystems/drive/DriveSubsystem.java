@@ -93,7 +93,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(50.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(40.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -102,7 +102,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   // Other settings
   private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.0;
+  private static final double TOLERANCE = 1.5;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
@@ -516,7 +516,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    // Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
     Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
