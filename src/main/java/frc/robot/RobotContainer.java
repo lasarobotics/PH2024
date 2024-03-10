@@ -290,6 +290,18 @@ public class RobotContainer {
   }
 
   /**
+   * Call while disabled
+   */
+  public void disabledPeriodic() {
+    // Try to get alliance
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isEmpty()) return;
+
+    // Set alliance if available
+    DRIVE_SUBSYSTEM.setAlliance(alliance.get());
+  }
+
+  /**
    * Get currently selected autonomous command
    *
    * @return Autonomous command

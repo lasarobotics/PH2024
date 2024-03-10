@@ -29,7 +29,6 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -55,8 +54,8 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -135,7 +134,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
   private boolean m_isTractionControlEnabled = true;
-  private Pose2d m_origin;
+  private Rotation2d m_allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
@@ -192,6 +191,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
+    this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
     this.m_xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
     this.m_yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
@@ -263,9 +263,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set VisionSubsystem pose supplier for simulation
     VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
-
-    // Fix origin based on alliance
-    setOriginForAlliance();
   }
 
   /**
@@ -345,34 +342,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Set field origin for alliance
-   * <p>
-   * ONLY USED FOR TELEOP DRIVING
-   */
-  private void setOriginForAlliance() {
-    System.out.println("Waiting to get alliance from driver station...");
-    Supplier<AllianceStationID> allianceStationIDSupplier;
-    if (RobotBase.isSimulation()) allianceStationIDSupplier = () -> DriverStationSim.getAllianceStationId();
-    else allianceStationIDSupplier = () -> DriverStation.getRawAllianceStation();
-
-    // Fix origin based on alliance
-    while (allianceStationIDSupplier.get().equals(AllianceStationID.Unknown)) continue;
-    switch (allianceStationIDSupplier.get()) {
-      case Red1:
-      case Red2:
-      case Red3:
-        m_origin = new Pose2d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH, GlobalConstants.ROTATION_PI);
-        break;
-      case Blue1:
-      case Blue2:
-      case Blue3:
-      default:
-        m_origin = new Pose2d();
-    }
-    System.out.println("Origin set, continuing...");
-  }
-
-  /**
    * Set swerve modules
    * @param moduleStates Array of calculated module states
    */
@@ -418,7 +387,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().relativeTo(m_origin).getRotation(),
+      getPose().getRotation().plus(m_allianceCorrection),
       m_controlCentricity
     );
 
@@ -446,7 +415,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().relativeTo(m_origin).getRotation(),
+      getPose().getRotation().plus(m_allianceCorrection),
       m_controlCentricity
     );
 
@@ -757,7 +726,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
-    // logOutputs();
+    logOutputs();
   }
 
   @Override
@@ -800,6 +769,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       },
       this
     );
+  }
+
+  /**
+   * Set alliance
+   * <p>
+   * Must be set to correct for field oriented drive
+   * @param alliance alliance
+   */
+  public void setAlliance(Alliance alliance) {
+    m_allianceCorrection = alliance.equals(Alliance.Red) ? GlobalConstants.ROTATION_PI : GlobalConstants.ROTATION_ZERO;
   }
 
   /**
