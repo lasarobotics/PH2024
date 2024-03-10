@@ -101,7 +101,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   // Other settings
   private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.5;
+  private static final double TOLERANCE = 1.0;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
@@ -464,9 +464,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Update current heading
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
-
-    // Skip vision if autonomous
-    //if (RobotState.isAutonomous()) return;
 
     // Get estimated poses from VisionSubsystem
     var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
