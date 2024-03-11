@@ -3,10 +3,11 @@
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
-    "preload + 4 ring",
+    "3.5 Notes Variation 1",
     "Preload + 1  + 2 mid auto paths",
     "Preload + 3 ring opposite direction",
-    "Ring Side"
+    "Ring Side",
+    "preload + 4 ring"
   ],
   "autoFolders": [
     "Leave",
