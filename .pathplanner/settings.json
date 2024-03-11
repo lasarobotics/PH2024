@@ -3,6 +3,8 @@
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
+    "Preload + 3 ring opposite direction",
+    "Preload + 1  + 2 mid auto paths",
     "Ring Side"
   ],
   "autoFolders": [

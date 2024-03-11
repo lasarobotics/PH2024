@@ -280,6 +280,8 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEAVE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_ONE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_ONE_RING).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_ONE_RING_PLUS_TWOMID, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_ONE_RING_PLUS_TWOMID).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING_OPPOSITE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING_OPPOSITE).getCommand());
   }
 
   /**

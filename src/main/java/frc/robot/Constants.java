@@ -91,6 +91,8 @@ public final class Constants {
     public static final String LEAVE = "Leave";
     public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
     public static final String PRELOAD_PLUS_ONE_RING = "Preload + 1 Ring";
+    public static final String PRELOAD_PLUS_ONE_RING_PLUS_TWOMID = "Preload + 1 note + 2 mid";
+    public static final String PRELOAD_PLUS_THREE_RING_OPPOSITE = "Preload + 3 ring opposite";
   }
 
   public static class Drive {
