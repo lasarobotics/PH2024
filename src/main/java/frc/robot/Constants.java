@@ -85,7 +85,7 @@ public final class Constants {
     public static final String SHOOT_FIRST_TIME_COMMAND = "firstTimeShoot";
     public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
-    public static final String ANGLED_SHOOT_COMMAND_NAME = "angled shoot";
+    public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
 
   public static class AutoNames {
