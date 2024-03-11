@@ -85,6 +85,7 @@ public final class Constants {
     public static final String SHOOT_FIRST_TIME_COMMAND = "firstTimeShoot";
     public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
+    public static final String ANGLED_SHOOT_COMMAND_NAME = "angled shoot";
   }
 
   public static class AutoNames {
@@ -93,6 +94,7 @@ public final class Constants {
     public static final String PRELOAD_PLUS_ONE_RING = "Preload + 1 Ring";
     public static final String PRELOAD_PLUS_ONE_RING_PLUS_TWOMID = "Preload + 1 note + 2 mid";
     public static final String PRELOAD_PLUS_THREE_RING_OPPOSITE = "Preload + 3 ring opposite";
+    public static final String PRELOAD_PLUS_FOUR_RING = "Preload + 4 Ring";
   }
 
   public static class Drive {

@@ -12,12 +12,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "firstTimeShoot"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -37,15 +31,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Shoot First Note (preload + 4 ring)"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         },
         {
@@ -68,15 +56,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Shoot Second Note (preload + 4 ring)"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         },
         {
@@ -101,7 +83,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         },
         {
@@ -132,7 +114,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         }
       ]

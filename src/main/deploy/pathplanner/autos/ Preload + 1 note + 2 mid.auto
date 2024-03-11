@@ -12,12 +12,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "firstTimeShoot"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -39,7 +33,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         },
         {
@@ -70,7 +64,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         },
         {
@@ -101,7 +95,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "angled shoot"
           }
         }
       ]
