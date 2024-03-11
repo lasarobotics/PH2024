@@ -108,7 +108,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
 
     // Left bumper button - outtake game piece
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(SHOOTER_SUBSYSTEM.sourceIntakeCommand());
+    PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
 
     // A button - go to amp and score
     PRIMARY_CONTROLLER.a().whileTrue(
@@ -167,6 +167,17 @@ public class RobotContainer {
       rumbleCommand(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
+    );
+  }
+  
+  /**
+   * Compose command to intake a note via the source and rumble controller appropriately
+   * @return Command that will automatically intake a note from source via the shooter flywheels
+   */
+  private Command sourceIntakeCommand() {
+    return Commands.parallel(
+      rumbleCommand(),
+      SHOOTER_SUBSYSTEM.sourceIntakeCommand()
     );
   }
 
