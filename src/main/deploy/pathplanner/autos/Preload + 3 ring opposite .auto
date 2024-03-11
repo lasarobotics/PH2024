@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6320762009083543,
-      "y": 2.43090581419258
+      "x": 1.35,
+      "y": 5.53
     },
     "rotation": 0
   },
@@ -12,22 +12,9 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pickup first note far"
-                }
-              }
-            ]
+            "name": "firstTimeShoot"
           }
         },
         {
@@ -35,53 +22,15 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
-                }
-              },
-              {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup second note far"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
+                  "pathName": "1st note (Preload + 3 ring opposite direction)"
                 }
               },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pickup third and fourth note far"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
               {
                 "type": "named",
                 "data": {
                   "name": "intake"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pick up fifth note far"
                 }
               }
             ]
@@ -90,7 +39,69 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Go to podium"
+            "pathName": " Shoot 1st note (Preload + 3 ring opposite direction)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "2nd note (Preload + 3 ring opposite direction)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot 2nd note(Preload + 3 ring opposite direction"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Third Note (Preload + 3 ring opposite direction"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot Third Note (Preload + 3 ring opposite direction"
           }
         },
         {
@@ -102,6 +113,6 @@
       ]
     }
   },
-  "folder": null,
+  "folder": "Ring side",
   "choreoAuto": false
 }
