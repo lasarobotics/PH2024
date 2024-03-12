@@ -80,7 +80,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "FarMidTop_LeftStage"
+                  "pathName": "LeftStage_FarMidTop"
                 }
               },
               {
@@ -95,7 +95,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarMidTop_LeftStage2"
+            "pathName": "FarMidTop_LeftStage"
           }
         },
         {
