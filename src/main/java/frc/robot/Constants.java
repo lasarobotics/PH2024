@@ -88,31 +88,13 @@ public final class Constants {
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
 
-  public static class PathPlannerNames {
-    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop";
-    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
-    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_INTAKEFARMID_AUTO_NAME = "Center_CloseBottom_CloseMid_IntakeFarMid";
-    public static final String CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = "Center_CloseTop_CloseMid_CloseBottom";
-    public static final String CENTER_CLOSETOP_FARTOP_2_AUTO_NAME = "Center_CloseTop_FarTop_2";
-
-    public static final String LEFT_WAIT_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
-    public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
-    public static final String LEFT_CLOSEMID_FARTOP_FARMIDTOP_AUTO_NAME = "Left_CloseMid_FarTop_FarMidTop";
-    public static final String LEFT_CLOSETOP_AUTO_NAME = "Left_CloseTop";
-    public static final String LEFT_CLOSETOP_FARTOP_FARMIDTOP = "Left_CloseTop_FarTop_FarMidTop";
-
-    public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
-    public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
-  }
-
   public static class AutoNames {
-    public static final String LEAVE = "Leave";
-    public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
-    public static final String PRELOAD_PLUS_ONE_RING = "Preload + 1 Ring";
-    public static final String PRELOAD_PLUS_CLOSETOP_PLUS_FARTOP_PLUS_FARMID = "Preload + 1 close top + 1 far top + 1 far mid";
-    public static final String PRELOAD_PLUS_THREE_RING_OPPOSITE = "Preload + 3 ring opposite";
-    public static final String PRELOAD_PLUS_FOUR_RING = "Preload + 4 Ring";
-    public static final String PRELOAD_PLUS_CLOSETOP_PLUS_FARTOP = "Preload + 1 close top + 1 far top";
+    public static final String CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = "Center_CloseTop_CloseMid_CloseBottom";
+    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
+    public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
+    public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_CloseTop_FarTop";
+    public static final String LEFT_WAIT_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
+    public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
   }
 
   public static class Drive {
