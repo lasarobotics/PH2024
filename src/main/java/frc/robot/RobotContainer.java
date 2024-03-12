@@ -79,7 +79,7 @@ public class RobotContainer {
 
     // Register Named Commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_FIRST_TIME_COMMAND, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
+    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
@@ -290,11 +290,10 @@ public class RobotContainer {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
     m_automodeChooser.addOption(Constants.AutoNames.LEAVE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_ONE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_ONE_RING).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_ONE_RING_PLUS_TWOMID, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_ONE_RING_PLUS_TWOMID).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING_OPPOSITE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING_OPPOSITE).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_FOUR_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_FOUR_RING).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.PathPlannerNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_ONE_RING_PLUS_TWOMID, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.PathPlannerNames.LEFT_CLOSEMID_FARTOP_FARMIDTOP_AUTO_NAME).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING_OPPOSITE, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.PathPlannerNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_AUTO_NAME).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_FOUR_RING, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.PathPlannerNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME).getCommand());
   }
 
   /**

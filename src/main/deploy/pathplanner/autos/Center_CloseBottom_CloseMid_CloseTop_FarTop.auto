@@ -12,6 +12,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "first time shoot"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [

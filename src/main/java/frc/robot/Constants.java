@@ -82,10 +82,25 @@ public final class Constants {
     public static final String START_INTAKE_COMMAND_NAME = "start intake";
     public static final String STOP_INTAKE_COMMAND_NAME = "stop intake";
     public static final String SHOOT_COMMAND_NAME = "shoot";
-    public static final String SHOOT_FIRST_TIME_COMMAND = "first time shoot";
+    public static final String PRELOAD_COMMAND_NAME = "preload";
     public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
+  }
+  public static class PathPlannerNames {
+    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop";
+    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
+    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_INTAKEFARMID_AUTO_NAME = "Center_CloseBottom_CloseMid_IntakeFarMid";
+    public static final String CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = "Center_CloseTop_CloseMid_CloseBottom";
+    public static final String CENTER_CLOSETOP_FARTOP_2_AUTO_NAME = "Center_CloseTop_FarTop_2";
+
+    public static final String LEFT_WAIT_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
+    public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
+    public static final String LEFT_CLOSEMID_FARTOP_FARMIDTOP_AUTO_NAME = "Left_CloseMid_FarTop_FarMidTop";
+    public static final String LEFT_CLOSETOP_AUTO_NAME = "Left_CloseTop";
+
+    public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
+    public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
   }
 
   public static class AutoNames {
