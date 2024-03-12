@@ -3,6 +3,7 @@
   "waypoints": [
     {
       "anchor": {
+<<<<<<< HEAD
         "x": 0.72,
         "y": 4.36
       },
@@ -10,18 +11,36 @@
       "nextControl": {
         "x": 0.7744233156310836,
         "y": 4.30190697837226
+=======
+        "x": 0.6751948895821795,
+        "y": 4.3386424065009646
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.9231639413397603,
+        "y": 4.562886845488656
+>>>>>>> d032646 (changes in auto names)
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
+<<<<<<< HEAD
         "x": 2.63,
         "y": 4.1
       },
       "prevControl": {
         "x": 1.283960513717134,
         "y": 4.807585826149276
+=======
+        "x": 2.556898225435407,
+        "y": 4.221645307898693
+      },
+      "prevControl": {
+        "x": 1.6794199859183587,
+        "y": 4.6993834605246425
+>>>>>>> d032646 (changes in auto names)
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,14 +58,25 @@
   },
   "goalEndState": {
     "velocity": 0,
+<<<<<<< HEAD
     "rotation": 0,
+=======
+    "rotation": -21.61477894278632,
+>>>>>>> d032646 (changes in auto names)
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Starts Speaker",
   "previewStartingState": {
+<<<<<<< HEAD
     "rotation": -56.69,
     "velocity": 0
   },
   "useDefaultConstraints": false
+=======
+    "rotation": -62.40270413135626,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+>>>>>>> d032646 (changes in auto names)
 }

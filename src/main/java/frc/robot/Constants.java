@@ -87,6 +87,7 @@ public final class Constants {
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
+
   public static class PathPlannerNames {
     public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop";
     public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
@@ -98,6 +99,7 @@ public final class Constants {
     public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
     public static final String LEFT_CLOSEMID_FARTOP_FARMIDTOP_AUTO_NAME = "Left_CloseMid_FarTop_FarMidTop";
     public static final String LEFT_CLOSETOP_AUTO_NAME = "Left_CloseTop";
+    public static final String LEFT_CLOSETOP_FARTOP_FARMIDTOP = "Left_CloseTop_FarTop_FarMidTop";
 
     public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
     public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
@@ -107,9 +109,10 @@ public final class Constants {
     public static final String LEAVE = "Leave";
     public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
     public static final String PRELOAD_PLUS_ONE_RING = "Preload + 1 Ring";
-    public static final String PRELOAD_PLUS_ONE_RING_PLUS_TWOMID = "Preload + 1 note + 2 mid";
+    public static final String PRELOAD_PLUS_CLOSETOP_PLUS_FARTOP_PLUS_FARMID = "Preload + 1 close top + 1 far top + 1 far mid";
     public static final String PRELOAD_PLUS_THREE_RING_OPPOSITE = "Preload + 3 ring opposite";
     public static final String PRELOAD_PLUS_FOUR_RING = "Preload + 4 Ring";
+    public static final String PRELOAD_PLUS_CLOSETOP_PLUS_FARTOP = "Preload + 1 close top + 1 far top";
   }
 
   public static class Drive {
