@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6320762009083543,
-      "y": 2.43090581419258
+      "x": 1.35,
+      "y": 5.53
     },
     "rotation": 0
   },
@@ -16,72 +16,90 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
-                }
-              },
-              {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup first note far"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
+                  "pathName": "First Note (preload + 4 ring)"
                 }
               },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pickup second note far"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "feed through"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pickup third and fourth note far"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
               {
                 "type": "named",
                 "data": {
                   "name": "intake"
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pick up fifth note far"
+                  "pathName": "Second Note (preload + 4 ring)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Third Note (preload + 4 ring)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Mid Note (preload + 4 ring)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
                 }
               }
             ]
@@ -90,18 +108,18 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Go to podium"
+            "pathName": "Mid Note Shoot (preload + 4 ring)"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Center",
   "choreoAuto": false
 }

@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "firstTimeShoot"
+            "name": "first time shoot"
           }
         },
         {
@@ -158,6 +158,6 @@
       ]
     }
   },
-  "folder": "Ring side",
+  "folder": "Center",
   "choreoAuto": false
 }

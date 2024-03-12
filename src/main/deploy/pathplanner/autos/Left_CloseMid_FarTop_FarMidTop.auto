@@ -33,7 +33,7 @@
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "auto shoot"
           }
         },
         {
@@ -64,7 +64,7 @@
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "auto shoot"
           }
         },
         {
@@ -95,12 +95,12 @@
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": "Ring side",
+  "folder": "Left",
   "choreoAuto": false
 }

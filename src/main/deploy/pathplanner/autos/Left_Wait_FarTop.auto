@@ -5,7 +5,7 @@
       "x": 0.76,
       "y": 6.69
     },
-    "rotation": 58.73016014543446
+    "rotation": 58.73
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,13 @@
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
           }
         },
         {
@@ -24,32 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "First Note (1 preload + 1 non amp side + 2 mid)"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intake"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "angled shoot"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "First Note Mid (1 preload + 1 non amp side + 2 mid)"
+                  "pathName": "center_far-top"
                 }
               },
               {
@@ -70,12 +51,12 @@
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Left",
   "choreoAuto": false
 }

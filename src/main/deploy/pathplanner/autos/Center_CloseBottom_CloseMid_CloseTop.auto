@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.26,
-      "y": 5.6
+      "x": 1.35,
+      "y": 5.53
     },
-    "rotation": 0.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "firstTimeShoot"
+            "name": "first time shoot"
           }
         },
         {
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup third note ring"
+                  "pathName": "1st note (Preload + 3 ring opposite direction)"
                 }
               },
               {
@@ -34,12 +34,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": " Shoot 1st note (Preload + 3 ring opposite direction)"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "shoot"
           }
         },
         {
@@ -49,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "ShootLow + IntakeMidClose"
+                  "pathName": "2nd note (Preload + 3 ring opposite direction)"
                 }
               },
               {
@@ -59,12 +65,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot 2nd note(Preload + 3 ring opposite direction"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "angled shoot"
+            "name": "shoot"
           }
         },
         {
@@ -74,7 +86,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "ShootMid + IntakeMidfield"
+                  "pathName": "Third Note (Preload + 3 ring opposite direction"
                 }
               },
               {
@@ -84,11 +96,23 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot Third Note (Preload + 3 ring opposite direction"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         }
       ]
     }
   },
-  "folder": "Ring side",
+  "folder": "Center",
   "choreoAuto": false
 }

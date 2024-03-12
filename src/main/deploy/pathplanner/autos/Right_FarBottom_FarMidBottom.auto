@@ -2,54 +2,23 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.35,
-      "y": 5.53
+      "x": 0.7158327706968803,
+      "y": 4.361919607030098
     },
-    "rotation": 0
+    "rotation": -60.46121774044187
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "firstTimeShoot"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "First Note (1 preload + 1 non amp side + 2 mid)"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intake"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "First Note Mid (1 preload + 1 non amp side + 2 mid)"
+                  "pathName": "Intake First Mid"
                 }
               },
               {
@@ -64,18 +33,49 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot First Mid (1 preload + non amp side + 2 mid)"
+            "pathName": "First Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Intake second mid"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot second mid"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": "Ring side",
+  "folder": "Right",
   "choreoAuto": false
 }
