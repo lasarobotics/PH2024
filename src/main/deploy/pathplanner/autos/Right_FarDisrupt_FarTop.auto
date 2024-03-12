@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup first note far"
+                  "pathName": "RightStage_FarBottom"
                 }
               }
             ]
@@ -43,7 +43,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup second note far"
+                  "pathName": "FarBottom_FarMidBottom"
                 }
               }
             ]
@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pickup third and fourth note far"
+                  "pathName": "FarMid_FarMidTop"
                 }
               }
             ]
@@ -81,7 +81,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "pick up fifth note far"
+                  "pathName": "FarMidTop_FarTop"
                 }
               }
             ]
@@ -90,7 +90,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Go to podium"
+            "pathName": "AnywhereFar_LeftStage"
           }
         },
         {

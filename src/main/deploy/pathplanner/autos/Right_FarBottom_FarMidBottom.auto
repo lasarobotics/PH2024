@@ -12,13 +12,19 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "first time shoot"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Intake First Mid"
+                  "pathName": "Right_FarBottom"
                 }
               },
               {
@@ -33,7 +39,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "First Shoot"
+            "pathName": "FarBottom_RightStage"
           }
         },
         {
@@ -49,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Intake second mid"
+                  "pathName": "FarMidBottom_RightStage2"
                 }
               },
               {
@@ -64,7 +70,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot second mid"
+            "pathName": "FarMidBottom_RightStage"
           }
         },
         {

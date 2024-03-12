@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "1st note (Preload + 3 ring opposite direction)"
+                  "pathName": "Center_CloseBottom2"
                 }
               },
               {
@@ -39,7 +39,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": " Shoot 1st note (Preload + 3 ring opposite direction)"
+            "pathName": "CloseBottom_SpeakerShot"
           }
         },
         {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "2nd note (Preload + 3 ring opposite direction)"
+                  "pathName": "SpeakerShot_CloseMid"
                 }
               },
               {
@@ -70,7 +70,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot 2nd note(Preload + 3 ring opposite direction"
+            "pathName": "CloseMid_SpeakerShot"
           }
         },
         {
@@ -86,7 +86,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Third Note (Preload + 3 ring opposite direction"
+                  "pathName": "Center_CloseTop2"
                 }
               },
               {
@@ -101,7 +101,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot Third Note (Preload + 3 ring opposite direction"
+            "pathName": "CloseTop_SpeakerShot"
           }
         },
         {

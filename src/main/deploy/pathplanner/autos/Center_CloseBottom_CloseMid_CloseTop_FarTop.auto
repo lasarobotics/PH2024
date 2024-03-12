@@ -18,7 +18,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "First Note (preload + 4 ring)"
+                  "pathName": "CloseBottom_Center"
                 }
               },
               {
@@ -43,7 +43,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Second Note (preload + 4 ring)"
+                  "pathName": "CloseBottom_CloseMid"
                 }
               },
               {
@@ -68,7 +68,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Third Note (preload + 4 ring)"
+                  "pathName": "CloseMid_CloseTop"
                 }
               },
               {
@@ -93,7 +93,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Mid Note (preload + 4 ring)"
+                  "pathName": "CloseTop_FarTop2"
                 }
               },
               {
@@ -108,7 +108,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid Note Shoot (preload + 4 ring)"
+            "pathName": "FarTop_LeftStage"
           }
         },
         {

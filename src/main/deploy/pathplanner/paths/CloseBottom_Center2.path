@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.25634889866271,
-        "y": 5.597021986033711
+        "x": 2.629046436240141,
+        "y": 4.0968484027229355
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2563488986627096,
-        "y": 5.597021986033711
+        "x": 2.1352541704601204,
+        "y": 4.600928007373373
       },
       "isLocked": false,
-      "linkedName": "At speaker"
+      "linkedName": "pickup third note blue"
     },
     {
       "anchor": {
-        "x": 3.507218643509969,
-        "y": 5.843208478396908
+        "x": 1.295440786370295,
+        "y": 5.555162990025228
       },
       "prevControl": {
-        "x": 2.507218643509969,
-        "y": 5.843208478396908
+        "x": 1.748083696668647,
+        "y": 5.3082668571352185
       },
       "nextControl": null,
       "isLocked": false,
@@ -43,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Old",
+  "folder": "Starts Close",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -21.97450799147199,
     "velocity": 0
   },
   "useDefaultConstraints": true

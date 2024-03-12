@@ -26,13 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "pickup second note ring"
+            "pathName": "CloseMid_Center"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Go back to speaker"
+            "pathName": "Anywhere_Center"
           }
         },
         {
@@ -56,6 +56,6 @@
       ]
     }
   },
-  "folder": "Center",
+  "folder": "Old",
   "choreoAuto": false
 }

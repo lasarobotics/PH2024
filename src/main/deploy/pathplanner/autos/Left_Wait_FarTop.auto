@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "center_far-top"
+                  "pathName": "Left_FarTop"
                 }
               },
               {
@@ -45,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot First Mid (1 preload + non amp side + 2 mid)"
+            "pathName": "FarTop_RightStage"
           }
         },
         {
