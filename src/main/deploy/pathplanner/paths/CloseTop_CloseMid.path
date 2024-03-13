@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.25634889866271,
-        "y": 5.597021986033711
+        "x": 2.7226441151219607,
+        "y": 6.844330268232984
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2563488986627096,
-        "y": 5.597021986033711
+        "x": 1.2699301408104018,
+        "y": 6.288594049872185
       },
       "isLocked": false,
-      "linkedName": "At speaker"
+      "linkedName": "first note intake (Left_CloseTop_CloseMid_FarMid)"
     },
     {
       "anchor": {
-        "x": 3.507218643509969,
-        "y": 5.843208478396908
+        "x": 2.5763977418691195,
+        "y": 5.567111941824834
       },
       "prevControl": {
-        "x": 2.507218643509969,
-        "y": 5.843208478396908
+        "x": 2.459400643266846,
+        "y": 5.586611458258547
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,20 +32,20 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.1,
-    "maxAcceleration": 3.5,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 2160.0,
     "maxAngularAcceleration": 2160.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -2.385944030388727,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Old",
+  "folder": "Starts Close",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 48.44738685186511,
     "velocity": 0
   },
   "useDefaultConstraints": true
