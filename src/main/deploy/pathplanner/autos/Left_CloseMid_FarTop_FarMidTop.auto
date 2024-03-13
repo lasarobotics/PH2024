@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.72,
-      "y": 4.36
+      "x": 0.76,
+      "y": 6.69
     },
-    "rotation": -60.45999999999998
+    "rotation": 59.06417489056268
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right_CloseBottom"
+                  "pathName": "Left_CloseTop"
                 }
               },
               {
@@ -43,21 +43,59 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CloseTop_FarTop"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "CloseBottom_FarBottom"
+            "pathName": "FarTop_LeftStage"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "intake"
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LeftStage_FarMidTop"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarBottom_RightStage"
+            "pathName": "FarMidTop_LeftStage"
           }
         },
         {
@@ -69,6 +107,6 @@
       ]
     }
   },
-  "folder": "Right",
+  "folder": "Left",
   "choreoAuto": false
 }
