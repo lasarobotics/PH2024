@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "Right_CloseBottom"
                 }
               },
               {
@@ -64,6 +64,12 @@
           "type": "named",
           "data": {
             "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": []
           }
         }
       ]

@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 4.28,
-        "y": 6.33
+        "x": 4.34,
+        "y": 6.58
       },
       "prevControl": {
-        "x": 4.477600594156059,
-        "y": 6.298343808089041
+        "x": 4.537600594156059,
+        "y": 6.548343808089041
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftStage"
     }
   ],
   "rotationTargets": [],
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 15.24367782064262,
     "rotateFast": false
   },
   "reversed": false,

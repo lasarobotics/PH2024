@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.04,
-        "y": 0.76
+        "x": 0.7531929553170285,
+        "y": 6.698083894980142
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.911364301133161,
-        "y": 0.7950824633273187
+        "x": 1.7281687770026384,
+        "y": 6.249595017004761
       },
       "isLocked": false,
-      "linkedName": "Far_Bottom"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.7329246168463843,
-        "y": 2.736432139530946
+        "x": 2.595897258302831,
+        "y": 5.547612425391122
       },
       "prevControl": {
-        "x": 3.8498661612707834,
-        "y": 2.619490595106547
+        "x": 1.595897258302831,
+        "y": 5.547612425391122
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Shoot_Right_Stage"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -38.29016319224294,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts Far",
+  "folder": "Starts Speaker",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 59.03624346792645,
     "velocity": 0
   },
   "useDefaultConstraints": true

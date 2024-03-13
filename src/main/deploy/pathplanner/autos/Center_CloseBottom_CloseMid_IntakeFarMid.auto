@@ -47,15 +47,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "CloseBottom_CloseMid2"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "intake"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CloseBottom_CloseMid"
                 }
               }
             ]

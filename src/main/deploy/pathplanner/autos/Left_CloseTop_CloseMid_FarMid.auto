@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7158327706968803,
-      "y": 4.361919607030098
+      "x": 0.7580440067197164,
+      "y": 6.685072843231024
     },
-    "rotation": -60.46121774044187
+    "rotation": 60.75566698850124
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RightStage_FarBottom"
+                  "pathName": "Left_CloseTop2"
                 }
               },
               {
@@ -34,12 +34,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "FarBottom_RightStage"
           }
         },
         {
@@ -55,7 +49,32 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RightStage_FarMidBottom"
+                  "pathName": "CloseTop_CloseMid"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CloseMid_FarMid"
                 }
               },
               {
@@ -70,7 +89,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarMidBottom_RightStage"
+            "pathName": "FarMid_LeftStage"
           }
         },
         {
@@ -82,6 +101,6 @@
       ]
     }
   },
-  "folder": "Right",
+  "folder": "Left",
   "choreoAuto": false
 }
