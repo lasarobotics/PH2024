@@ -12,6 +12,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "preload"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
