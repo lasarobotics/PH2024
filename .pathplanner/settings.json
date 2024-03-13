@@ -15,7 +15,7 @@
     "Old",
     "Right"
   ],
-  "defaultMaxVel": 5.0,
+  "defaultMaxVel": 5.1,
   "defaultMaxAccel": 3.5,
   "defaultMaxAngVel": 2160.0,
   "defaultMaxAngAccel": 2160.0,
