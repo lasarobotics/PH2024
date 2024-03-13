@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.369967973011977,
-      "y": 5.597021986033711
+      "x": 1.3783760900855138,
+      "y": 5.528365618134744
     },
     "rotation": 0
   },
@@ -12,50 +12,38 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "firstTimeShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake"
+            "pathName": "close bottom"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "pickup second note ring"
+            "pathName": "close mid"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Go back to speaker"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intake"
+            "pathName": "close top"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Leave"
+            "pathName": "far top"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "shoot far"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "built",
   "choreoAuto": false
 }
