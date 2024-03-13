@@ -27,6 +27,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -35,6 +36,7 @@ import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -91,6 +93,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(30.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
+  private static final Measure<Time> TAG_VISIBLE_DEBOUNCE_TIME = Units.Seconds.of(0.5);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
@@ -113,6 +116,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
   private Supplier<AprilTag> m_targetSupplier;
+  private Debouncer m_tagVisibleDebouncer;
 
   private SparkPIDConfig m_flywheelConfig;
   private SparkPIDConfig m_angleConfig;
@@ -157,6 +161,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
+    this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), edu.wpi.first.math.filter.Debouncer.DebounceType.kFalling);
 
     // Slave bottom flywheel motor to top
     m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
@@ -206,11 +211,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     initializeShooterCurves(shooterMap);
 
     // Set default command to track speaker angle
-    setDefaultCommand(run(() -> {
-      var state = getAutomaticState();
-      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
-      setState(state);
-    }));
+    // setDefaultCommand(run(() -> {
+    //   var state = getAutomaticState();
+    //   state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
+    //   setState(state);
+    // }));
 
     // Initialize sim variables
     m_mechanism2d = new Mechanism2d(1.0, 1.0);
@@ -517,8 +522,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get()) | override.getAsBoolean()
-            && getTargetDistance().lte(MAX_SHOOTING_DISTANCE) | override.getAsBoolean())
+            && m_tagVisibleDebouncer.calculate(VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get())) | override.getAsBoolean()
+            )
           feedStart(false);
         else feedStop();
       },
