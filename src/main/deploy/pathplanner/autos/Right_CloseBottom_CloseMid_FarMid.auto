@@ -2,21 +2,15 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7580440067197164,
-      "y": 6.685072843231024
+      "x": 0.6946944060158917,
+      "y": 4.348392164717821
     },
-    "rotation": 60.75566698850124
+    "rotation": -59.19855402386312
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
-        {
-          "type": "named",
-          "data": {
-            "name": "preload"
-          }
-        },
         {
           "type": "parallel",
           "data": {
@@ -24,7 +18,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Left_CloseTop"
+                  "pathName": "Right_CloseBottom"
                 }
               },
               {
@@ -39,7 +33,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
           }
         },
         {
@@ -49,7 +43,32 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CloseTop_FarTop"
+                  "pathName": "CloseBottom_CloseMid"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CloseMid_FarMid"
                 }
               },
               {
@@ -64,18 +83,18 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "FarMid_LeftStage"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": "Left",
+  "folder": "Right",
   "choreoAuto": false
 }
