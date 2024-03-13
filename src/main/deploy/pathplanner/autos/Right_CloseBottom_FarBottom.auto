@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "first time shoot"
+            "name": "preload"
           }
         },
         {
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right_CloseBottom"
+                  "pathName": null
                 }
               },
               {
