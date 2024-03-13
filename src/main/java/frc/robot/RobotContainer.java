@@ -82,6 +82,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
+    
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1.2));
 
@@ -170,7 +171,7 @@ public class RobotContainer {
       SHOOTER_SUBSYSTEM.intakeCommand()
     );
   }
-  
+
   /**
    * Compose command to intake a note via the source and rumble controller appropriately
    * @return Command that will automatically intake a note from source via the shooter flywheels
