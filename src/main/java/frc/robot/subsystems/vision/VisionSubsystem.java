@@ -169,7 +169,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Log visible tags and estimated poses
     Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, poseList.toArray(new Pose3d[0]));
-    // Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, loggedPoses.toArray(new Pose2d[0]));
+    Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, loggedPoses.toArray(new Pose2d[0]));
 
     m_visibleTags.set(visibleTags);
     m_estimatedRobotPoses.set(estimatedPoses);

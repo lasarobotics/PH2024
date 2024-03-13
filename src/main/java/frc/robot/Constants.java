@@ -82,20 +82,25 @@ public final class Constants {
     public static final String START_INTAKE_COMMAND_NAME = "start intake";
     public static final String STOP_INTAKE_COMMAND_NAME = "stop intake";
     public static final String SHOOT_COMMAND_NAME = "shoot";
+    public static final String PRELOAD_COMMAND_NAME = "preload";
     public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
+    public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
 
   public static class AutoNames {
-    public static final String LEAVE = "Leave";
-    public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
-    public static final String PRELOAD_PLUS_ONE_RING = "Preload + 1 Ring";
+    public static final String CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = "Center_CloseTop_CloseMid_CloseBottom";
+    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
+    public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
+    public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_CloseTop_FarTop";
+    public static final String LEFT_WAIT_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
+    public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(6.0, 0.0, 0.1, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.12;
-    public static final double DRIVE_TURN_SCALAR = 50.0;
+    public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
@@ -124,7 +129,7 @@ public final class Constants {
       ),
       false,
       true,
-      0.1
+      0.15
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(

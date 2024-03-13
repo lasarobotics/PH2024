@@ -3,38 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 1.25634889866271,
+        "y": 5.597021986033711
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.095137859580823,
-        "y": 7.0
+        "x": 1.4291761916857169,
+        "y": 5.26711750165355
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "At speaker"
     },
     {
       "anchor": {
-        "x": 5.0,
-        "y": 7.0
+        "x": 2.629046436240141,
+        "y": 4.0968484027229355
       },
       "prevControl": {
-        "x": 4.223054873333534,
-        "y": 7.0
+        "x": 1.8266340043476086,
+        "y": 4.518629296410036
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "pickup third note blue"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0,
-      "rotationDegrees": 0,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -45,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -21.41296947487175,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Starts Speaker",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 0.8849369806391214,
     "velocity": 0
   },
   "useDefaultConstraints": true

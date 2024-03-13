@@ -54,6 +54,7 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -91,7 +92,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(9.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(40.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -133,6 +134,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
   private boolean m_isTractionControlEnabled = true;
+  private Rotation2d m_allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
@@ -189,6 +191,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
+    this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
     this.m_xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
     this.m_yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
@@ -384,7 +387,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().getRotation(),
+      getPose().getRotation().plus(m_allianceCorrection),
       m_controlCentricity
     );
 
@@ -412,7 +415,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
-      getPose().getRotation(),
+      getPose().getRotation().plus(m_allianceCorrection),
       m_controlCentricity
     );
 
@@ -461,9 +464,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Update current heading
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
-
-    // Skip vision if autonomous
-    //if (RobotState.isAutonomous()) return;
 
     // Get estimated poses from VisionSubsystem
     var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
@@ -766,6 +766,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       },
       this
     );
+  }
+
+  /**
+   * Set alliance
+   * <p>
+   * Must be set to correct for field oriented drive
+   * @param alliance alliance
+   */
+  public void setAlliance(Alliance alliance) {
+    m_allianceCorrection = alliance.equals(Alliance.Red) ? GlobalConstants.ROTATION_PI : GlobalConstants.ROTATION_ZERO;
   }
 
   /**

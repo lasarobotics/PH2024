@@ -3,38 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 2.8179669391920243,
+        "y": 6.902804382049867
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.095137859580823,
-        "y": 7.0
+        "x": 2.488772095338677,
+        "y": 6.686770265771108
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Pickup first note blue"
     },
     {
       "anchor": {
-        "x": 5.0,
-        "y": 7.0
+        "x": 1.25634889866271,
+        "y": 5.597021986033711
       },
       "prevControl": {
-        "x": 4.223054873333534,
-        "y": 7.0
+        "x": 1.7990620442460534,
+        "y": 5.596312345506897
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "At speaker"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0,
-      "rotationDegrees": 0,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -49,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Starts Close",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 35.3313313389164,
     "velocity": 0
   },
   "useDefaultConstraints": true
