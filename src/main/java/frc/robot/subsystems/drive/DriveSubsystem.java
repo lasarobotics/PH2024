@@ -482,7 +482,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    // Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
     Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
@@ -723,7 +723,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
-    // logOutputs();
+    logOutputs();
   }
 
   @Override

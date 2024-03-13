@@ -117,10 +117,10 @@ public final class Constants {
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.3,
-        1e-3,
+        2e-3,
         0.08,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.1
+        0.2
       ),
       false,
       true,
@@ -128,11 +128,11 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        2.0,
-        0.012,
+        3.0,
+        0.02,
         0.0,
         0.0,
-        0.026
+        0.0349
       ),
       false,
       true,
@@ -146,15 +146,16 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(31.0))),
-      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(28.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(27.5)))
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.5))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.5))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.5))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.5))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(31.5))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.5))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(29.5))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(28.0))),
+      Map.entry(Units.Meters.of(6.10), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(25.55)))
     );
   }
 
@@ -193,7 +194,7 @@ public final class Constants {
 
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
-    public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
+    public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
       new Translation3d(-0.102, -0.279, 0.584),
       new Rotation3d(0.0, Math.toRadians(-21.5), Math.toRadians(+180.0))
     );
@@ -201,7 +202,7 @@ public final class Constants {
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
-    public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
+    public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
       new Translation3d(0.0254, -0.279, 0.584),
       new Rotation3d(0.0, Math.toRadians(-21.5), 0.0)
     );
