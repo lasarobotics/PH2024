@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3783760900855138,
-      "y": 5.528365618134744
+      "x": 0.7489453734487825,
+      "y": 6.693817695671106
     },
-    "rotation": 0
+    "rotation": 58.874706601563354
   },
   "command": {
     "type": "sequential",
@@ -20,31 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "close bottom"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "close mid"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "close top"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "far top"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "shoot far"
+            "pathName": "leave"
           }
         }
       ]
