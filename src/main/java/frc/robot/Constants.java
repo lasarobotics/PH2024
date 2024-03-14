@@ -98,11 +98,12 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.12;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
+    // public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.ROBOT_CENTRIC;
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
     private static final double DRIVE_THROTTLE_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
@@ -121,20 +122,20 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.3,
+        0.32,
         2e-3,
         0.08,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.2
+        0.25
       ),
       false,
       true,
-      0.1
+      0.12
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         3.0,
-        0.01,
+        0.02,
         0.0,
         0.0,
         0.035
@@ -151,16 +152,18 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.5))),
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.5))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.5))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.5))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(31.5))),
-      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.5))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(29.5))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(28.0))),
-      Map.entry(Units.Meters.of(6.10), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(25.55)))
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(39.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.25))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(28.5))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(5.20), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0))),
+      Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(24.5)))
     );
   }
 

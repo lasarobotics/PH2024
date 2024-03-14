@@ -14,7 +14,32 @@
         {
           "type": "named",
           "data": {
-            "name": "first time shoot"
+            "name": "preload"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right_CloseBottom"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
           }
         },
         {
@@ -30,12 +55,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "auto shoot"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "FarBottom_RightStage"
@@ -48,7 +67,7 @@
           }
         },
         {
-          "type": "sequential",
+          "type": "parallel",
           "data": {
             "commands": []
           }

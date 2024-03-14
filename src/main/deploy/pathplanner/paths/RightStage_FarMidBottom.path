@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.5763977418691195,
-        "y": 5.567111941824834
+        "x": 3.7329246168463843,
+        "y": 2.736432139530946
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5790220676107336,
-        "y": 5.5670134188588944
+        "x": 5.062586087167426,
+        "y": 0.5849854930113668
       },
-      "isLocked": true,
-      "linkedName": "CloseMid (CloseTop_CloseMid)"
+      "isLocked": false,
+      "linkedName": "Shoot_Right_Stage"
     },
     {
       "anchor": {
-        "x": 7.9891964634143235,
-        "y": 4.098792791023527
+        "x": 8.313463363768836,
+        "y": 2.4504441189333512
       },
       "prevControl": {
-        "x": 7.0515367634060695,
-        "y": 3.3051680355142192
+        "x": 8.004843197656323,
+        "y": 2.2364674704286767
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,11 +39,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 11.350349872644747,
+    "rotation": 31.890791801845786,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts Close",
+  "folder": "Starts Stage",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

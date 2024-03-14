@@ -92,21 +92,22 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(40.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(45.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
+  public static final Measure<Angle> AIM_OFFSET = Units.Degrees.of(0.0);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
   // Other settings
   private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.0;
+  private static final double TOLERANCE = 1.5;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
+  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0,1.0, Math.toRadians(3.0));
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -482,7 +483,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
+    //Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
     Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
@@ -555,6 +556,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
+    // Add offset
+    adjustedAngle = adjustedAngle.plus(Rotation2d.fromRadians(AIM_OFFSET.in(Units.Radians)));
     // Calculate necessary rotate rate
     double rotateOutput = reversed
       ? m_autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees())
@@ -562,6 +565,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
+    Logger.recordOutput(getName() + "/aimError", currentPose.getRotation().getDegrees() - adjustedAngle.getDegrees());
 
     // Drive robot accordingly
     drive(

@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right_FarBottom"
+                  "pathName": "RightStage_FarBottom"
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "FarMidBottom_RightStage2"
+                  "pathName": "RightStage_FarMidBottom"
                 }
               },
               {

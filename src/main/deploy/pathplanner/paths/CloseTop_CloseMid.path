@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2699301408104018,
-        "y": 6.288594049872185
+        "x": 1.1821823168586967,
+        "y": 5.47936411787313
       },
       "isLocked": false,
       "linkedName": "first note intake (Left_CloseTop_CloseMid_FarMid)"
@@ -25,21 +25,21 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CloseMid (CloseTop_CloseMid)"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 2.5,
+    "maxVelocity": 5.1,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 2160.0,
     "maxAngularAcceleration": 2160.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -2.385944030388727,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
