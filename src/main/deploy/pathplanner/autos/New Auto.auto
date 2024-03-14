@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3783760900855138,
+      "y": 5.528365618134744
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "preload"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "close bottom"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "close mid"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "close top"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "far top"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "shoot far"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "built",
+  "choreoAuto": false
+}

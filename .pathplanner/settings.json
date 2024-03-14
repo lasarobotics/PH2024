@@ -3,15 +3,17 @@
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
+    "paths",
+    "Old",
     "Starts Close",
     "Starts Far",
-    "Old",
     "Starts Speaker",
     "Starts Stage"
   ],
   "autoFolders": [
     "Center",
     "Left",
+    "built",
     "Old",
     "Right"
   ],
