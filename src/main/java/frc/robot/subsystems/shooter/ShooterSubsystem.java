@@ -211,11 +211,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     initializeShooterCurves(shooterMap);
 
     // Set default command to track speaker angle
-    // setDefaultCommand(run(() -> {
-    //   var state = getAutomaticState();
-    //   state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
-    //   setState(state);
-    // }));
+    setDefaultCommand(run(() -> {
+      var state = getAutomaticState();
+      state = new State(SPINUP_SPEED, state.angle);
+      setState(state);
+    }));
 
     // Initialize sim variables
     m_mechanism2d = new Mechanism2d(1.0, 1.0);

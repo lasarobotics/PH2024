@@ -18,7 +18,7 @@
     "Right"
   ],
   "defaultMaxVel": 5.1,
-  "defaultMaxAccel": 3.5,
+  "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 2160.0,
   "defaultMaxAngAccel": 2160.0,
   "maxModuleSpeed": 4.5
