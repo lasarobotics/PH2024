@@ -106,10 +106,10 @@ public class RobotContainer {
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
 
-    // Left trigger button - aim at game piece and intake
+    // Left trigger button - intake game piece
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
 
-    // Left bumper button - outtake game piece
+    // Left bumper button - intake game piece from source
     PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
 
     // A button - go to amp and score
