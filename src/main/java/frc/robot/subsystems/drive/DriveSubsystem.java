@@ -92,7 +92,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(45.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -107,8 +107,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0,1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.4, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
+  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -186,8 +186,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
+      new com.pathplanner.lib.util.PIDConstants(6.0, 0.0, 0.0),
       new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.0),
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),
@@ -468,15 +468,19 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
 
     // Get estimated poses from VisionSubsystem
-    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
+    var apriltagCameraResults = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
 
     // Exit if no valid vision pose estimates
-    if (visionEstimatedRobotPoses.isEmpty()) return;
+    if (apriltagCameraResults.isEmpty()) return;
 
     // Add vision measurements to pose estimator
-    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-      //if (visionEstimatedRobotPose.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
-      m_poseEstimator.addVisionMeasurement(visionEstimatedRobotPose.estimatedPose.toPose2d(), visionEstimatedRobotPose.timestampSeconds);
+    for (var result : apriltagCameraResults) {
+      //if (result.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
+      m_poseEstimator.addVisionMeasurement(
+        result.estimatedRobotPose.estimatedPose.toPose2d(),
+        result.estimatedRobotPose.timestampSeconds,
+        result.visionMeasurementStdDevs
+      );
     }
   }
 
@@ -484,7 +488,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    //Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
     Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
@@ -691,6 +695,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  /**
+   * Reset current pose to vision estimate
+   */
   private void resetPoseToVision() {
     // Get vision estimated poses
     var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
@@ -703,7 +710,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_poseEstimator.resetPosition(
         getRotation2d(),
         getModulePositions(),
-        visionEstimatedRobotPose.estimatedPose.toPose2d()
+        visionEstimatedRobotPose.estimatedRobotPose.estimatedPose.toPose2d()
       );
     }
   }
@@ -806,6 +813,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Update turn PID
     m_rotatePIDController.calculate(getAngle(), getRotateRate(), 0.0);
+
+    // Update auto-aim controllers
+    m_autoAimPIDControllerFront.calculate(
+      getPose().getRotation().getDegrees(),
+      getPose().getRotation().getDegrees()
+    );
+    m_autoAimPIDControllerBack.calculate(
+      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
+      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
+    );
   }
 
   /**

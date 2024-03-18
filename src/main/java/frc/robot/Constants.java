@@ -99,11 +99,10 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.12;
+    public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
-    // public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.ROBOT_CENTRIC;
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
     private static final double DRIVE_THROTTLE_INPUT_CURVE_X[] = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };

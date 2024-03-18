@@ -76,8 +76,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(55.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(53.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(53.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
 
@@ -93,7 +93,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
-  private static final Measure<Time> TAG_VISIBLE_DEBOUNCE_TIME = Units.Seconds.of(0.5);
+  private static final Measure<Time> TAG_VISIBLE_DEBOUNCE_TIME = Units.Seconds.of(1.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
@@ -161,7 +161,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
-    this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), edu.wpi.first.math.filter.Debouncer.DebounceType.kFalling);
+    this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), Debouncer.DebounceType.kFalling);
 
     // Slave bottom flywheel motor to top
     m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
@@ -215,6 +215,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       var state = getAutomaticState();
       state = new State(SPINUP_SPEED, state.angle);
       setState(state);
+      feedStop();
     }));
 
     // Initialize sim variables
@@ -300,7 +301,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle));
+    setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
   }
 
   /**
@@ -398,8 +399,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_ANGLE, m_desiredShooterState.angle.in(Units.Degrees));
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_SPEED, m_desiredShooterState.speed.in(Units.MetersPerSecond));
     Logger.recordOutput(getName() + SHOOTER_TARGET_DISTANCE, getTargetDistance());
-
-    System.out.println(getTargetDistance());
   }
 
   @Override
@@ -524,8 +523,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         setState(getAutomaticState());
         if (RobotBase.isSimulation() | isReady()
             && isAimed.getAsBoolean()
-            && m_tagVisibleDebouncer.calculate(VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get())) | override.getAsBoolean()
-            )
+            && m_tagVisibleDebouncer.calculate(VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get())) | override.getAsBoolean())
           feedStart(false);
         else feedStop();
       },

@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.VisionSystemSim;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -31,6 +30,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;
 
 public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -55,8 +55,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
 
-  private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
+  private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
+  private AtomicReference<List<Pose2d>> m_loggedEstimatedPoses;
+  private AtomicReference<List<Pose3d>> m_visibleTagPoses;
 
   private ObjectCamera m_objectCamera;
   private AprilTagCamera[] m_apriltagCameras;
@@ -73,8 +75,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     setName(getClass().getSimpleName());
     this.m_apriltagCameras = visionHardware.cameras;
     this.m_objectCamera = visionHardware.objectCamera;
-    this.m_estimatedRobotPoses = new AtomicReference<List<EstimatedRobotPose>>();
+    this.m_estimatedRobotPoses = new AtomicReference<List<AprilTagCameraResult>>();
     this.m_visibleTags = new AtomicReference<List<AprilTag>>();
+    this.m_loggedEstimatedPoses = new AtomicReference<List<Pose2d>>();
+    this.m_visibleTagPoses = new AtomicReference<List<Pose3d>>();
 
     this.m_sim = new VisionSystemSim(getName());
 
@@ -148,31 +152,31 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Update currently estimated robot pose from each camera
    */
   private void updateEstimatedGlobalPoses() {
-    var estimatedPoses = new ArrayList<EstimatedRobotPose>();
+    var apriltagCameraResult = new ArrayList<AprilTagCameraResult>();
 
     var visibleTags = new ArrayList<AprilTag>();
     var loggedPoses = new ArrayList<Pose2d>();
-    var poseList = new ArrayList<Pose3d>();
+    var visibleTagPoseList = new ArrayList<Pose3d>();
     for (var camera : m_apriltagCameras) {
       var result = camera.getLatestEstimatedPose();
       if (result == null) continue;
-      result.targetsUsed.forEach((photonTrackedTarget) -> {
+      result.estimatedRobotPose.targetsUsed.forEach((photonTrackedTarget) -> {
         var tag = getTag(photonTrackedTarget.getFiducialId());
         if (tag.isPresent()) {
           visibleTags.add(tag.get());
-          poseList.add(tag.get().pose);
+          visibleTagPoseList.add(tag.get().pose);
         }
       });
-      estimatedPoses.add(result);
-      loggedPoses.add(result.estimatedPose.toPose2d());
+      apriltagCameraResult.add(result);
+      loggedPoses.add(result.estimatedRobotPose.estimatedPose.toPose2d());
     }
 
     // Log visible tags and estimated poses
-    Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, poseList.toArray(new Pose3d[0]));
-    // Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, loggedPoses.toArray(new Pose2d[0]));
+    m_visibleTagPoses.set(visibleTagPoseList);
+    m_loggedEstimatedPoses.set(loggedPoses);
 
     m_visibleTags.set(visibleTags);
-    m_estimatedRobotPoses.set(estimatedPoses);
+    m_estimatedRobotPoses.set(apriltagCameraResult);
   }
 
   /**
@@ -210,7 +214,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Get currently estimated robot poses from each camera
    * @return List of estimated poses, the timestamp, and targets used to create the estimate
    */
-  public List<EstimatedRobotPose> getEstimatedGlobalPoses() {
+  public List<AprilTagCameraResult> getEstimatedGlobalPoses() {
+    Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, m_visibleTagPoses.get().toArray(new Pose3d[0]));
+    Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, m_loggedEstimatedPoses.get().toArray(new Pose2d[0]));
+
     return m_estimatedRobotPoses.getAndSet(Collections.emptyList());
   }
 

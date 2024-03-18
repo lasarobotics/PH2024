@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.25634889866271,
-        "y": 5.597021986033711
+        "x": 1.38,
+        "y": 5.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2563488986627096,
-        "y": 5.597021986033711
+        "x": 2.38,
+        "y": 5.6
       },
       "isLocked": false,
       "linkedName": "At speaker"
