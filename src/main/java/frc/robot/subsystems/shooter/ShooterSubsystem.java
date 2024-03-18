@@ -398,6 +398,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_ANGLE, m_desiredShooterState.angle.in(Units.Degrees));
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_SPEED, m_desiredShooterState.speed.in(Units.MetersPerSecond));
     Logger.recordOutput(getName() + SHOOTER_TARGET_DISTANCE, getTargetDistance());
+
+    System.out.println(getTargetDistance());
   }
 
   @Override
