@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.34,
-        "y": 6.58
+        "x": 3.863365826494124,
+        "y": 6.298343808089041
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.5181010777223465,
-        "y": 6.548343808089041
+        "x": 4.04146690421647,
+        "y": 6.266687616178082
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftStage"
     },
     {
       "anchor": {
