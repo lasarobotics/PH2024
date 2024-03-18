@@ -12,16 +12,16 @@
         "y": 7.36125120891572
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Far_Top"
     },
     {
       "anchor": {
-        "x": 4.34,
-        "y": 6.58
+        "x": 3.863365826494124,
+        "y": 6.298343808089041
       },
       "prevControl": {
-        "x": 4.5642444389876875,
-        "y": 6.6384985493011355
+        "x": 4.087610265481813,
+        "y": 6.3568423573901764
       },
       "nextControl": null,
       "isLocked": false,
