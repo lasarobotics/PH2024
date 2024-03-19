@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 1.38,
-        "y": 5.6
+        "y": 5.55
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.38,
-        "y": 5.6
+        "y": 5.55
       },
       "isLocked": false,
       "linkedName": "At speaker"
     },
     {
       "anchor": {
-        "x": 3.507218643509969,
-        "y": 5.843208478396908
+        "x": 3.5,
+        "y": 5.55
       },
       "prevControl": {
-        "x": 2.507218643509969,
-        "y": 5.843208478396908
+        "x": 2.5,
+        "y": 5.55
       },
       "nextControl": null,
       "isLocked": false,

@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 1.38,
-        "y": 5.6
+        "y": 5.55
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.0156556378273773,
-        "y": 5.6
+        "y": 5.55
       },
       "isLocked": false,
       "linkedName": "At speaker"
     },
     {
       "anchor": {
-        "x": 2.8488289558032753,
-        "y": 5.4954964245768085
+        "x": 2.8687124812629907,
+        "y": 5.546073925774613
       },
       "prevControl": {
-        "x": 2.679627602038368,
-        "y": 5.455771137804956
+        "x": 2.6949103048526153,
+        "y": 5.546073925774613
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "Starts Close",
   "previewStartingState": {
-    "rotation": 1.4211866173712895,
+    "rotation": -0.24876189019902964,
     "velocity": 0
   },
   "useDefaultConstraints": true
