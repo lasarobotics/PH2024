@@ -108,7 +108,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(9.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -186,8 +186,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(6.0, 0.0, 0.0),
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.0),
+      new com.pathplanner.lib.util.PIDConstants(1.5, 0.0, 0.0),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),

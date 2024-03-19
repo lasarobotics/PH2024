@@ -134,7 +134,7 @@ public final class Constants {
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         3.0,
-        0.03,
+        0.01,
         0.0,
         0.0,
         0.035
@@ -154,12 +154,12 @@ public final class Constants {
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(48.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(41.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.25))),
-      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(28.5))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(28.5))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(29.0))),
       Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
       Map.entry(Units.Meters.of(5.20), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0))),
       Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(24.5)))
