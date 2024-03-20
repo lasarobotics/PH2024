@@ -107,6 +107,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
   private final Measure<Velocity<Distance>> MAX_FLYWHEEL_SPEED;
   private final Measure<Velocity<Distance>> SPINUP_SPEED = Units.MetersPerSecond.of(10.0);
+  
+  private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
+  private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
+  private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), Debouncer.DebounceType.kRising);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -593,6 +597,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public boolean isObjectPresent() {
     return m_indexerMotor.getInputs().forwardLimitSwitch;
+  }
+
+  /**
+   * Whether a note has been shot
+   * @return If the current of the top flywheel motor is greater than the threshold for a specified time
+   */
+  public boolean hasBeenShot() {
+    return NOTE_SHOT_DETECTOR.calculate(m_topFlywheelMotor.getOutputCurrent().compareTo(NOTE_SHOT_CURRENT_THRESHOLD) > 0);
   }
 
   @Override
