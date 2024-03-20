@@ -99,6 +99,9 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
+    // Back button - toggles centricity between robot and field centric
+    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
+
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click right stick to override and shoot now
     PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.rightStick().getAsBoolean()));
