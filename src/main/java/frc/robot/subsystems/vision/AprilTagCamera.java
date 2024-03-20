@@ -34,7 +34,6 @@ import frc.robot.Constants;
 public class AprilTagCamera implements Runnable, AutoCloseable {
   private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.2;
   private final double POSE_MAX_HEIGHT = 0.75;
-  private final double XY_STDDEV_MULTIPLIER = 0.05;
   private final Measure<Distance> MAX_TAG_DISTANCE = Units.Meters.of(100.0);
 
   public static class AprilTagCameraResult {
@@ -154,7 +153,7 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
         }
 
         // Calculate standard deviation
-        double xyStdDev = closestTagDistance.times(XY_STDDEV_MULTIPLIER).in(Units.Meters);
+        double xyStdDev = 0.01 * Math.pow(closestTagDistance.in(Units.Meters), 2.0) / estimatedRobotPose.targetsUsed.size();
         double thetaStdDev = 0.01 * Math.pow(closestTagDistance.in(Units.Meters), 2.0) / estimatedRobotPose.targetsUsed.size();
 
         // Set result
