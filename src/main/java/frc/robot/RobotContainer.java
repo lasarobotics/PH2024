@@ -121,6 +121,9 @@ public class RobotContainer {
       )
     );
 
+    // Push down left stick - Pass note    
+    PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+
     // B button - go to source and intake game piece
     // PRIMARY_CONTROLLER.b().whileTrue(
     //   DRIVE_SUBSYSTEM.goToPoseCommand(

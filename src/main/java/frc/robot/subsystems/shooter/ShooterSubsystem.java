@@ -80,6 +80,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
+    public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -549,6 +550,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command shootSpeakerCommand() {
     return shootManualCommand(State.SPEAKER_SCORE_STATE);
+  }
+
+  /** 
+   * Pass note from opponent side to your side
+   * @return Command to pass note
+   */
+  public Command passCommand() {
+    return shootManualCommand(State.PASSING_STATE);
   }
 
   /**
