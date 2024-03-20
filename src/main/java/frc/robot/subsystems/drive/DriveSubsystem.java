@@ -826,6 +826,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Toggles between field centric and robot centric drive control
+   */
+  private void toggleControlCentricity() {
+    if (m_controlCentricity == ControlCentricity.FIELD_CENTRIC) {
+      this.m_controlCentricity = ControlCentricity.ROBOT_CENTRIC;
+    } else {
+      this.m_controlCentricity = ControlCentricity.FIELD_CENTRIC;
+    }
+  }
+
+  /**
    * Aim robot at desired point on the field, while strafing
    * @param xRequestSupplier X axis speed supplier [-1.0, +1.0]
    * @param yRequestSupplier Y axis speed supplier [-1.0, +1.0]
@@ -921,6 +932,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command toggleTractionControlCommand() {
     return runOnce(() -> toggleTractionControl());
+  }
+
+  /**
+   * Toggles between field and robot oriented drive control
+   * @return Command to toggle control centricity between robot and field centric drive control
+   */
+  public Command toggleCentriciyCommand() {
+    return runOnce(() -> toggleControlCentricity());
   }
 
   /**
