@@ -267,6 +267,17 @@ public class RobotContainer {
   }
 
   /**
+   * PARTY BUTTON!!!!
+   * @return Command that spins the robot and moves the shooter up and down
+   */
+  private Command partyButton() {
+    return Commands.parallel(
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
+      SHOOTER_SUBSYSTEM.shootPartyButton()
+    );
+  }
+
+  /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker
    */
