@@ -104,7 +104,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click right stick to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.rightStick().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -133,8 +133,13 @@ public class RobotContainer {
     //   )
     // );
 
-    //B Button - automatically aim at object
-    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+    // Right Stick Button - snap robot to the nearest cardinal direction
+    PRIMARY_CONTROLLER.rightStick().whileTrue(
+      DRIVE_SUBSYSTEM.snapToCardinalDirectionCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX()
+      )
+    );
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());

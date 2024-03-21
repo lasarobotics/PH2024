@@ -543,6 +543,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
 
+
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -578,6 +579,34 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity()
+    );
+  }
+
+  private void snapToCardinalDirection(double xRequest, double yRequest) {
+    // Calculate desired robot velocity
+    double moveRequest = Math.hypot(xRequest, yRequest);
+    double moveDirection = Math.atan2(yRequest, xRequest);
+    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+    
+    Rotation2d currentRotation = getPose().getRotation();
+    double angleScalar = (currentRotation.div(90).getDegrees());
+    double desiredAngle = (int)((angleScalar / 90) + 0.5) * 90;
+
+    double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
+    
+    // Drive with the pose to the snapped cardinal direction
+    drive(
+      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+      Units.DegreesPerSecond.of(rotateOutput),
+      getInertialVelocity()
+    );
+  }
+
+    public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
+    return runEnd(
+      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
+      () -> resetRotatePID()
     );
   }
 
