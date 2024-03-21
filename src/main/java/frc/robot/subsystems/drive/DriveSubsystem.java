@@ -584,6 +584,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  /**
+   * Rotates the robot to the nearest cardinal direction while preserving strafing
+   * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
+   * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
+   */
   private void snapToCardinalDirection(double xRequest, double yRequest) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
@@ -591,8 +596,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
     
     Rotation2d currentRotation = getPose().getRotation();
-    double angleScalar = (currentRotation.div(90).getDegrees());
-    double desiredAngle = (int)((angleScalar / 90) + 0.5) * 90;
+    double angleScalar = (currentRotation.getDegrees());
+    double desiredAngle = (int)(angleScalar / 90 + Math.copySign(0.5, angleScalar)) * 90;
 
     double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
     
@@ -605,7 +610,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
-    public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
+  /**
+   * Rotates the robot to the nearest cardinal direction while preserving strafing
+   * @param xRequestSupplier X axis speed supplier
+   * @param yRequestSupplier Y axis speed supplier
+   * @return Command to snap to the nearest cardinal direction
+   */
+  public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
       () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
       () -> resetRotatePID()
