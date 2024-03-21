@@ -136,6 +136,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
   private boolean m_isTractionControlEnabled = true;
+  private boolean m_isFieldCentricEnabled = true;
   private Rotation2d m_allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
@@ -499,6 +500,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_field.setRobotPose(getPose());
     SmartDashboard.putBoolean("TC", m_isTractionControlEnabled);
     SmartDashboard.putBoolean("PurplePath", m_purplePathClient.isConnected());
+    SmartDashboard.putBoolean("Field Oriented Control", m_isFieldCentricEnabled);
   }
 
   /**
@@ -860,8 +862,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private void toggleControlCentricity() {
     if (m_controlCentricity == ControlCentricity.FIELD_CENTRIC) {
       this.m_controlCentricity = ControlCentricity.ROBOT_CENTRIC;
+      m_isFieldCentricEnabled = false;
     } else {
       this.m_controlCentricity = ControlCentricity.FIELD_CENTRIC;
+      m_isFieldCentricEnabled = true;
     }
   }
 
