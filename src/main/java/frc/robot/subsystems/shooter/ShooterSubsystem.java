@@ -179,6 +179,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     var flywheelConversionFactor = flywheelDiameter.in(Units.Meters) * Math.PI;
     m_topFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
     m_topFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
+    m_bottomFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
+    m_bottomFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
 
     // Set angle adjust conversion factor
     var angleConversionFactor = Math.PI * 2;
