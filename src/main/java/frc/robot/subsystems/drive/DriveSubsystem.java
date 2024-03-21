@@ -572,7 +572,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
-    Logger.recordOutput(getName() + "/aimError", currentPose.getRotation().getDegrees() - adjustedAngle.getDegrees());
+    double aimError = currentPose.getRotation().getDegrees() - adjustedAngle.getDegrees();
+    Logger.recordOutput(getName() + "/AimError", Math.copySign(((180 - Math.abs(aimError)) % 180), (aimError)));
 
     // Drive robot accordingly
     drive(
