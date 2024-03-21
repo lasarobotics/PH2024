@@ -11,6 +11,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -44,20 +45,22 @@ public class RobotContainer {
     Constants.HID.CONTROLLER_DEADBAND,
     Constants.Drive.DRIVE_LOOKAHEAD
   );
-  private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
-    ShooterSubsystem.initializeHardware(),
-    Constants.Shooter.FLYWHEEL_CONFIG,
-    Constants.Shooter.ANGLE_CONFIG,
-    Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
-    Constants.Shooter.FLYWHEEL_DIAMETER,
-    Constants.Shooter.SHOOTER_MAP,
-    DRIVE_SUBSYSTEM::getPose,
-    () -> speakerSupplier()
-  );
-  private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
-    IntakeSubsystem.initializeHardware(),
-    Constants.Intake.ROLLER_VELOCITY
-  );
+  private static final ShooterSubsystem SHOOTER_SUBSYSTEM = null;
+  private static final IntakeSubsystem INTAKE_SUBSYSTEM = null;
+  // private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
+  //   ShooterSubsystem.initializeHardware(),
+  //   Constants.Shooter.FLYWHEEL_CONFIG,
+  //   Constants.Shooter.ANGLE_CONFIG,
+  //   Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
+  //   Constants.Shooter.FLYWHEEL_DIAMETER,
+  //   Constants.Shooter.SHOOTER_MAP,
+  //   DRIVE_SUBSYSTEM::getPose,
+  //   () -> speakerSupplier()
+  // );
+  // private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
+  //   IntakeSubsystem.initializeHardware(),
+  //   Constants.Intake.ROLLER_VELOCITY
+  // );
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
@@ -65,6 +68,8 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    System.out.println("robotcontainer");
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -96,6 +101,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
@@ -132,6 +138,8 @@ public class RobotContainer {
     //     SHOOTER_SUBSYSTEM.sourceIntakeCommand()
     //   )
     // );
+    //B
+    PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
 
     // Right Stick Button - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
@@ -273,6 +281,34 @@ public class RobotContainer {
       false
     );
   }
+
+   /**
+    * Automatically aim robot heading at object, drive, and intake a game object
+    * @return Command to aim robot at object, drive, and intake a game object
+    */
+   private Command aimAndIntakeObjectCommand() {
+     return Commands.sequence(
+         DRIVE_SUBSYSTEM.aimAtPointCommand(
+             () -> PRIMARY_CONTROLLER.getLeftY(),
+             () -> PRIMARY_CONTROLLER.getLeftX(),
+             () -> PRIMARY_CONTROLLER.getRightX(),
+             () -> {
+               return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+                   ? VISION_SUBSYSTEM.getObjectLocation().get()
+                   : null;
+             },
+             false,
+             false).withTimeout(0.5),
+         Commands.parallel(
+             Commands.run(() -> {
+               DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
+             }, DRIVE_SUBSYSTEM)
+            //  INTAKE_SUBSYSTEM.intakeCommand(),
+            //  SHOOTER_SUBSYSTEM.intakeCommand()
+         )
+        //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+        );
+   }
 
   /**
    * Get correct speaker for current alliance
