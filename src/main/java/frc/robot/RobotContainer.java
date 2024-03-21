@@ -130,6 +130,9 @@ public class RobotContainer {
     //   )
     // );
 
+    //B Button - automatically aim at object
+    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
