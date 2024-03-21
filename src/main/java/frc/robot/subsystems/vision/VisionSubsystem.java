@@ -253,6 +253,16 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     ));
   }
 
+  /**
+   * Gets the object heading, relative to the camera.
+   * @return the heading
+   */
+  public Optional<Measure<Angle>> getObjectHeading() {
+    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
+    if (yaw.isEmpty()) return Optional.empty();
+    return yaw;
+  }
+
   @Override
   public void close() {
     for (var camera : m_apriltagCameras) camera.close();
