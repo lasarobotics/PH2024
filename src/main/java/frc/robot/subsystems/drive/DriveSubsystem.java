@@ -499,6 +499,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_field.setRobotPose(getPose());
     SmartDashboard.putBoolean("TC", m_isTractionControlEnabled);
     SmartDashboard.putBoolean("PurplePath", m_purplePathClient.isConnected());
+    SmartDashboard.putBoolean("FC", m_controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
   }
 
   /**
