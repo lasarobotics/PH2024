@@ -168,11 +168,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_targetSupplier = targetSupplier;
     this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), Debouncer.DebounceType.kFalling);
 
-    // Slave bottom flywheel motor to top
-    m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
-
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
+    m_bottomFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
     m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
 
     // Set flywheel conversion factor
@@ -280,8 +278,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
 
-    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) m_topFlywheelMotor.stopMotor();
-    else m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
+      m_topFlywheelMotor.stopMotor();
+      m_bottomFlywheelMotor.stopMotor();
+    }
+    else { 
+      m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+      m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    }
     m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
   }
 
@@ -412,6 +416,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
     m_topFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.speed.in(Units.MetersPerSecond);
+    m_bottomFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.speed.in(Units.MetersPerSecond);
 
     m_angleMotor.getInputs().absoluteEncoderPosition = m_simShooterAngleState.position;
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
