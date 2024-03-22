@@ -255,6 +255,7 @@ public class RobotContainer {
 
   /**
    * Compose command to feed a note through the robot
+   * @return Command to feed note through the robot
    */
   private Command feedThroughCommand() {
     return Commands.parallel(
