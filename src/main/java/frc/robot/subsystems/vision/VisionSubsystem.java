@@ -199,6 +199,9 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    var objectLocation = getObjectLocation();
+    if (objectLocation.isEmpty()) return;
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
   @Override
@@ -248,7 +251,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return Optional.of(pose.getTranslation().plus(
       new Translation2d(
         distance.get().in(Units.Meters),
-        Rotation2d.fromRadians(pose.getRotation().getRadians() + yaw.get().in(Units.Radians))
+        Rotation2d.fromRadians(pose.getRotation().getRadians() - yaw.get().in(Units.Radians))
       )
     ));
   }
