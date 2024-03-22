@@ -45,8 +45,7 @@ public class RobotContainer {
     Constants.HID.CONTROLLER_DEADBAND,
     Constants.Drive.DRIVE_LOOKAHEAD
   );
-  private static final ShooterSubsystem SHOOTER_SUBSYSTEM = null;
-  private static final IntakeSubsystem INTAKE_SUBSYSTEM = null;
+
   // private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
   //   ShooterSubsystem.initializeHardware(),
   //   Constants.Shooter.FLYWHEEL_CONFIG,
@@ -83,13 +82,13 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     // Register Named Commands
-    NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
-    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
-    NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
+    // NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
+    // NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
+    // NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
+    // NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
 
-    NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
-    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1));
+    // NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
+    // NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -108,27 +107,29 @@ public class RobotContainer {
     // Back button - toggles centricity between robot and field centric
     PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
 
+    PRIMARY_CONTROLLER.leftBumper().whileTrue(aimAtObject());
+
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click right stick to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    // PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
+    // PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
 
     // Left trigger button - intake game piece
-    PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
+    // PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
 
     // Left bumper button - intake game piece from source
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
+    // PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
 
     // A button - go to amp and score
-    PRIMARY_CONTROLLER.a().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.AMP,
-        SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-        SHOOTER_SUBSYSTEM.scoreAmpCommand()
-      )
-    );
+    // PRIMARY_CONTROLLER.a().whileTrue(
+    //   DRIVE_SUBSYSTEM.goToPoseCommand(
+    //     Constants.Field.AMP,
+    //     SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+    //     SHOOTER_SUBSYSTEM.scoreAmpCommand()
+    //   )
+    // );
 
     // B button - go to source and intake game piece
     // PRIMARY_CONTROLLER.b().whileTrue(
@@ -139,7 +140,7 @@ public class RobotContainer {
     //   )
     // );
     //B
-    PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
+    // PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
 
     // Right Stick Button - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
@@ -150,13 +151,13 @@ public class RobotContainer {
     );
 
     // X button - shoot note into speaker from against the subwoofer
-    PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
+    // PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
     // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
-    PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
+    // PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
-    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
-    PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
+    // PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+    // PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
   }
 
   /**
@@ -168,100 +169,100 @@ public class RobotContainer {
    * </ul>
    * @return Command that will automatically make the controller rumble based on the above conditions
    */
-  private Command rumbleCommand() {
-    return Commands.run(() -> {
-      if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-      if (SHOOTER_SUBSYSTEM.isObjectPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
-    }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
-  }
+  // private Command rumbleCommand() {
+  //   return Commands.run(() -> {
+  //     if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
+  //       PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
+  //     else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
+  //     if (SHOOTER_SUBSYSTEM.isObjectPresent())
+  //       PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
+  //     else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
+  //   }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
+  // }
 
   /**
    * Compose command to intake a note and rumble controller appropriately
    * @return Command that will automatically intake a note and prepare it for feeding inside the shooter motor
    */
-  private Command intakeCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-    );
-  }
+  // private Command intakeCommand() {
+  //   return Commands.parallel(
+  //     rumbleCommand(),
+  //     INTAKE_SUBSYSTEM.intakeCommand(),
+  //     SHOOTER_SUBSYSTEM.intakeCommand()
+  //   );
+  // }
 
   /**
    * Compose command to intake a note via the source and rumble controller appropriately
    * @return Command that will automatically intake a note from source via the shooter flywheels
    */
-  private Command sourceIntakeCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      SHOOTER_SUBSYSTEM.sourceIntakeCommand()
-    );
-  }
+  // private Command sourceIntakeCommand() {
+  //   return Commands.parallel(
+  //     rumbleCommand(),
+  //     SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+  //   );
+  // }
 
   /**
    * Intake until an object is present in autonomous
    * @return Command to intake until an object is present
    */
-  private Command autoIntakeCommand() {
-    return Commands.parallel(
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-    ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
-  }
+  // private Command autoIntakeCommand() {
+  //   return Commands.parallel(
+  //     INTAKE_SUBSYSTEM.intakeCommand(),
+  //     SHOOTER_SUBSYSTEM.intakeCommand()
+  //   ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
+  // }
 
   /**
    * Compose command to outtake a note
    * @return Command that will spit out a note from ground intake
    */
-  private Command outtakeCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      INTAKE_SUBSYSTEM.outtakeCommand(),
-      SHOOTER_SUBSYSTEM.outtakeCommand()
-    );
-  }
+  // private Command outtakeCommand() {
+  //   return Commands.parallel(
+  //     rumbleCommand(),
+  //     INTAKE_SUBSYSTEM.outtakeCommand(),
+  //     SHOOTER_SUBSYSTEM.outtakeCommand()
+  //   );
+  // }
 
   /**
    * Compose command to shoot note
    * @param override Shoot even if target tag is not visible
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand(BooleanSupplier override) {
-    return Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX(),
-        () -> speakerSupplier().pose.getTranslation().toTranslation2d(),
-        true,
-        true
-      ),
-      SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
-    );
-  }
+  // private Command shootCommand(BooleanSupplier override) {
+  //   return Commands.parallel(
+  //     DRIVE_SUBSYSTEM.aimAtPointCommand(
+  //       () -> PRIMARY_CONTROLLER.getLeftY(),
+  //       () -> PRIMARY_CONTROLLER.getLeftX(),
+  //       () -> PRIMARY_CONTROLLER.getRightX(),
+  //       () -> speakerSupplier().pose.getTranslation().toTranslation2d(),
+  //       true,
+  //       true
+  //     ),
+  //     SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
+  //   );
+  // }
 
   /**
    * Compose command to shoot note, checking if tag is visible and robot is in range
    * @return Command that will automatically aim and shoot note
    */
-  private Command shootCommand() {
-    return shootCommand(() -> false);
-  }
+  // private Command shootCommand() {
+  //   return shootCommand(() -> false);
+  // }
 
   /**
    * Compose command to feed a note through the robot
    */
-  private Command feedThroughCommand() {
-    return Commands.parallel(
-      rumbleCommand(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.feedThroughCommand(() -> DRIVE_SUBSYSTEM.isAimed())
-    );
-  }
+  // private Command feedThroughCommand() {
+  //   return Commands.parallel(
+  //     rumbleCommand(),
+  //     INTAKE_SUBSYSTEM.intakeCommand(),
+  //     SHOOTER_SUBSYSTEM.feedThroughCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+  //   );
+  // }
 
   /**
    * Command to aim at detected game object automatically, driving normally if none is detected
@@ -286,29 +287,29 @@ public class RobotContainer {
     * Automatically aim robot heading at object, drive, and intake a game object
     * @return Command to aim robot at object, drive, and intake a game object
     */
-   private Command aimAndIntakeObjectCommand() {
-     return Commands.sequence(
-         DRIVE_SUBSYSTEM.aimAtPointCommand(
-             () -> PRIMARY_CONTROLLER.getLeftY(),
-             () -> PRIMARY_CONTROLLER.getLeftX(),
-             () -> PRIMARY_CONTROLLER.getRightX(),
-             () -> {
-               return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-                   ? VISION_SUBSYSTEM.getObjectLocation().get()
-                   : null;
-             },
-             false,
-             false).withTimeout(0.5),
-         Commands.parallel(
-             Commands.run(() -> {
-               DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
-             }, DRIVE_SUBSYSTEM)
-            //  INTAKE_SUBSYSTEM.intakeCommand(),
-            //  SHOOTER_SUBSYSTEM.intakeCommand()
-         )
-        //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
-        );
-   }
+  //  private Command aimAndIntakeObjectCommand() {
+  //    return Commands.sequence(
+  //        DRIVE_SUBSYSTEM.aimAtPointCommand(
+  //            () -> PRIMARY_CONTROLLER.getLeftY(),
+  //            () -> PRIMARY_CONTROLLER.getLeftX(),
+  //            () -> PRIMARY_CONTROLLER.getRightX(),
+  //            () -> {
+  //              return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+  //                  ? VISION_SUBSYSTEM.getObjectLocation().get()
+  //                  : null;
+  //            },
+  //            false,
+  //            false).withTimeout(0.5),
+  //        Commands.parallel(
+  //            Commands.run(() -> {
+  //              DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
+  //            }, DRIVE_SUBSYSTEM)
+  //           //  INTAKE_SUBSYSTEM.intakeCommand(),
+  //           //  SHOOTER_SUBSYSTEM.intakeCommand()
+  //        )
+  //       //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+  //       );
+  //  }
 
   /**
    * Get correct speaker for current alliance
