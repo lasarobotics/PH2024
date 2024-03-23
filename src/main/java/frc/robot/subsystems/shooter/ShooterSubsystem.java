@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -576,14 +577,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to move the shooter between upper and lower limits
    */
   public Command shootPartyMode() {
-    return run(() -> {
-      State top = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getUpperLimit()));
-      State bottom = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit()));
-      if (isReady() && m_desiredShooterState == top)
-        setState(bottom);
-      if (isReady() && m_desiredShooterState == bottom)
-        setState(top);
-    });
+    final State TOP = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getUpperLimit()));
+    final State BOTTOM = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit()));
+
+    return Commands.sequence(
+      run(() -> setState(TOP)).until(() -> isReady()),
+      run(() -> setState(BOTTOM)).until(() -> isReady())
+    ).repeatedly();
   }
 
   /**
