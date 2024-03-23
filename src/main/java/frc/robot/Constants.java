@@ -20,6 +20,7 @@ import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -88,13 +89,16 @@ public final class Constants {
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
 
+
   public static class AutoNames {
-    public static final String CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = "Center_CloseTop_CloseMid_CloseBottom";
-    public static final String CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = "Center_CloseBottom_CloseMid_CloseTop_FarTop";
-    public static final String RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = "Right_FarBottom_FarMidBottom";
-    public static final String LEFT_CLOSETOP_FARTOP_AUTO_NAME = "Left_CloseTop_FarTop";
-    public static final String LEFT_WAIT_FARTOP_AUTO_NAME = "Left_Wait_FarTop";
-    public static final String RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = "Right_FarDisrupt_FarTop";
+    public static final Pair<String, String> CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = new Pair<String, String>("Belton 4-Note", "Center_CloseTop_CloseMid_CloseBottom");
+    public static final Pair<String, String> CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("5-Note", "Center_CloseBottom_CloseMid_CloseTop_FarTop");
+    public static final Pair<String, String> RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = new Pair<String, String>("Two far notes closest to source", "Right_FarBottom_FarMidBottom");
+    public static final Pair<String, String> LEFT_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("Closest amp side close note and far note", "Left_CloseTop_FarTop");
+    public static final Pair<String, String> LEFT_WAIT_FARTOP_AUTO_NAME = new Pair<String, String>("Wait, then do closest amp side far note", "Left_Wait_FarTop");
+    public static final Pair<String, String> RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = new Pair<String, String>("Disrupt auto (amp side - source side)", "Right_FarDisrupt_FarTop");
+    public static final Pair<String, String> SIDEWAYS_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go sideways", "sideways auto");
+    public static final Pair<String, String> TEST_180_FAR_PATH_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go amp side and flip 180", "test 180 far path");
   }
 
   public static class Drive {

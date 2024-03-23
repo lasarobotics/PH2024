@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 2.6965763405211014,
-        "y": 4.158142371422589
+        "x": 2.6453682536994707,
+        "y": 4.198201444835939
       },
       "prevControl": {
-        "x": 2.2441875592589793,
-        "y": 4.468184682718612
+        "x": 2.1929794724373486,
+        "y": 4.508243756131962
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "pickup third note blue"
+      "linkedName": "Close_Bottom"
     }
   ],
   "rotationTargets": [],
@@ -33,13 +33,13 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 5.1,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 2160.0,
     "maxAngularAcceleration": 2160.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -21.41296947487175,
+    "rotation": -27.950969027890213,
     "rotateFast": false
   },
   "reversed": false,
