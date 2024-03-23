@@ -11,6 +11,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -108,6 +109,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
 
     PRIMARY_CONTROLLER.leftBumper().whileTrue(aimAtObject());
+    PRIMARY_CONTROLLER.rightBumper().whileTrue(aimAndIntakeObjectCommand());
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click right stick to override and shoot now
@@ -135,13 +137,13 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // B button - go to source and intake game piece
-    PRIMARY_CONTROLLER.b().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.SOURCE,
-        SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
-        SHOOTER_SUBSYSTEM.sourceIntakeCommand()
-      )
-    );
+    // PRIMARY_CONTROLLER.b().whileTrue(
+      // DRIVE_SUBSYSTEM.goToPoseCommand(
+        // Constants.Field.SOURCE,
+        // SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
+        // SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+      // )
+    // );
     //B
     // PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
 
@@ -299,26 +301,35 @@ public class RobotContainer {
     */
    private Command aimAndIntakeObjectCommand() {
      return Commands.sequence(
-         DRIVE_SUBSYSTEM.aimAtPointCommand(
-             () -> PRIMARY_CONTROLLER.getLeftY(),
-             () -> PRIMARY_CONTROLLER.getLeftX(),
-             () -> PRIMARY_CONTROLLER.getRightX(),
-             () -> {
-               return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-                   ? VISION_SUBSYSTEM.getObjectLocation().get()
-                   : null;
-             },
-             false,
-             false).withTimeout(0.5),
-         Commands.parallel(
-             Commands.run(() -> {
-               DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
-             }, DRIVE_SUBSYSTEM)
-            //  INTAKE_SUBSYSTEM.intakeCommand(),
-            //  SHOOTER_SUBSYSTEM.intakeCommand()
-         )
-        //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
-        );
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+          () -> PRIMARY_CONTROLLER.getLeftY(),
+          () -> PRIMARY_CONTROLLER.getLeftX(),
+          () -> PRIMARY_CONTROLLER.getRightX(),
+          () -> {
+            return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+          },
+          false,
+          false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
+    //  Commands.parallel(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
+        () -> 0,
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false)
+        //  Commands.run(() -> {
+        //    DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
+
+        //  }, DRIVE_SUBSYSTEM)
+        //  INTAKE_SUBSYSTEM.intakeCommand(),
+        //  SHOOTER_SUBSYSTEM.intakeCommand()
+    //  )
+    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+    );
    }
 
   /**
@@ -331,7 +342,6 @@ public class RobotContainer {
       SHOOTER_SUBSYSTEM.shootPartyMode()
     );
   }
-
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker

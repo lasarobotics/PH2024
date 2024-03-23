@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -55,6 +56,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
   private static final String OBJECT_DETECTED_LOG_ENTRY = "/ObjectDetected";
+
+  private static final double INTAKE_YAW_TOLERANCE = 1;
 
   private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
@@ -203,6 +206,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     var objectLocation = getObjectLocation();
     Logger.recordOutput(getName() + OBJECT_DETECTED_LOG_ENTRY, getObjectLocation().isPresent());
     if (objectLocation.isEmpty()) return;
+    Logger.recordOutput(getName() + "/shouldIntake", shouldIntake());
     Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
@@ -243,6 +247,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * @return The position of the object, relative to the field
    */
   public Optional<Translation2d> getObjectLocation() {
+
     Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
     Optional<Measure<Distance>> distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
@@ -252,7 +257,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, yaw.get());
     return Optional.of(pose.getTranslation().plus(
       new Translation2d(
-        distance.get().in(Units.Meters),
+        // distance.get().in(Units.Meters),
+        1,
         Rotation2d.fromRadians(pose.getRotation().getRadians() - yaw.get().in(Units.Radians))
       )
     ));
@@ -266,6 +272,13 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
     if (yaw.isEmpty()) return Optional.empty();
     return yaw;
+  }
+
+  public boolean shouldIntake() {
+    if (!m_objectCamera.objectIsVisible()) return false;
+    double angle = m_objectCamera.getYaw().orElse(Units.Degrees.of(INTAKE_YAW_TOLERANCE)).in(Units.Degrees);
+    Logger.recordOutput(getName() + "/angle111", angle);
+    return Math.abs(angle) < INTAKE_YAW_TOLERANCE;
   }
 
   @Override

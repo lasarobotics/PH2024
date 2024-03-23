@@ -25,7 +25,9 @@ import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
  * Camera that looks for rings on the ground
  */
 public class ObjectCamera implements AutoCloseable {
-  private static final double TARGET_HEIGHT_METERS = 0.0508;
+  private static final double TARGET_HEIGHT_METERS = 0;
+  private static final double MIN_OBJECT_AREA = 0.1;
+  private static final double INTAKE_YAW_TOLERANCE = 2;
 
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
@@ -80,6 +82,8 @@ public class ObjectCamera implements AutoCloseable {
     * @return Distance to object, empty if undetected
     */
   public Optional<Measure<Distance>> getDistance() {
+    if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
+
     PhotonPipelineResult result = m_camera.getLatestResult();
     if (!result.hasTargets()) return Optional.empty();
 
@@ -98,6 +102,7 @@ public class ObjectCamera implements AutoCloseable {
     * @return Yaw angle to target, empty if undetected
     */
   public Optional<Measure<Angle>> getYaw() {
+    if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
     PhotonPipelineResult result = m_camera.getLatestResult();
     if (!result.hasTargets()) return Optional.empty();
     return Optional.of(Units.Degrees.of(result.getBestTarget().getYaw()));
@@ -109,6 +114,16 @@ public class ObjectCamera implements AutoCloseable {
    */
   public Transform3d getTransform() {
     return m_transform;
+  }
+
+  public Optional<Double> getObjectArea() {
+    PhotonPipelineResult result = m_camera.getLatestResult();
+    if (!result.hasTargets()) return Optional.empty();
+    return Optional.of(result.getBestTarget().getArea());
+  }
+
+  public boolean objectIsVisible() {
+    return m_camera.getLatestResult().hasTargets();
   }
 
   @Override
