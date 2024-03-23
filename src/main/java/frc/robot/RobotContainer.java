@@ -144,8 +144,6 @@ public class RobotContainer {
         // SHOOTER_SUBSYSTEM.sourceIntakeCommand()
       // )
     // );
-    //B
-    // PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
 
     // Right Stick Button - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
@@ -155,7 +153,7 @@ public class RobotContainer {
       )
     );
 
-    //B Button - automatically aim at object
+    // B Button - automatically aim at object
     PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 
     // X button - shoot note into speaker from against the subwoofer
@@ -300,18 +298,18 @@ public class RobotContainer {
     * @return Command to aim robot at object, drive, and intake a game object
     */
    private Command aimAndIntakeObjectCommand() {
-     return Commands.sequence(
+    return Commands.sequence(
       DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-          () -> PRIMARY_CONTROLLER.getLeftY(),
-          () -> PRIMARY_CONTROLLER.getLeftX(),
-          () -> PRIMARY_CONTROLLER.getRightX(),
-          () -> {
-            return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-          },
-          false,
-          false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
-    //  Commands.parallel(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX(),
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false).until(() -> VISION_SUBSYSTEM.shouldIntake()
+      ),
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
         () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
@@ -320,17 +318,10 @@ public class RobotContainer {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false)
-        //  Commands.run(() -> {
-        //    DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
-
-        //  }, DRIVE_SUBSYSTEM)
-        //  INTAKE_SUBSYSTEM.intakeCommand(),
-        //  SHOOTER_SUBSYSTEM.intakeCommand()
-    //  )
-    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+        false
+      )
     );
-   }
+  }
 
   /**
    * PARTY BUTTON!!!!
@@ -342,6 +333,7 @@ public class RobotContainer {
       SHOOTER_SUBSYSTEM.shootPartyMode()
     );
   }
+
   /**
    * Get correct speaker for current alliance
    * @return Location of appropriate speaker

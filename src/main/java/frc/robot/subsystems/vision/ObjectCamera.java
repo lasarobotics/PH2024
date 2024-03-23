@@ -36,7 +36,6 @@ public class ObjectCamera implements AutoCloseable {
 
   /**
     * Create Object Camera
-    *
     * @param name       Name of device
     * @param transform  Location on robot in meters
     * @param resolution Resolution used by camera
