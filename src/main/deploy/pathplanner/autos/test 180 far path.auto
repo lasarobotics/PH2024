@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.9959808841615208,
-      "y": 7.00722290166912
+      "x": 2.0,
+      "y": 5.5
     },
     "rotation": 0
   },
@@ -14,12 +14,18 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "test 180 far path"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "test 180 far path opposite"
           }
         }
       ]
     }
   },
-  "folder": "Old",
+  "folder": "pose estimation testing autos",
   "choreoAuto": false
 }

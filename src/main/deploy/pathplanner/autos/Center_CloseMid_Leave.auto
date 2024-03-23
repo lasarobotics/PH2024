@@ -50,7 +50,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Leave"
+            "pathName": null
           }
         }
       ]
