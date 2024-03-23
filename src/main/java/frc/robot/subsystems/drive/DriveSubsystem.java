@@ -537,7 +537,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive normally and return if invalid point
     if (point == null) {
-      System.out.println("null point!!!!");
       double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
       drive(
         controlCentricity,
