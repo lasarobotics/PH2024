@@ -293,34 +293,35 @@ public class RobotContainer {
     */
    private Command aimAndIntakeObjectCommand() {
      return Commands.sequence(
-         DRIVE_SUBSYSTEM.aimAtPointCommand(
-             () -> PRIMARY_CONTROLLER.getLeftY(),
-             () -> PRIMARY_CONTROLLER.getLeftX(),
-             () -> PRIMARY_CONTROLLER.getRightX(),
-             () -> {
-               return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-             },
-             false,
-             false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
-         Commands.parallel(
-          DRIVE_SUBSYSTEM.aimAtPointCommand(
-            () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos(),
-            () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin(),
-            () -> 0,
-            () -> {
-              return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-            },
-            false,
-            false).onlyIf(() -> VISION_SUBSYSTEM.shouldIntake())
-            //  Commands.run(() -> {
-            //    DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+          () -> PRIMARY_CONTROLLER.getLeftY(),
+          () -> PRIMARY_CONTROLLER.getLeftX(),
+          () -> PRIMARY_CONTROLLER.getRightX(),
+          () -> {
+            return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+          },
+          false,
+          false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
+    //  Commands.parallel(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
+        () -> 0,
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false)
+        //  Commands.run(() -> {
+        //    DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
 
-            //  }, DRIVE_SUBSYSTEM)
-            //  INTAKE_SUBSYSTEM.intakeCommand(),
-            //  SHOOTER_SUBSYSTEM.intakeCommand()
-         )
-        //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
-        );
+        //  }, DRIVE_SUBSYSTEM)
+        //  INTAKE_SUBSYSTEM.intakeCommand(),
+        //  SHOOTER_SUBSYSTEM.intakeCommand()
+    //  )
+    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+    );
    }
 
   /**
