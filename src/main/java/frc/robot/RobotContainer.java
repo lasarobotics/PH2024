@@ -270,7 +270,7 @@ public class RobotContainer {
    * @return Command to aim at object
    */
   private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointCommand(
+    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
       () -> PRIMARY_CONTROLLER.getLeftY(),
       () -> PRIMARY_CONTROLLER.getLeftX(),
       () -> PRIMARY_CONTROLLER.getRightX(),

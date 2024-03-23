@@ -377,7 +377,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param inertialVelocity Current robot inertial velocity
    * @param rotateRate Current robot rotate rate
    */
-  private void drive(Measure<Velocity<Distance>> xRequest,
+  private void drive(ControlCentricity controlCentricity,
+                     Measure<Velocity<Distance>> xRequest,
                      Measure<Velocity<Distance>> yRequest,
                      Measure<Velocity<Angle>> rotateRequest,
                      Measure<Velocity<Distance>> inertialVelocity) {
@@ -390,7 +391,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
       getPose().getRotation().plus(m_allianceCorrection),
-      m_controlCentricity
+      controlCentricity
     );
 
     // Desaturate drive speeds
@@ -406,7 +407,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param yRequest Desired Y (sideways) velocity
    * @param rotateRequest Desired rotate rate
    */
-  private void drive(Measure<Velocity<Distance>> xRequest,
+  private void drive(ControlCentricity controlCentricity,
+                     Measure<Velocity<Distance>> xRequest,
                      Measure<Velocity<Distance>> yRequest,
                      Measure<Velocity<Angle>> rotateRequest) {
     // Get requested chassis speeds, correcting for second order kinematics
@@ -418,7 +420,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SwerveModuleState[] moduleStates = m_advancedKinematics.toSwerveModuleStates(
       m_desiredChassisSpeeds,
       getPose().getRotation().plus(m_allianceCorrection),
-      m_controlCentricity
+      controlCentricity
     );
 
     // Desaturate drive speeds
@@ -511,6 +513,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive to counter tipping motion
     drive(
+      ControlCentricity.ROBOT_CENTRIC,
       DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.cos(direction)),
       DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.sin(direction)),
       Units.DegreesPerSecond.of(0.0)
@@ -526,7 +529,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param boolean True to point back of robot to target
    * @param velocityCorrection True to compensate for robot's own velocity
    */
-  private void aimAtPoint(double xRequest, double yRequest, double rotateRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
+  private void aimAtPoint(ControlCentricity controlCentricity, double xRequest, double yRequest, double rotateRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
@@ -534,8 +537,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive normally and return if invalid point
     if (point == null) {
+      System.out.println("null point!!!!");
       double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
       drive(
+        controlCentricity,
         Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
         Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
         Units.DegreesPerSecond.of(rotateOutput),
@@ -543,7 +548,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       );
       return;
     }
-
 
     // Get current pose
     Pose2d currentPose = getPose();
@@ -577,6 +581,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive robot accordingly
     drive(
+      controlCentricity,
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
@@ -603,6 +608,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     
     // Drive with the pose to the snapped cardinal direction
     drive(
+      m_controlCentricity,
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
@@ -631,6 +637,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
 
     drive(
+      m_controlCentricity,
       Units.MetersPerSecond.of(0),
       Units.MetersPerSecond.of(0),
       Units.DegreesPerSecond.of(rotateOutput),
@@ -665,6 +672,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Drive robot
     drive(
+      m_controlCentricity,
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
@@ -892,6 +900,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
     return runEnd(() ->
       aimAtPoint(
+        m_controlCentricity,
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
         rotateRequestSupplier.getAsDouble(),
@@ -1031,6 +1040,26 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       stopCommand(),
       Commands.parallel(driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), endCommand)
     );
+  }
+
+  /**
+   * @return Command to aim a point on the field in robot centric mode
+   */
+  public Command aimAtPointRobotCentric(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
+                                        Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
+    return runEnd(() ->
+      aimAtPoint(
+        ControlCentricity.ROBOT_CENTRIC,
+        xRequestSupplier.getAsDouble(),
+        yRequestSupplier.getAsDouble(),
+        rotateRequestSupplier.getAsDouble(),
+        pointSupplier.get(),
+        reversed,
+        velocityCorrection
+      ),
+      () -> resetRotatePID()
+    );
+
   }
 
   /**

@@ -54,6 +54,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_DISTANCE_LOG_ENTRY = "/ObjectDistance";
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
+  private static final String OBJECT_DETECTED_LOG_ENTRY = "/ObjectDetected";
 
   private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
@@ -200,6 +201,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     // This method will be called once per scheduler run
     var objectLocation = getObjectLocation();
+    Logger.recordOutput(getName() + OBJECT_DETECTED_LOG_ENTRY, getObjectLocation().isPresent());
     if (objectLocation.isEmpty()) return;
     Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
