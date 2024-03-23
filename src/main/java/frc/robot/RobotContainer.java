@@ -141,6 +141,9 @@ public class RobotContainer {
 
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
+
+    // DPAD left - PARTY BUTTON!!
+    PRIMARY_CONTROLLER.povLeft().whileTrue(partyButton());
   }
 
   /**

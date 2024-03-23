@@ -581,9 +581,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       State bottom = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(m_angleConfig.getLowerLimit()));
       boolean currentTargetTop = true;
       if (currentTargetTop)
-        shootManualCommand(top);
+        setState(top);
       else
-        shootManualCommand(bottom);
+        setState(bottom);
       
       if (isReady())
         currentTargetTop = !currentTargetTop;
