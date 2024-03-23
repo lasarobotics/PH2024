@@ -97,6 +97,8 @@ public final class Constants {
     public static final Pair<String, String> LEFT_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("Closest amp side close note and far note", "Left_CloseTop_FarTop");
     public static final Pair<String, String> LEFT_WAIT_FARTOP_AUTO_NAME = new Pair<String, String>("Wait, then do closest amp side far note", "Left_Wait_FarTop");
     public static final Pair<String, String> RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = new Pair<String, String>("Disrupt auto (amp side - source side)", "Right_FarDisrupt_FarTop");
+    public static final Pair<String, String> SIDEWAYS_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go sideways", "sideways auto");
+    public static final Pair<String, String> TEST_180_FAR_PATH_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go amp side and flip 180", "test 180 far path");
   }
 
   public static class Drive {

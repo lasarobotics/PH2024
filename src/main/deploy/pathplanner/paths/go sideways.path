@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
+    "rotation": 179.1911028755941,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "pose estimation test paths",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 179.1264591874457,
     "velocity": 0
   },
   "useDefaultConstraints": true
