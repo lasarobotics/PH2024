@@ -11,6 +11,7 @@ import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -44,6 +45,7 @@ public class RobotContainer {
     Constants.HID.CONTROLLER_DEADBAND,
     Constants.Drive.DRIVE_LOOKAHEAD
   );
+
   private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
     ShooterSubsystem.initializeHardware(),
     Constants.Shooter.FLYWHEEL_CONFIG,
@@ -65,6 +67,8 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    System.out.println("robotcontainer");
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -96,12 +100,18 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
+    // Back button - toggles centricity between robot and field centric
+    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
+
+    PRIMARY_CONTROLLER.leftBumper().whileTrue(aimAtObject());
+
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click right stick to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.rightStick().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -122,13 +132,23 @@ public class RobotContainer {
     );
 
     // B button - go to source and intake game piece
-    // PRIMARY_CONTROLLER.b().whileTrue(
-    //   DRIVE_SUBSYSTEM.goToPoseCommand(
-    //     Constants.Field.SOURCE,
-    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
-    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand()
-    //   )
-    // );
+    PRIMARY_CONTROLLER.b().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.SOURCE,
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+      )
+    );
+    //B
+    // PRIMARY_CONTROLLER.b().whileTrue(aimAndIntakeObjectCommand());
+
+    // Right Stick Button - snap robot to the nearest cardinal direction
+    PRIMARY_CONTROLLER.rightStick().whileTrue(
+      DRIVE_SUBSYSTEM.snapToCardinalDirectionCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX()
+      )
+    );
 
     //B Button - automatically aim at object
     PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
@@ -238,6 +258,7 @@ public class RobotContainer {
 
   /**
    * Compose command to feed a note through the robot
+   * @return Command to feed note through the robot
    */
   private Command feedThroughCommand() {
     return Commands.parallel(
@@ -252,7 +273,7 @@ public class RobotContainer {
    * @return Command to aim at object
    */
   private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointCommand(
+    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
       () -> PRIMARY_CONTROLLER.getLeftY(),
       () -> PRIMARY_CONTROLLER.getLeftX(),
       () -> PRIMARY_CONTROLLER.getRightX(),
@@ -265,6 +286,34 @@ public class RobotContainer {
       false
     );
   }
+
+   /**
+    * Automatically aim robot heading at object, drive, and intake a game object
+    * @return Command to aim robot at object, drive, and intake a game object
+    */
+   private Command aimAndIntakeObjectCommand() {
+     return Commands.sequence(
+         DRIVE_SUBSYSTEM.aimAtPointCommand(
+             () -> PRIMARY_CONTROLLER.getLeftY(),
+             () -> PRIMARY_CONTROLLER.getLeftX(),
+             () -> PRIMARY_CONTROLLER.getRightX(),
+             () -> {
+               return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+                   ? VISION_SUBSYSTEM.getObjectLocation().get()
+                   : null;
+             },
+             false,
+             false).withTimeout(0.5),
+         Commands.parallel(
+             Commands.run(() -> {
+               DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
+             }, DRIVE_SUBSYSTEM)
+            //  INTAKE_SUBSYSTEM.intakeCommand(),
+            //  SHOOTER_SUBSYSTEM.intakeCommand()
+         )
+        //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+        );
+   }
 
   /**
    * Get correct speaker for current alliance
@@ -299,6 +348,20 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME).getCommand());
+  }
+
+  /**
+   * Initialization code for autonomous mode.
+   */
+  public void autonomousInit() {
+    DRIVE_SUBSYSTEM.disableTractionControlCommand();
+  }
+
+  /**
+   * Initialization code for teleop mode.
+   */
+  public void teleopInit() {
+    DRIVE_SUBSYSTEM.enableTractionControlCommand();
   }
 
   /**

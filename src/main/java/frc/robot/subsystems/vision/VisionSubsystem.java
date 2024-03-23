@@ -54,6 +54,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_DISTANCE_LOG_ENTRY = "/ObjectDistance";
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
+  private static final String OBJECT_DETECTED_LOG_ENTRY = "/ObjectDetected";
 
   private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
@@ -199,6 +200,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    var objectLocation = getObjectLocation();
+    Logger.recordOutput(getName() + OBJECT_DETECTED_LOG_ENTRY, getObjectLocation().isPresent());
+    if (objectLocation.isEmpty()) return;
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
   @Override
@@ -248,9 +253,19 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return Optional.of(pose.getTranslation().plus(
       new Translation2d(
         distance.get().in(Units.Meters),
-        Rotation2d.fromRadians(pose.getRotation().getRadians() + yaw.get().in(Units.Radians))
+        Rotation2d.fromRadians(pose.getRotation().getRadians() - yaw.get().in(Units.Radians))
       )
     ));
+  }
+
+  /**
+   * Gets the object heading, relative to the camera.
+   * @return the heading
+   */
+  public Optional<Measure<Angle>> getObjectHeading() {
+    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
+    if (yaw.isEmpty()) return Optional.empty();
+    return yaw;
   }
 
   @Override
