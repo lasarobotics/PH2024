@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -80,6 +81,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
+    public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -106,6 +108,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
   private final Measure<Velocity<Distance>> MAX_FLYWHEEL_SPEED;
   private final Measure<Velocity<Distance>> SPINUP_SPEED = Units.MetersPerSecond.of(10.0);
+  
+  private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
+  private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
+  private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), Debouncer.DebounceType.kRising);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -163,17 +169,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_targetSupplier = targetSupplier;
     this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), Debouncer.DebounceType.kFalling);
 
-    // Slave bottom flywheel motor to top
-    m_bottomFlywheelMotor.follow(m_topFlywheelMotor);
-
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
+    m_bottomFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
     m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
 
     // Set flywheel conversion factor
     var flywheelConversionFactor = flywheelDiameter.in(Units.Meters) * Math.PI;
     m_topFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
     m_topFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
+    m_bottomFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
+    m_bottomFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
 
     // Set angle adjust conversion factor
     var angleConversionFactor = Math.PI * 2;
@@ -273,8 +279,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private void setState(State state) {
     m_desiredShooterState = normalizeState(state);
 
-    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) m_topFlywheelMotor.stopMotor();
-    else m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
+      m_topFlywheelMotor.stopMotor();
+      m_bottomFlywheelMotor.stopMotor();
+    }
+    else { 
+      m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+      m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    }
     m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
   }
 
@@ -405,6 +417,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
     m_topFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.speed.in(Units.MetersPerSecond);
+    m_bottomFlywheelMotor.getInputs().encoderVelocity = m_desiredShooterState.speed.in(Units.MetersPerSecond);
 
     m_angleMotor.getInputs().absoluteEncoderPosition = m_simShooterAngleState.position;
     m_angleMotor.getInputs().absoluteEncoderVelocity = m_simShooterAngleState.velocity;
@@ -551,6 +564,28 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return shootManualCommand(State.SPEAKER_SCORE_STATE);
   }
 
+  /** 
+   * Pass note from opponent side to your side
+   * @return Command to pass note
+   */
+  public Command passCommand() {
+    return shootManualCommand(State.PASSING_STATE);
+  }
+
+  /**
+   * Move shooter up and down
+   * @return Command to move the shooter between upper and lower limits
+   */
+  public Command shootPartyMode() {
+    final State TOP = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getUpperLimit()));
+    final State BOTTOM = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit()));
+
+    return Commands.sequence(
+      run(() -> setState(TOP)).until(() -> isReady()),
+      run(() -> setState(BOTTOM)).until(() -> isReady())
+    ).repeatedly();
+  }
+
   /**
    * Move shooter to amp position
    * @return Command that prepares shooter for scoring in the amp
@@ -584,6 +619,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public boolean isObjectPresent() {
     return m_indexerMotor.getInputs().forwardLimitSwitch;
+  }
+
+  /**
+   * Whether a note has been shot
+   * @return If the current of the top flywheel motor is greater than the threshold for a specified time
+   */
+  public boolean hasBeenShot() {
+    return NOTE_SHOT_DETECTOR.calculate(m_topFlywheelMotor.getOutputCurrent().compareTo(NOTE_SHOT_CURRENT_THRESHOLD) > 0);
   }
 
   @Override

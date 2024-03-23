@@ -131,6 +131,9 @@ public class RobotContainer {
       )
     );
 
+    // Push down left stick - pass note    
+    PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+
     // B button - go to source and intake game piece
     PRIMARY_CONTROLLER.b().whileTrue(
       DRIVE_SUBSYSTEM.goToPoseCommand(
@@ -161,6 +164,9 @@ public class RobotContainer {
 
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
+
+    // DPAD left - PARTY BUTTON!!
+    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
   }
 
   /**
@@ -314,6 +320,17 @@ public class RobotContainer {
         //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
         );
    }
+
+  /**
+   * PARTY BUTTON!!!!
+   * @return Command that spins the robot and moves the shooter up and down
+   */
+  private Command partyMode() {
+    return Commands.parallel(
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
+      SHOOTER_SUBSYSTEM.shootPartyMode()
+    );
+  }
 
   /**
    * Get correct speaker for current alliance
