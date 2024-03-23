@@ -348,6 +348,20 @@ public class RobotContainer {
   }
 
   /**
+   * Initialization code for autonomous mode.
+   */
+  public void autonomousInit() {
+    DRIVE_SUBSYSTEM.disableTractionControlCommand();
+  }
+
+  /**
+   * Initialization code for teleop mode.
+   */
+  public void teleopInit() {
+    DRIVE_SUBSYSTEM.enableTractionControlCommand();
+  }
+
+  /**
    * Run simlation related methods
    */
   public void simulationPeriodic() {
