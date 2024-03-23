@@ -122,6 +122,10 @@ public class ObjectCamera implements AutoCloseable {
     return Optional.of(result.getBestTarget().getArea());
   }
 
+  public boolean objectIsVisible() {
+    return m_camera.getLatestResult().hasTargets();
+  }
+
   @Override
   public void close() {
     m_camera.close();

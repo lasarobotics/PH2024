@@ -56,7 +56,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
 
-  private static final double INTAKE_YAW_TOLERANCE = 2;
+  private static final double INTAKE_YAW_TOLERANCE = 1;
 
   private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
@@ -204,6 +204,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     // This method will be called once per scheduler run
     var objectLocation = getObjectLocation();
     if (objectLocation.isEmpty()) return;
+    Logger.recordOutput(getName() + "/shouldIntake", shouldIntake());
     Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
@@ -272,7 +273,9 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   public boolean shouldIntake() {
-    double angle = m_objectCamera.getYaw().orElse(Units.Degrees.of(Double.MAX_VALUE)).in(Units.Degrees);
+    if (!m_objectCamera.objectIsVisible()) return false;
+    double angle = m_objectCamera.getYaw().orElse(Units.Degrees.of(INTAKE_YAW_TOLERANCE)).in(Units.Degrees);
+    Logger.recordOutput(getName() + "/angle111", angle);
     return Math.abs(angle) < INTAKE_YAW_TOLERANCE;
   }
 
