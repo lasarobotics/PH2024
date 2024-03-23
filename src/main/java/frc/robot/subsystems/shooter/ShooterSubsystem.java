@@ -575,18 +575,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Move shooter up and down
    * @return Command to move the shooter between upper and lower limits
    */
-  public Command shootPartyButton() {
+  public Command shootPartyMode() {
     return run(() -> {
-      State top = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(m_angleConfig.getUpperLimit()));
-      State bottom = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(m_angleConfig.getLowerLimit()));
-      boolean currentTargetTop = true;
-      if (currentTargetTop)
-        setState(top);
-      else
+      State top = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getUpperLimit()));
+      State bottom = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit()));
+      if (isReady() && m_desiredShooterState == top)
         setState(bottom);
-      
-      if (isReady())
-        currentTargetTop = !currentTargetTop;
+      if (isReady() && m_desiredShooterState == bottom)
+        setState(top);
     });
   }
 

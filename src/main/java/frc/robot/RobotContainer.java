@@ -143,7 +143,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD left - PARTY BUTTON!!
-    PRIMARY_CONTROLLER.povLeft().whileTrue(partyButton());
+    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
   }
 
   /**
@@ -273,10 +273,10 @@ public class RobotContainer {
    * PARTY BUTTON!!!!
    * @return Command that spins the robot and moves the shooter up and down
    */
-  private Command partyButton() {
+  private Command partyMode() {
     return Commands.parallel(
       DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
-      SHOOTER_SUBSYSTEM.shootPartyButton()
+      SHOOTER_SUBSYSTEM.shootPartyMode()
     );
   }
 
