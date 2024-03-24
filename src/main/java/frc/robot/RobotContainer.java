@@ -101,19 +101,15 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
     // Back button - toggles centricity between robot and field centric
     PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
 
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(aimAtObject());
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(aimAndIntakeObjectCommand());
-
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
-    // Click right stick to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    // Click DPAD down to override and shoot now
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -159,10 +155,13 @@ public class RobotContainer {
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
-    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
+    // Y button - spit out note
     PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
+    // DPAD up - shoot manual
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+
+    // DPAD right - feed a note through
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD left - PARTY BUTTON!!
