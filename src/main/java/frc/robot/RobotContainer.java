@@ -87,6 +87,7 @@ public class RobotContainer {
     // NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
     // NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     // NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
+    NamedCommands.registerCommand("aaa", aimAndIntakeObjectCommand().withTimeout(10));
 
     // NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
     // NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1));
@@ -293,30 +294,27 @@ public class RobotContainer {
     */
    private Command aimAndIntakeObjectCommand() {
      return Commands.sequence(
-      DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-          () -> PRIMARY_CONTROLLER.getLeftY(),
-          () -> PRIMARY_CONTROLLER.getLeftX(),
-          () -> PRIMARY_CONTROLLER.getRightX(),
-          () -> {
-            return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-          },
-          false,
-          false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
+    //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+    //   DRIVE_SUBSYSTEM.aimAtPointCommand(
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftX() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getRightX() : 0,
+    //       () -> {
+    //         return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+    //       },
+    //       false,
+    //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
         false)
-        //  Commands.run(() -> {
-        //    DRIVE_SUBSYSTEM.autoDrive(new ChassisSpeeds(3, 0, 0));
 
-        //  }, DRIVE_SUBSYSTEM)
         //  INTAKE_SUBSYSTEM.intakeCommand(),
         //  SHOOTER_SUBSYSTEM.intakeCommand()
     //  )
@@ -351,6 +349,8 @@ public class RobotContainer {
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("deleteme", new AutoTrajectory(DRIVE_SUBSYSTEM, "deleteme").getCommand());
+
     m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME).getCommand());
