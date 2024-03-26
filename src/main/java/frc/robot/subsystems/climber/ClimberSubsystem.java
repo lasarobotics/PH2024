@@ -62,13 +62,17 @@ public class ClimberSubsystem extends SubsystemBase {
     return climberHardware;
   }
 
-  // Runs the climber during a match
+  /**
+   * Runs the climber during a match
+   */
   private void runClimber() {
     m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
     m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
-  // Stop both motors
+  /**
+   * Stop both motors
+   */
   private void stop() {
     m_lClimberMotor.stopMotor();
     m_rClimberMotor.stopMotor();
