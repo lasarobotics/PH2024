@@ -203,6 +203,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     // This method will be called once per scheduler run
     var objectLocation = getObjectLocation();
+    Logger.recordOutput(getName() + "/canSeeObject", objectLocation.isPresent());
     if (objectLocation.isEmpty()) return;
     Logger.recordOutput(getName() + "/shouldIntake", shouldIntake());
     Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());

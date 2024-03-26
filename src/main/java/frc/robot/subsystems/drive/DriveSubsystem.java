@@ -108,7 +108,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(9.0, 0.0, 0.4, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   // Log
@@ -231,7 +231,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredChassisSpeeds = new ChassisSpeeds();
 
     // Setup anti-tip command
-    new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
+    //new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
@@ -594,13 +594,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
-    
+
     Rotation2d currentRotation = getPose().getRotation();
     double angleScalar = (currentRotation.getDegrees());
     double desiredAngle = (int)(angleScalar / 90 + Math.copySign(0.5, angleScalar)) * 90;
 
     double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
-    
+
     // Drive with the pose to the snapped cardinal direction
     drive(
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
@@ -618,7 +618,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
-      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
+      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
       () -> resetRotatePID()
     );
   }
@@ -890,7 +890,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return runEnd(() ->
+    return runEnd(() -> {
+      System.out.println("aimAtPoint");
       aimAtPoint(
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
@@ -898,7 +899,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         pointSupplier.get(),
         reversed,
         velocityCorrection
-      ),
+      );
+
+    },
       () -> resetRotatePID()
     );
   }
