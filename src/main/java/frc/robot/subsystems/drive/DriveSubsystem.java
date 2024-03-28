@@ -28,6 +28,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -697,6 +698,26 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_rFrontModule.stop();
     m_lRearModule.stop();
     m_rRearModule.stop();
+  }
+
+  /**
+   * Call method during initialization of disabled mode to set motors to brake mode
+   */
+  public void disabledInit() {
+    m_lFrontModule.disabledInit();
+    m_rFrontModule.disabledInit();
+    m_lRearModule.disabledInit();
+    m_rRearModule.disabledInit();
+  }
+
+  /**
+   * Call method when exiting disabled mode to set motors to coast mode
+   */
+  public void disabledExit() {
+    m_lFrontModule.disabledExit();
+    m_rFrontModule.disabledExit();
+    m_lRearModule.disabledExit();
+    m_rRearModule.disabledExit();
   }
 
   /**

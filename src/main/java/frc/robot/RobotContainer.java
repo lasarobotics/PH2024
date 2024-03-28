@@ -371,24 +371,17 @@ public class RobotContainer {
   }
 
   /**
-   * Initialization code for autonomous mode.
-   */
-  public void autonomousInit() {
-    DRIVE_SUBSYSTEM.disableTractionControlCommand();
-  }
-
-  /**
-   * Initialization code for teleop mode.
-   */
-  public void teleopInit() {
-    DRIVE_SUBSYSTEM.enableTractionControlCommand();
-  }
-
-  /**
    * Run simlation related methods
    */
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
+  }
+
+  /**
+   * Initialization code for disabled mode
+   */
+  public void disabledInit() {
+    DRIVE_SUBSYSTEM.disabledInit();
   }
 
   /**
@@ -401,6 +394,13 @@ public class RobotContainer {
 
     // Set alliance if available
     DRIVE_SUBSYSTEM.setAlliance(alliance.get());
+  }
+
+  /**
+   * Exit code for disabled mode
+   */
+  public void disabledExit() {
+    DRIVE_SUBSYSTEM.disabledExit();
   }
 
   /**
