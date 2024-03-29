@@ -19,6 +19,7 @@ import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,6 +35,7 @@ import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -53,8 +55,8 @@ public final class Constants {
     public static final double FIELD_LENGTH = 16.54;
 
     public static final Translation2d CENTER = new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2);
-    public static final Pair<Integer,Translation2d> BLUE_SPEAKER = new Pair<Integer,Translation2d>(7, new Translation2d(0.00, 5.55));
-    public static final Pair<Integer,Translation2d> RED_SPEAKER = new Pair<Integer,Translation2d>(4, new Translation2d(15.64, 5.55));
+    public static final AprilTag BLUE_SPEAKER = VisionSubsystem.getInstance().getTag(7).get();
+    public static final AprilTag RED_SPEAKER = VisionSubsystem.getInstance().getTag(4).get();
 
     public static final PurplePathPose AMP = new PurplePathPose(
       new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
@@ -78,18 +80,30 @@ public final class Constants {
 
   public static class NamedCommands {
     public static final String INTAKE_COMMAND_NAME = "intake";
+    public static final String START_INTAKE_COMMAND_NAME = "start intake";
+    public static final String STOP_INTAKE_COMMAND_NAME = "stop intake";
     public static final String SHOOT_COMMAND_NAME = "shoot";
+    public static final String PRELOAD_COMMAND_NAME = "preload";
+    public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
+    public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
   }
 
+
   public static class AutoNames {
-    public static final String LEAVE = "Leave";
-    public static final String PRELOAD_PLUS_THREE_RING = "Preload + 3 Ring";
+    public static final Pair<String, String> CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = new Pair<String, String>("Belton 4-Note", "Center_CloseTop_CloseMid_CloseBottom");
+    public static final Pair<String, String> CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("5-Note", "Center_CloseBottom_CloseMid_CloseTop_FarTop");
+    public static final Pair<String, String> RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = new Pair<String, String>("Two far notes closest to source", "Right_FarBottom_FarMidBottom");
+    public static final Pair<String, String> LEFT_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("Closest amp side close note and far note", "Left_CloseTop_FarTop");
+    public static final Pair<String, String> LEFT_WAIT_FARTOP_AUTO_NAME = new Pair<String, String>("Wait, then do closest amp side far note", "Left_Wait_FarTop");
+    public static final Pair<String, String> RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = new Pair<String, String>("Disrupt auto (amp side - source side)", "Right_FarDisrupt_FarTop");
+    public static final Pair<String, String> SIDEWAYS_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go sideways", "sideways auto");
+    public static final Pair<String, String> TEST_180_FAR_PATH_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go amp side and flip 180", "test 180 far path");
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(7.0, 0.0, 0.1, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.12;
+    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
+    public static final double DRIVE_SLIP_RATIO = 0.08;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -111,20 +125,20 @@ public final class Constants {
     public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.12,
-        0.0,
-        0.0,
+        0.32,
+        2e-3,
+        0.08,
         1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
-        0.2
+        0.25
       ),
       false,
       true,
-      0.2
+      0.12
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        2.0,
-        0.005,
+        3.0,
+        0.01,
         0.0,
         0.0,
         0.035
@@ -138,23 +152,26 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(180.0 * 5).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(49.0))),
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(48.0))),
       Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(33.5))),
-      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.5))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(28.25)))
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(29.0))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
+      Map.entry(Units.Meters.of(5.20), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0))),
+      Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(24.5)))
     );
   }
 
   public static class Intake {
-    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(95);
+    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(100);
   }
 
   public static class Climber {
@@ -189,16 +206,16 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(0.0762, 0.267, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.198), Math.toRadians(+180.0))
+      new Translation3d(-0.102, -0.279, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-21.5), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-      new Translation3d(-0.0762, 0.267, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.198), 0.0)
+      new Translation3d(0.0254, -0.279, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-21.5), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);
@@ -206,7 +223,7 @@ public final class Constants {
     public static final String CAMERA_OBJECT_NAME = "Arducam_OV9782_USB_Camera_C";
     public static final Transform3d CAMERA_OBJECT_LOCATION = new Transform3d(
       new Translation3d(0.3, 0.0, 0.5),
-      new Rotation3d(0, Math.toRadians(+15.0), 0)
+      new Rotation3d(0, Math.toRadians(+15.0), Math.toRadians(180))
     );
     public static final Resolution CAMERA_OBJECT_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);

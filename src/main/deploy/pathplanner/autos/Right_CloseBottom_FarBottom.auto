@@ -1,0 +1,80 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.72,
+      "y": 4.36
+    },
+    "rotation": -60.45999999999998
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "preload"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right_CloseBottom"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CloseBottom_FarBottom"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarBottom_RightStage"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": []
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Right",
+  "choreoAuto": false
+}

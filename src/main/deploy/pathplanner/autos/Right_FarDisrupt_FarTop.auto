@@ -1,0 +1,113 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.7318848248807611,
+      "y": 4.37959787956613
+    },
+    "rotation": -59.097284066484356
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "preload"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "feed through"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "RightStage_FarBottom"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "feed through"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "FarBottom_FarMidBottom"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "feed through"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "FarMid_FarMidTop"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "FarMidTop_FarTop"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "AnywhereFar_LeftStage"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Right",
+  "choreoAuto": false
+}

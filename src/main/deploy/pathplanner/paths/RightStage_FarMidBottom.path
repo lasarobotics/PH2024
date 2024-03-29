@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.2933126568007527,
-        "y": 6.5118855049740185
+        "x": 3.7329246168463843,
+        "y": 2.736432139530946
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3653240288936725,
-        "y": 6.4501614717515166
+        "x": 5.062586087167426,
+        "y": 0.5849854930113668
       },
       "isLocked": false,
-      "linkedName": "After shoot preload"
+      "linkedName": "Shoot_Right_Stage"
     },
     {
       "anchor": {
-        "x": 2.8179669391920243,
-        "y": 6.902804382049867
+        "x": 8.313463363768836,
+        "y": 2.4504441189333512
       },
       "prevControl": {
-        "x": 2.6327948395245167,
-        "y": 6.74849429899361
+        "x": 8.004843197656323,
+        "y": 2.2364674704286767
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Pickup first note blue"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 0.3,
-    "maxAcceleration": 4.3,
-    "maxAngularVelocity": 1080.0,
-    "maxAngularAcceleration": 360.0
+    "maxVelocity": 5.1,
+    "maxAcceleration": 1.0,
+    "maxAngularVelocity": 2160.0,
+    "maxAngularAcceleration": 2160.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 37.056528189409626,
+    "rotation": 31.890791801845786,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Starts Stage",
   "previewStartingState": {
-    "rotation": 39.61068824002659,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

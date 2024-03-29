@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.22,
-        "y": 4.9638782657846985
+        "x": 7.9875135522242555,
+        "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.427869350588231,
-        "y": 4.187163805411808
+        "x": 7.812017904320845,
+        "y": 6.1520974348362
       },
       "isLocked": false,
-      "linkedName": "pickup second note blue"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5967027559055125,
-        "y": 4.277612633350267
+        "x": 3.863365826494124,
+        "y": 6.298343808089041
       },
       "prevControl": {
-        "x": 2.431663353829512,
-        "y": 4.399619713377149
+        "x": 4.030215695300752,
+        "y": 6.270181329816341
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftStage"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 0.3,
-    "maxAcceleration": 4.3,
-    "maxAngularVelocity": 1080.0,
-    "maxAngularAcceleration": 360.0
+    "maxVelocity": 5.1,
+    "maxAcceleration": 1.0,
+    "maxAngularVelocity": 2160.0,
+    "maxAngularAcceleration": 2160.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -26.85592198442992,
+    "rotation": 19.960960741839564,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Starts Far",
   "previewStartingState": {
-    "rotation": -17.697748346149556,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

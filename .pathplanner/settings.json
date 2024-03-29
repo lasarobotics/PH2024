@@ -1,17 +1,27 @@
 {
-  "robotWidth": 0.7112,
+  "robotWidth": 0.71,
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
-    "Ring Side"
+    "pose estimation test paths",
+    "Old",
+    "Starts Close",
+    "Starts Far",
+    "Starts Speaker",
+    "Starts Stage",
+    "paths"
   ],
   "autoFolders": [
-    "Leave",
-    "Ring side"
+    "Center",
+    "Left",
+    "pose estimation testing autos",
+    "Old",
+    "Right",
+    "built"
   ],
-  "defaultMaxVel": 0.3,
-  "defaultMaxAccel": 4.3,
-  "defaultMaxAngVel": 1080.0,
-  "defaultMaxAngAccel": 360.0,
-  "maxModuleSpeed": 4.3
+  "defaultMaxVel": 5.1,
+  "defaultMaxAccel": 1.0,
+  "defaultMaxAngVel": 2160.0,
+  "defaultMaxAngAccel": 2160.0,
+  "maxModuleSpeed": 4.5
 }

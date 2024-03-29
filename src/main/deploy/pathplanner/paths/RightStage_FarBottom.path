@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.99,
+        "y": 1.24
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.813569356462021,
+        "y": 1.0451936292343766
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.445141301310171,
+        "y": 0.8353319162778667
+      },
+      "prevControl": {
+        "x": 7.4328671564611275,
+        "y": 0.8229871096333656
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Far_Bottom_Intake"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 2160.0,
+    "maxAngularAcceleration": 2160.0
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Starts Stage",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

@@ -35,8 +35,8 @@ public class Robot extends LoggedRobot {
     // AdvantageKit Logging
     BatteryTracker batteryTracker = new BatteryTracker(BatteryTracker.initializeHardware());
     Logger.recordMetadata("ProjectName", "PurpleSwerve");
-    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
-    Logger.recordMetadata("BatteryName", batteryTracker.scanBattery());
+    //Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    //Logger.recordMetadata("BatteryName", batteryTracker.scanBattery());
 
     // Set pathfinding algorithm to be AdvantageKit compatible
     Pathfinding.setPathfinder(new LocalADStarAK());
@@ -81,7 +81,9 @@ public class Robot extends LoggedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.disabledPeriodic();
+  }
 
   @Override
   public void disabledExit() {}
@@ -93,6 +95,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    m_robotContainer.autonomousInit();
   }
 
   @Override
@@ -106,6 +110,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    m_robotContainer.teleopInit();
   }
 
   @Override

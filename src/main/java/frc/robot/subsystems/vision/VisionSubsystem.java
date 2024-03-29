@@ -6,7 +6,6 @@ package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,9 +13,9 @@ import java.util.function.Supplier;
 
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.VisionSystemSim;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -31,6 +30,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;
 
 public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -54,9 +54,14 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_DISTANCE_LOG_ENTRY = "/ObjectDistance";
   private static final String OBJECT_HEADING_LOG_ENTRY = "/ObjectHeading";
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
+  private static final String OBJECT_DETECTED_LOG_ENTRY = "/ObjectDetected";
 
-  private AtomicReference<List<EstimatedRobotPose>> m_estimatedRobotPoses;
-  private AtomicReference<List<Integer>> m_visibleTagIDs;
+  private static final double INTAKE_YAW_TOLERANCE = 1;
+
+  private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
+  private AtomicReference<List<AprilTag>> m_visibleTags;
+  private AtomicReference<List<Pose2d>> m_loggedEstimatedPoses;
+  private AtomicReference<List<Pose3d>> m_visibleTagPoses;
 
   private ObjectCamera m_objectCamera;
   private AprilTagCamera[] m_apriltagCameras;
@@ -73,8 +78,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     setName(getClass().getSimpleName());
     this.m_apriltagCameras = visionHardware.cameras;
     this.m_objectCamera = visionHardware.objectCamera;
-    this.m_estimatedRobotPoses = new AtomicReference<List<EstimatedRobotPose>>();
-    this.m_visibleTagIDs = new AtomicReference<List<Integer>>();
+    this.m_estimatedRobotPoses = new AtomicReference<List<AprilTagCameraResult>>();
+    this.m_visibleTags = new AtomicReference<List<AprilTag>>();
+    this.m_loggedEstimatedPoses = new AtomicReference<List<Pose2d>>();
+    this.m_visibleTagPoses = new AtomicReference<List<Pose3d>>();
 
     this.m_sim = new VisionSystemSim(getName());
 
@@ -148,29 +155,31 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Update currently estimated robot pose from each camera
    */
   private void updateEstimatedGlobalPoses() {
-    List<EstimatedRobotPose> estimatedPoses = new ArrayList<EstimatedRobotPose>();
+    var apriltagCameraResult = new ArrayList<AprilTagCameraResult>();
 
-    List<Integer> visibleTagIDs = new ArrayList<Integer>();
-    HashSet<Pose3d> visibleTags = new HashSet<Pose3d>();
-    List<Pose2d> loggedPoses = new ArrayList<Pose2d>();
+    var visibleTags = new ArrayList<AprilTag>();
+    var loggedPoses = new ArrayList<Pose2d>();
+    var visibleTagPoseList = new ArrayList<Pose3d>();
     for (var camera : m_apriltagCameras) {
       var result = camera.getLatestEstimatedPose();
       if (result == null) continue;
-      result.targetsUsed.forEach((photonTrackedTarget) -> {
-        if (photonTrackedTarget.getFiducialId() == -1) return;
-        visibleTagIDs.add(photonTrackedTarget.getFiducialId());
-        visibleTags.add(m_fieldLayout.getTagPose(photonTrackedTarget.getFiducialId()).get());
+      result.estimatedRobotPose.targetsUsed.forEach((photonTrackedTarget) -> {
+        var tag = getTag(photonTrackedTarget.getFiducialId());
+        if (tag.isPresent()) {
+          visibleTags.add(tag.get());
+          visibleTagPoseList.add(tag.get().pose);
+        }
       });
-      estimatedPoses.add(result);
-      loggedPoses.add(result.estimatedPose.toPose2d());
+      apriltagCameraResult.add(result);
+      loggedPoses.add(result.estimatedRobotPose.estimatedPose.toPose2d());
     }
 
     // Log visible tags and estimated poses
-    Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, visibleTags.toArray(new Pose3d[0]));
-    Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, loggedPoses.toArray(new Pose2d[0]));
+    m_visibleTagPoses.set(visibleTagPoseList);
+    m_loggedEstimatedPoses.set(loggedPoses);
 
-    m_visibleTagIDs.set(visibleTagIDs);
-    m_estimatedRobotPoses.set(estimatedPoses);
+    m_visibleTags.set(visibleTags);
+    m_estimatedRobotPoses.set(apriltagCameraResult);
   }
 
   /**
@@ -193,6 +202,11 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    var objectLocation = getObjectLocation();
+    Logger.recordOutput(getName() + OBJECT_DETECTED_LOG_ENTRY, getObjectLocation().isPresent());
+    if (objectLocation.isEmpty()) return;
+    Logger.recordOutput(getName() + "/shouldIntake", shouldIntake());
+    Logger.recordOutput(getName() + OBJECT_POSE_LOG_ENTRY, objectLocation.get());
   }
 
   @Override
@@ -208,7 +222,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Get currently estimated robot poses from each camera
    * @return List of estimated poses, the timestamp, and targets used to create the estimate
    */
-  public List<EstimatedRobotPose> getEstimatedGlobalPoses() {
+  public List<AprilTagCameraResult> getEstimatedGlobalPoses() {
+    Logger.recordOutput(getName() + VISIBLE_TAGS_LOG_ENTRY, m_visibleTagPoses.get().toArray(new Pose3d[0]));
+    Logger.recordOutput(getName() + ESTIMATED_POSES_LOG_ENTRY, m_loggedEstimatedPoses.get().toArray(new Pose2d[0]));
+
     return m_estimatedRobotPoses.getAndSet(Collections.emptyList());
   }
 
@@ -216,8 +233,12 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Get IDs of currently visible tags
    * @return List of IDs of currently visible tags
    */
-  public List<Integer> getVisibleTagIDs() {
-    return m_visibleTagIDs.get();
+  public List<AprilTag> getVisibleTags() {
+    return m_visibleTags.get();
+  }
+
+  public Optional<AprilTag> getTag(int id) {
+    return m_fieldLayout.getTags().stream().filter((tag) -> tag.ID == id).findFirst();
   }
 
   /**
@@ -225,6 +246,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * @return The position of the object, relative to the field
    */
   public Optional<Translation2d> getObjectLocation() {
+
     Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
     Optional<Measure<Distance>> distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
@@ -234,10 +256,28 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + OBJECT_HEADING_LOG_ENTRY, yaw.get());
     return Optional.of(pose.getTranslation().plus(
       new Translation2d(
-        distance.get().in(Units.Meters),
-        Rotation2d.fromRadians(pose.getRotation().getRadians() + yaw.get().in(Units.Radians))
+        // distance.get().in(Units.Meters),
+        1,
+        Rotation2d.fromRadians(pose.getRotation().getRadians() - yaw.get().in(Units.Radians))
       )
     ));
+  }
+
+  /**
+   * Gets the object heading, relative to the camera.
+   * @return the heading
+   */
+  public Optional<Measure<Angle>> getObjectHeading() {
+    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
+    if (yaw.isEmpty()) return Optional.empty();
+    return yaw;
+  }
+
+  public boolean shouldIntake() {
+    if (!m_objectCamera.objectIsVisible()) return false;
+    double angle = m_objectCamera.getYaw().orElse(Units.Degrees.of(INTAKE_YAW_TOLERANCE)).in(Units.Degrees);
+    Logger.recordOutput(getName() + "/angle111", angle);
+    return Math.abs(angle) < INTAKE_YAW_TOLERANCE;
   }
 
   @Override

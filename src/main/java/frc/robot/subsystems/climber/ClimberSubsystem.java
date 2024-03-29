@@ -65,38 +65,28 @@ public class ClimberSubsystem extends SubsystemBase {
     return climberHardware;
   }
 
-  // Raises the arms
-  private void raiseClimber() {
+  /**
+   * Runs the climber during a match
+   */
+  private void runClimber() {
     m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
     m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
   }
 
-  // Lowers the arms
-  private void lowerClimber() {
-    m_lClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
-    m_rClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
-  }
-
-  // Stop both motors
+  /**
+   * Stop both motors
+   */
   private void stop() {
     m_lClimberMotor.stopMotor();
     m_rClimberMotor.stopMotor();
   }
 
   /**
-   * Raise climber arms
+   * Runs climber arms
    * @return Command to run the climber motors
    */
-  public Command raiseClimberCommand() {
-    return runEnd(() -> raiseClimber(), () -> stop());
-  }
-
-  /**
-   * Lower climber arms
-   * @return Command to run the climber motors in the reverse direction
-   */
-  public Command lowerClimberCommand() {
-    return runEnd(() -> lowerClimber(), () -> stop());
+  public Command runClimberCommand() {
+    return runEnd(() -> runClimber(), () -> stop());
   }
 
   public Command lowerLeftCommand() {

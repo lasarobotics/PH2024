@@ -9,20 +9,23 @@ import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
-import edu.wpi.first.math.Pair;
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.ClimberHardware;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
@@ -71,6 +74,8 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    System.out.println("robotcontainer");
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
         DRIVE_SUBSYSTEM.driveCommand(
@@ -101,6 +106,9 @@ public class RobotContainer {
   private void configureBindings() {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
+
+    // Back button - toggles centricity between robot and field centric
+    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag
     // is visible and robot is in range
@@ -242,6 +250,7 @@ public class RobotContainer {
 
   /**
    * Compose command to feed a note through the robot
+   * @return Command to feed note through the robot
    */
   // private Command feedThroughCommand() {
   // return Commands.parallel(
@@ -258,17 +267,59 @@ public class RobotContainer {
    * @return Command to aim at object
    */
   private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointCommand(
+    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
+      () -> PRIMARY_CONTROLLER.getLeftY(),
+      () -> PRIMARY_CONTROLLER.getLeftX(),
+      () -> PRIMARY_CONTROLLER.getRightX(),
+      () -> {
+        return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+                ? VISION_SUBSYSTEM.getObjectLocation().get()
+                : null;
+      },
+      false,
+      false
+    );
+  }
+
+   /**
+    * Automatically aim robot heading at object, drive, and intake a game object
+    * @return Command to aim robot at object, drive, and intake a game object
+    */
+   private Command aimAndIntakeObjectCommand() {
+    return Commands.sequence(
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX(),
         () -> {
-          return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-              ? VISION_SUBSYSTEM.getObjectLocation().get()
-              : null;
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false);
+        false).until(() -> VISION_SUBSYSTEM.shouldIntake()
+      ),
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
+        () -> 0,
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false
+      )
+    );
+  }
+
+  /**
+   * PARTY BUTTON!!!!
+   * @return Command that spins the robot and moves the shooter up and down
+   */
+  private Command partyMode() {
+    return Commands.parallel(
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
+      SHOOTER_SUBSYSTEM.shootPartyMode()
+    );
   }
 
   /**
@@ -311,6 +362,18 @@ public class RobotContainer {
    */
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
+  }
+
+  /**
+   * Call while disabled
+   */
+  public void disabledPeriodic() {
+    // Try to get alliance
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isEmpty()) return;
+
+    // Set alliance if available
+    DRIVE_SUBSYSTEM.setAlliance(alliance.get());
   }
 
   /**

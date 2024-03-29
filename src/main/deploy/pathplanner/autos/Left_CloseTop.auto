@@ -18,15 +18,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "shoot"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "pick up first note ring"
+            "pathName": "Center_CloseTop"
           }
         },
         {
@@ -38,18 +32,12 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Leave"
+            "name": "auto shoot"
           }
         }
       ]
     }
   },
-  "folder": "Ring side",
+  "folder": "Left",
   "choreoAuto": false
 }

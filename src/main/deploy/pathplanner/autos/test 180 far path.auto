@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 2.0,
+      "y": 5.5
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "test 180 far path"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "test 180 far path opposite"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "pose estimation testing autos",
+  "choreoAuto": false
+}

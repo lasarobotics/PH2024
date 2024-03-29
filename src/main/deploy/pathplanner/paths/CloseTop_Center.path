@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.8179669391920243,
+        "y": 6.902804382049867
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.488772095338677,
+        "y": 6.686770265771108
+      },
+      "isLocked": false,
+      "linkedName": "Pickup first note blue"
+    },
+    {
+      "anchor": {
+        "x": 1.38,
+        "y": 5.55
+      },
+      "prevControl": {
+        "x": 1.9227131455833433,
+        "y": 5.5492903594731855
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "At speaker"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.1,
+    "maxAcceleration": 1.0,
+    "maxAngularVelocity": 2160.0,
+    "maxAngularAcceleration": 2160.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Starts Close",
+  "previewStartingState": {
+    "rotation": 35.3313313389164,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
