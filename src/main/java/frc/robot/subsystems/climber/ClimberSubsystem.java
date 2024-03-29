@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,14 +32,16 @@ public class ClimberSubsystem extends SubsystemBase {
   private Spark m_lClimberMotor;
   private Spark m_rClimberMotor;
 
-  private final Measure<Dimensionless> CLIMBER_VELOCITY;
+  private Measure<Dimensionless> CLIMBER_VELOCITY;
 
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem(Hardware climberHardware, Measure<Dimensionless> climberVelocity) {
     this.m_lClimberMotor = climberHardware.lClimberMotor;
     this.m_rClimberMotor = climberHardware.rClimberMotor;
 
+    m_lClimberMotor.setInverted(true);
     m_rClimberMotor.setInverted(true);
+
 
     m_lClimberMotor.enableReverseLimitSwitch();
     m_rClimberMotor.enableReverseLimitSwitch();
@@ -96,9 +99,25 @@ public class ClimberSubsystem extends SubsystemBase {
     return runEnd(() -> lowerClimber(), () -> stop());
   }
 
+  public Command lowerLeftCommand() {
+    return runEnd(() -> m_lClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+  }
+  public Command raiseLeftCommand() {
+    return runEnd(() -> m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+  }
+  public Command lowerRightCommand() {
+    return runEnd(() -> m_rClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+  }
+  public Command raiseRightCommand() {
+    return runEnd(() -> m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+  }
+
   @Override
   public void periodic() {
     m_lClimberMotor.periodic();
-    m_rClimberMotor.stopMotor();
+    m_rClimberMotor.periodic();
+    // m_rClimberMotor.stopMotor();
+
+    CLIMBER_VELOCITY = Units.Percent.of(SmartDashboard.getNumber("climber power", 0));
   }
 }
