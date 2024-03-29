@@ -32,6 +32,7 @@ import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
@@ -270,6 +271,24 @@ public class RobotContainer {
       rumbleCommand(),
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.feedThroughCommand(() -> DRIVE_SUBSYSTEM.isAimed())
+    );
+  }
+
+  /**
+   * Compose command to test intake, amp shoot, and speaker shoot
+   * @return Command that does the intake command, amp shoot command, and speaker shoot command
+   */
+  private Command testCommands() {
+    return Commands.sequence(
+      intakeCommand().withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()))
+      ).withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()))
+      ).withTimeout(5),
+      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(5) 
     );
   }
 
