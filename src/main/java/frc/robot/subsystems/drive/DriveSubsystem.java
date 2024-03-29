@@ -8,6 +8,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import javax.xml.transform.Source;
+
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.AdvancedSwerveKinematics;
@@ -112,6 +114,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(9.0, 0.0, 0.4, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
+  private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
+  private static final Measure<Angle> BLUE_SOURCE_DIRECTION = Units.Radians.of(-1.060);
+
+  private static final Measure<Angle> RED_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
+  private static final Measure<Angle> RED_SOURCE_DIRECTION = Units.Radians.of(-2.106 + Math.PI);  
+
+  private static Measure<Angle> m_selectedAmpDirection = BLUE_AMP_DIRECTION;
+  private static Measure<Angle> m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;
+
   // Log
   private static final String POSE_LOG_ENTRY = "/Pose";
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
@@ -144,6 +155,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Field2d m_field;
   private MedianFilter m_xVelocityFilter;
   private MedianFilter m_yVelocityFilter;
+
+  private Alliance m_currentAlliance;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
@@ -600,9 +613,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveDirection = Math.atan2(yRequest, xRequest);
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
     
+    double sourceDistance = getPose().getTranslation().getDistance(Constants.Field.SOURCE.getGoalPose().getTranslation());
+    
     Rotation2d currentRotation = getPose().getRotation();
-    double angleScalar = (currentRotation.getDegrees());
-    double desiredAngle = (int)(angleScalar / 90 + Math.copySign(0.5, angleScalar)) * 90;
+
+    double desiredAngle;
+    if (sourceDistance < 2){
+      desiredAngle = m_selectedSourceDirection.in(Units.Degrees);
+    } else desiredAngle = m_selectedAmpDirection.in(Units.Degrees);
 
     double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
     
@@ -856,8 +874,18 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Must be set to correct for field oriented drive
    * @param alliance alliance
    */
+  
   public void setAlliance(Alliance alliance) {
-    m_allianceCorrection = alliance.equals(Alliance.Red) ? GlobalConstants.ROTATION_PI : GlobalConstants.ROTATION_ZERO;
+    m_currentAlliance = alliance;
+    m_allianceCorrection = m_currentAlliance.equals(Alliance.Red) ? GlobalConstants.ROTATION_PI : GlobalConstants.ROTATION_ZERO;
+    if (m_currentAlliance.equals(Alliance.Red)){
+      m_selectedAmpDirection = RED_AMP_DIRECTION;
+      m_selectedSourceDirection = RED_SOURCE_DIRECTION;
+    } else {
+      m_selectedAmpDirection = BLUE_AMP_DIRECTION;
+      m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;  
+    }
+
   }
 
   /**
