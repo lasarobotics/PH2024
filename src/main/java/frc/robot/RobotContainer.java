@@ -143,7 +143,7 @@ public class RobotContainer {
 
     // Right stick click - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
-      DRIVE_SUBSYSTEM.snapToCardinalDirectionCommand(
+      DRIVE_SUBSYSTEM.snapToImportantDirectionCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX()
       )

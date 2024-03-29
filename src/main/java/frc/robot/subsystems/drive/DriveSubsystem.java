@@ -622,7 +622,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
    */
-  private void snapToCardinalDirection(double xRequest, double yRequest) {
+  private void snapToImportantDirection(double xRequest, double yRequest) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
@@ -655,9 +655,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param yRequestSupplier Y axis speed supplier
    * @return Command to snap to the nearest cardinal direction
    */
-  public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
+  public Command snapToImportantDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
-      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
+      () -> snapToImportantDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
       () -> resetRotatePID()
     );
   }
