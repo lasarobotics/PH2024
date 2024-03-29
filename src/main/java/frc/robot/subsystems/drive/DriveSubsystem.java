@@ -8,8 +8,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import javax.xml.transform.Source;
-
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.AdvancedSwerveKinematics;
@@ -30,7 +28,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
-import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
