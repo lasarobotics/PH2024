@@ -10,8 +10,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -156,8 +158,8 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
     // PRIMARY_CONTROLLER.povDown().whileTrue(outtakeCommand());
 
-    PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
-    PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
+    // PRIMARY_CONTROLLER.povUp().whileTrue(CLIMBER_SUBSYSTEM.raiseClimberCommand());
+    // PRIMARY_CONTROLLER.povDown().whileTrue(CLIMBER_SUBSYSTEM.lowerClimberCommand());
 
     PRIMARY_CONTROLLER.a().whileTrue(CLIMBER_SUBSYSTEM.lowerLeftCommand());
     PRIMARY_CONTROLLER.x().whileTrue(CLIMBER_SUBSYSTEM.raiseLeftCommand());
@@ -315,23 +317,23 @@ public class RobotContainer {
    * PARTY BUTTON!!!!
    * @return Command that spins the robot and moves the shooter up and down
    */
-  private Command partyMode() {
-    return Commands.parallel(
-      DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
-      SHOOTER_SUBSYSTEM.shootPartyMode()
-    );
-  }
+  // private Command partyMode() {
+  //   return Commands.parallel(
+  //     DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
+  //     SHOOTER_SUBSYSTEM.shootPartyMode()
+  //   );
+  // }
 
   /**
    * Get correct speaker for current alliance
    *
    * @return Location of appropriate speaker
    */
-  private static Pair<Integer, Translation2d> speakerSupplier() {
-    return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
-        ? Constants.Field.BLUE_SPEAKER
-        : Constants.Field.RED_SPEAKER;
-  }
+  // private static Pair<Integer, Translation2d> speakerSupplier() {
+  //   return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue
+  //       ? Constants.Field.BLUE_SPEAKER
+  //       : Constants.Field.RED_SPEAKER;
+  // }
 
   /**
    * Manually retrieve a desired shooter state from the dashboard
@@ -348,13 +350,13 @@ public class RobotContainer {
    * Add auto modes to chooser
    */
   private void autoModeChooser() {
-    m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
-    m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
-    m_automodeChooser.addOption(Constants.AutoNames.LEAVE,
-        new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING,
-        new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
-    m_automodeChooser.addOption("Preload + 1", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 1").getCommand());
+    // m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
+    // m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
+    // m_automodeChooser.addOption(Constants.AutoNames.LEAVE,
+    //     new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEAVE).getCommand());
+    // m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_PLUS_THREE_RING,
+    //     new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.PRELOAD_PLUS_THREE_RING).getCommand());
+    // m_automodeChooser.addOption("Preload + 1", new AutoTrajectory(DRIVE_SUBSYSTEM, "Preload + 1").getCommand());
   }
 
   /**
