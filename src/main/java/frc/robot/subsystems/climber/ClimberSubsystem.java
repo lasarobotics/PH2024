@@ -5,14 +5,18 @@
 package frc.robot.subsystems.climber;
 
 import org.lasarobotics.hardware.revrobotics.Spark;
+import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,7 +36,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private Spark m_lClimberMotor;
   private Spark m_rClimberMotor;
 
-  private Measure<Dimensionless> CLIMBER_VELOCITY;
+  private Measure<Velocity<Angle>> CLIMBER_VELOCITY;
 
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem(Hardware climberHardware, Measure<Dimensionless> climberVelocity) {
@@ -41,7 +45,8 @@ public class ClimberSubsystem extends SubsystemBase {
 
     m_lClimberMotor.setInverted(true);
     m_rClimberMotor.setInverted(true);
-
+    m_lClimberMotor.setClosedLoopRampRate(Units.Seconds.of(1));
+    m_rClimberMotor.setClosedLoopRampRate(Units.Seconds.of(1));
 
     m_lClimberMotor.enableReverseLimitSwitch();
     m_rClimberMotor.enableReverseLimitSwitch();
@@ -49,7 +54,10 @@ public class ClimberSubsystem extends SubsystemBase {
     m_lClimberMotor.setIdleMode(IdleMode.kBrake);
     m_rClimberMotor.setIdleMode(IdleMode.kBrake);
 
-    CLIMBER_VELOCITY = climberVelocity;
+    m_lClimberMotor.initializeSparkPID(Constants.Climber.CLIMBER_PID, FeedbackSensor.NEO_ENCODER);
+    m_rClimberMotor.initializeSparkPID(Constants.Climber.CLIMBER_PID, FeedbackSensor.NEO_ENCODER);
+
+    CLIMBER_VELOCITY = Units.RPM.of(0);
   }
 
   /**
@@ -68,10 +76,10 @@ public class ClimberSubsystem extends SubsystemBase {
   /**
    * Runs the climber during a match
    */
-  private void runClimber() {
-    m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
-    m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
-  }
+  // private void runClimber() {
+  //   m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
+  //   m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle);
+  // }
 
   /**
    * Stop both motors
@@ -85,21 +93,21 @@ public class ClimberSubsystem extends SubsystemBase {
    * Runs climber arms
    * @return Command to run the climber motors
    */
-  public Command runClimberCommand() {
-    return runEnd(() -> runClimber(), () -> stop());
-  }
+  // public Command runClimberCommand() {
+  //   return runEnd(() -> runClimber(), () -> stop());
+  // }
 
   public Command lowerLeftCommand() {
-    return runEnd(() -> m_lClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+    return runEnd(() -> m_lClimberMotor.set(-CLIMBER_VELOCITY.in(Units.RPM), ControlType.kVelocity), () -> stop());
   }
   public Command raiseLeftCommand() {
-    return runEnd(() -> m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+    return runEnd(() -> m_lClimberMotor.set(CLIMBER_VELOCITY.in(Units.RPM), ControlType.kVelocity), () -> stop());
   }
   public Command lowerRightCommand() {
-    return runEnd(() -> m_rClimberMotor.set(-CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+    return runEnd(() -> m_rClimberMotor.set(-CLIMBER_VELOCITY.in(Units.RPM), ControlType.kVelocity), () -> stop());
   }
   public Command raiseRightCommand() {
-    return runEnd(() -> m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.Percent), ControlType.kDutyCycle), () -> stop());
+    return runEnd(() -> m_rClimberMotor.set(CLIMBER_VELOCITY.in(Units.RPM), ControlType.kVelocity), () -> stop());
   }
 
   @Override
@@ -108,6 +116,6 @@ public class ClimberSubsystem extends SubsystemBase {
     m_rClimberMotor.periodic();
     // m_rClimberMotor.stopMotor();
 
-    CLIMBER_VELOCITY = Units.Percent.of(SmartDashboard.getNumber("climber power", 0));
+    CLIMBER_VELOCITY = Units.RPM.of(SmartDashboard.getNumber("climber power", 0));
   }
 }

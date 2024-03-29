@@ -176,6 +176,11 @@ public final class Constants {
 
   public static class Climber {
     public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(0.25);
+    public static final SparkPIDConfig CLIMBER_PID = new SparkPIDConfig(
+      new PIDConstants(0.005, 0, 0, 0, 0),
+      false,
+      false,
+      0);
   }
 
   public static class DriveHardware {
