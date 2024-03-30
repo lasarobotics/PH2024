@@ -294,10 +294,10 @@ public class RobotContainer {
     );
   }
 
-   /**
-    * Automatically aim robot heading at object, drive, and intake a game object
-    * @return Command to aim robot at object, drive, and intake a game object
-    */
+  /**
+   * Automatically aim robot heading at object, drive, and intake a game object
+   * @return Command to aim robot at object, drive, and intake a game object
+   */
    private Command aimAndIntakeObjectCommand() {
     return Commands.sequence(
       DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
