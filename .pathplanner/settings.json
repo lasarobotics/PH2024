@@ -14,10 +14,9 @@
   "autoFolders": [
     "Center",
     "Left",
-    "pose estimation testing autos",
-    "Old",
     "Right",
-    "built"
+    "built",
+    "pose estimation testing autos"
   ],
   "defaultMaxVel": 5.1,
   "defaultMaxAccel": 4.0,
