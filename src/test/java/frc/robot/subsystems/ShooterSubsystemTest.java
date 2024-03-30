@@ -81,7 +81,7 @@ public class ShooterSubsystemTest {
       Constants.Shooter.FLYWHEEL_CONFIG,
       Constants.Shooter.ANGLE_CONFIG,
       Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
-      Constants.Shooter.FLYWHEEL_DIAMETER,
+      Constants.Shooter.TOPFLYWHEEL_DIAMETER,
       Constants.Shooter.SHOOTER_MAP,
       () -> new Pose2d(),
       () -> Constants.Field.BLUE_SPEAKER

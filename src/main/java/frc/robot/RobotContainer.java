@@ -54,7 +54,8 @@ public class RobotContainer {
     Constants.Shooter.FLYWHEEL_CONFIG,
     Constants.Shooter.ANGLE_CONFIG,
     Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
-    Constants.Shooter.FLYWHEEL_DIAMETER,
+    Constants.Shooter.TOP_FLYWHEEL_DIAMETER,
+    Constants.Shooter.BOTTOM_FLYWHEEL_DIAMETER,
     Constants.Shooter.SHOOTER_MAP,
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
@@ -70,8 +71,6 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
-    System.out.println("robotcontainer");
-
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -86,12 +85,13 @@ public class RobotContainer {
 
     // Register Named Commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
-    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
+    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.1));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
-    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1.0));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
+    NamedCommands.registerCommand("auto intake", aimAndIntakeObjectCommand());
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -168,6 +168,8 @@ public class RobotContainer {
 
     // DPAD left - PARTY BUTTON!!
     PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
+
+    PRIMARY_CONTROLLER.povDown().onTrue(aimAndIntakeObjectCommand());
   }
 
   /**
@@ -299,29 +301,32 @@ public class RobotContainer {
    * @return Command to aim robot at object, drive, and intake a game object
    */
    private Command aimAndIntakeObjectCommand() {
-    return Commands.sequence(
-      DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+     return Commands.parallel(
+    //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+    //   DRIVE_SUBSYSTEM.aimAtPointCommand(
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftX() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getRightX() : 0,
+    //       () -> {
+    //         return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+    //       },
+    //       false,
+    //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
+    //  Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX(),
-        () -> {
-          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-        },
-        false,
-        false).until(() -> VISION_SUBSYSTEM.shouldIntake()
-      ),
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.9,
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.9,
+        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75 : 0,
+        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75 : 0,
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false
-      )
-    );
+        false),
+
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.intakeCommand()
+     )
+     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
   }
 
   /**

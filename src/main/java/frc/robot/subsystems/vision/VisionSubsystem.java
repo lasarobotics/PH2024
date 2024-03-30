@@ -280,6 +280,10 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     return Math.abs(angle) < INTAKE_YAW_TOLERANCE;
   }
 
+  public boolean objectIsVisible() {
+    return m_objectCamera.objectIsVisible();
+  }
+
   @Override
   public void close() {
     for (var camera : m_apriltagCameras) camera.close();

@@ -123,13 +123,14 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.4);
+    public static final Measure<Distance> TOP_FLYWHEEL_DIAMETER = Units.Inches.of(2.40);
+    public static final Measure<Distance> BOTTOM_FLYWHEEL_DIAMETER = Units.Inches.of(2.43);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.32,
         2e-3,
         0.08,
-        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
+        1 / ((Spark.MotorKind.NEO_VORTEX.getMaxRPM() / 60) * (TOP_FLYWHEEL_DIAMETER.in(Units.Meters) * Math.PI)),
         0.25
       ),
       false,
@@ -159,12 +160,14 @@ public final class Constants {
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.5))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(39.5))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(40.0))),
+      Map.entry(Units.Meters.of(2.80), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.5))),
+      Map.entry(Units.Meters.of(3.20), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.5))),
       Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
       Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
       Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(33.5))),
-      Map.entry(Units.Meters.of(4.30), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.5))),
+      Map.entry(Units.Meters.of(4.30), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(32.5))),
       Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(31.0))),
       Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0)))
     );

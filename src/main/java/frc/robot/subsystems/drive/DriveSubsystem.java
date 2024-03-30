@@ -62,7 +62,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
@@ -96,7 +95,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.2);
+  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.15);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
@@ -108,7 +107,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(9.0, 0.0, 0.4, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
 
   private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
@@ -242,7 +241,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredChassisSpeeds = new ChassisSpeeds();
 
     // Setup anti-tip command
-    new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
+    //new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
@@ -289,7 +288,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
@@ -305,7 +304,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
@@ -321,7 +320,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
@@ -337,7 +336,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       MAXSwerveModule.initializeHardware(
         Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
         Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
-        MotorKind.NEO
+        MotorKind.NEO_VORTEX
       ),
       MAXSwerveModule.ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
@@ -922,7 +921,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return runEnd(() ->
+    return runEnd(() -> {
       aimAtPoint(
         m_controlCentricity,
         xRequestSupplier.getAsDouble(),
@@ -931,7 +930,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         pointSupplier.get(),
         reversed,
         velocityCorrection
-      ),
+      );
+
+    },
       () -> resetRotatePID()
     );
   }

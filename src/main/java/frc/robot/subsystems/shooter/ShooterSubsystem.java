@@ -74,8 +74,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(55.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(56.0));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
@@ -144,17 +144,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param angleConfig Angle adjust PID config
    * @param angleFF Angle adjust feed forward gains
    * @param angleConstraint Angle adjust motion constraint
-   * @param flywheelDiameter Flywheel diameter
+   * @param topFlywheelDiameter Top flywheel diameter
+   * @param bottomFlywheelDiameter Bottom flywheel diameter
    * @param shooterMap Shooter lookup table
    * @param poseSupplier Robot pose supplier
    * @param targetSupplier Speaker target supplier
    */
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
-                          TrapezoidProfile.Constraints angleConstraint, Measure<Distance> flywheelDiameter,
+                          TrapezoidProfile.Constraints angleConstraint, Measure<Distance> topFlywheelDiameter, Measure<Distance> bottomFlywheelDiameter,
                           List<Entry<Measure<Distance>, State>> shooterMap,
                           Supplier<Pose2d> poseSupplier, Supplier<AprilTag> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
-    MAX_FLYWHEEL_SPEED = Units.MetersPerSecond.of((shooterHardware.topFlywheelMotor.getKind().getMaxRPM() / 60) * (flywheelDiameter.in(Units.Meters) * Math.PI));
+    MAX_FLYWHEEL_SPEED = Units.MetersPerSecond.of((shooterHardware.topFlywheelMotor.getKind().getMaxRPM() / 60) * (topFlywheelDiameter.in(Units.Meters) * Math.PI));
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
     this.m_bottomFlywheelMotor = shooterHardware.bottomFlywheelMotor;
     this.m_angleMotor = shooterHardware.angleMotor;
@@ -172,11 +173,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
 
     // Set flywheel conversion factor
-    var flywheelConversionFactor = flywheelDiameter.in(Units.Meters) * Math.PI;
-    m_topFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
-    m_topFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
-    m_bottomFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor);
-    m_bottomFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, flywheelConversionFactor / 60);
+    var topFlywheelConversionFactor = topFlywheelDiameter.in(Units.Meters) * Math.PI;
+    var bottomFlywheelConversionFactor = bottomFlywheelDiameter.in(Units.Meters) * Math.PI;
+    m_topFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, topFlywheelConversionFactor);
+    m_topFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, topFlywheelConversionFactor / 60);
+    m_bottomFlywheelMotor.setPositionConversionFactor(FeedbackSensor.NEO_ENCODER, bottomFlywheelConversionFactor);
+    m_bottomFlywheelMotor.setVelocityConversionFactor(FeedbackSensor.NEO_ENCODER, bottomFlywheelConversionFactor / 60);
 
     // Set angle adjust conversion factor
     var angleConversionFactor = Math.PI * 2;
@@ -274,6 +276,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param state Desired shooter state
    */
   private void setState(State state) {
+    // Normalize state to valid range
     m_desiredShooterState = normalizeState(state);
 
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
