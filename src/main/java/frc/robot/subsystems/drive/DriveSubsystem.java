@@ -96,7 +96,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Measure<Angle> AIM_OFFSET = Units.Degrees.of(0.0);
+  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.2);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
@@ -115,7 +115,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Angle> BLUE_SOURCE_DIRECTION = Units.Radians.of(-1.060);
 
   private static final Measure<Angle> RED_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
-  private static final Measure<Angle> RED_SOURCE_DIRECTION = Units.Radians.of(-2.106 + Math.PI);  
+  private static final Measure<Angle> RED_SOURCE_DIRECTION = Units.Radians.of(-2.106 + Math.PI);
 
   private static Measure<Angle> m_selectedAmpDirection = BLUE_AMP_DIRECTION;
   private static Measure<Angle> m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;
@@ -197,8 +197,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.4),
-      new com.pathplanner.lib.util.PIDConstants(8.0, 0.0, 0.3),
+      new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
       new ReplanningConfig(),
@@ -559,6 +559,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
 
+    // Adjust point
+    point = point.plus(AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -577,8 +579,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
-    // Add offset
-    adjustedAngle = adjustedAngle.plus(Rotation2d.fromRadians(AIM_OFFSET.in(Units.Radians)));
     // Calculate necessary rotate rate
     double rotateOutput = reversed
       ? m_autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees())
@@ -609,9 +609,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
     double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
-    
+
     double sourceDistance = getPose().getTranslation().getDistance(Constants.Field.SOURCE.getGoalPose().getTranslation());
-    
+
     Rotation2d currentRotation = getPose().getRotation();
 
     double desiredAngle;
@@ -620,7 +620,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     } else desiredAngle = m_selectedAmpDirection.in(Units.Degrees);
 
     double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
-    
+
     // Drive with the pose to the snapped cardinal direction
     drive(
       m_controlCentricity,
@@ -639,7 +639,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
-      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
+      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
       () -> resetRotatePID()
     );
   }
@@ -851,7 +851,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Must be set to correct for field oriented drive
    * @param alliance alliance
    */
-  
+
   public void setAlliance(Alliance alliance) {
     m_currentAlliance = alliance;
     m_allianceCorrection = m_currentAlliance.equals(Alliance.Red) ? GlobalConstants.ROTATION_PI : GlobalConstants.ROTATION_ZERO;
@@ -860,9 +860,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_selectedSourceDirection = RED_SOURCE_DIRECTION;
     } else {
       m_selectedAmpDirection = BLUE_AMP_DIRECTION;
-      m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;  
+      m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;
     }
-
   }
 
   /**

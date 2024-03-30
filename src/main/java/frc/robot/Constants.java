@@ -87,6 +87,7 @@ public final class Constants {
     public static final String SPINUP_COMMAND_NAME = "spinup";
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
+    public static final String AUTO_SHOOT_LONG_COMMAND_NAME = "auto shoot long";
   }
 
 
@@ -122,7 +123,7 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.3);
+    public static final Measure<Distance> FLYWHEEL_DIAMETER = Units.Inches.of(2.4);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.32,
@@ -157,16 +158,15 @@ public final class Constants {
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(56.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(48.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
-      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(34.0))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(29.0))),
-      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(27.5))),
-      Map.entry(Units.Meters.of(5.20), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(24.5)))
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(50.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.5))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(39.5))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.75), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(33.5))),
+      Map.entry(Units.Meters.of(4.30), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(32.5))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(31.0))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0)))
     );
   }
 

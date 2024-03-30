@@ -128,6 +128,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.getTestCommand().schedule();
   }
 
   @Override

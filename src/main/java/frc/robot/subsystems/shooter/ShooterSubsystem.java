@@ -47,7 +47,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -82,6 +81,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
     public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
+    public static final State TEST_STOP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(30.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
       this.speed = speed;
@@ -95,7 +95,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
-  private static final Measure<Time> TAG_VISIBLE_DEBOUNCE_TIME = Units.Seconds.of(1.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
@@ -108,7 +107,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final Measure<Distance> MAX_SHOOTING_DISTANCE;
   private final Measure<Velocity<Distance>> MAX_FLYWHEEL_SPEED;
   private final Measure<Velocity<Distance>> SPINUP_SPEED = Units.MetersPerSecond.of(10.0);
-  
+
   private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
   private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
   private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), Debouncer.DebounceType.kRising);
@@ -122,7 +121,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TrapezoidProfile.Constraints m_angleConstraint;
   private Supplier<Pose2d> m_poseSupplier;
   private Supplier<AprilTag> m_targetSupplier;
-  private Debouncer m_tagVisibleDebouncer;
 
   private SparkPIDConfig m_flywheelConfig;
   private SparkPIDConfig m_angleConfig;
@@ -167,7 +165,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
-    this.m_tagVisibleDebouncer = new Debouncer(TAG_VISIBLE_DEBOUNCE_TIME.in(Units.Seconds), Debouncer.DebounceType.kFalling);
 
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
@@ -219,7 +216,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
+      state = new State(SPINUP_SPEED, state.angle);
       setState(state);
       feedStop();
     }));
@@ -283,7 +280,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
     }
-    else { 
+    else {
       m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
@@ -438,6 +435,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command intakeCommand() {
     return startEnd(
       () -> {
+        setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
+
         m_indexerMotor.enableForwardLimitSwitch();
         feedStart(true);
       },
@@ -534,9 +533,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return runEnd(
       () -> {
         setState(getAutomaticState());
-        if (RobotBase.isSimulation() | isReady()
-            && isAimed.getAsBoolean()
-            && m_tagVisibleDebouncer.calculate(VisionSubsystem.getInstance().getVisibleTags().contains(m_targetSupplier.get())) | override.getAsBoolean())
+        if (RobotBase.isSimulation() | isReady() && isAimed.getAsBoolean())
           feedStart(false);
         else feedStop();
       },
@@ -564,7 +561,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return shootManualCommand(State.SPEAKER_SCORE_STATE);
   }
 
-  /** 
+  /**
    * Pass note from opponent side to your side
    * @return Command to pass note
    */

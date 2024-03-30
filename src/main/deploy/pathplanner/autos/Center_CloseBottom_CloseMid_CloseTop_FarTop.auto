@@ -97,30 +97,37 @@
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "CloseTop_FarTop2"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "intake"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "CloseTop_FarTop2"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "FarTop_LeftStage"
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "FarTop_LeftStage"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "auto shoot"
+            "name": "auto shoot long"
           }
         }
       ]

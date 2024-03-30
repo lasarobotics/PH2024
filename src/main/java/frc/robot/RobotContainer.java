@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Shooter;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
@@ -88,9 +89,9 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
-
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
-    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1.0));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -130,7 +131,7 @@ public class RobotContainer {
       )
     );
 
-    // Push down left stick - pass note    
+    // Push down left stick - pass note
     PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // B button - go to source and intake game piece
@@ -275,24 +276,6 @@ public class RobotContainer {
   }
 
   /**
-   * Compose command to test intake, amp shoot, and speaker shoot
-   * @return Command that does the intake command, amp shoot command, and speaker shoot command
-   */
-  private Command testCommands() {
-    return Commands.sequence(
-      intakeCommand().withTimeout(5),
-      SHOOTER_SUBSYSTEM.shootManualCommand(
-        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()))
-      ).withTimeout(5),
-      SHOOTER_SUBSYSTEM.shootManualCommand(
-        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()))
-      ).withTimeout(5),
-      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(5),
-      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(5) 
-    );
-  }
-
-  /**
    * Command to aim at detected game object automatically, driving normally if none is detected
    * @return Command to aim at object
    */
@@ -429,6 +412,24 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return m_automodeChooser.getSelected();
+  }
+
+  /**
+   * Compose command to test intake, amp shoot, and speaker shoot
+   * @return Command that does the intake command, amp shoot command, and speaker shoot command
+   */
+  public Command getTestCommand() {
+    return Commands.sequence(
+      intakeCommand().withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()))
+      ).withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()))
+      ).withTimeout(5),
+      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(5),
+      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(5)
+    );
   }
 
   /**

@@ -27,7 +27,6 @@ import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 public class ObjectCamera implements AutoCloseable {
   private static final double TARGET_HEIGHT_METERS = 0;
   private static final double MIN_OBJECT_AREA = 0.1;
-  private static final double INTAKE_YAW_TOLERANCE = 2;
 
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
