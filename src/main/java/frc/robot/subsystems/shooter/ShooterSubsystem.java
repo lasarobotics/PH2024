@@ -28,6 +28,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -110,7 +111,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
   private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
-  private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), Debouncer.DebounceType.kRising);
+  private final Measure<Time> READY_TIME_THRESHOLD = Units.Seconds.of(0.05);
+  private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kRising);
+  private final Debouncer READY_DEBOUNCER = new Debouncer(READY_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kRising);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -218,7 +221,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
+      state = new State(SPINUP_SPEED, state.angle);
       setState(state);
       feedStop();
     }));
@@ -356,7 +359,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if ready
    */
   private boolean isReady() {
-    return
+    return READY_DEBOUNCER.calculate(
       Precision.equals(
         m_angleMotor.getInputs().absoluteEncoderPosition,
         m_desiredShooterState.angle.in(Units.Radians),
@@ -371,7 +374,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         m_bottomFlywheelMotor.getInputs().encoderVelocity,
         m_desiredShooterState.speed.in(Units.MetersPerSecond),
         m_flywheelConfig.getTolerance()
-      );
+      ));
   }
 
   /**
@@ -443,8 +446,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command intakeCommand() {
     return startEnd(
       () -> {
-        setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle));
-
+        setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
         m_indexerMotor.enableForwardLimitSwitch();
         feedStart(true);
       },
