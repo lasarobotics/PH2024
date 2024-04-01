@@ -423,15 +423,56 @@ public class RobotContainer {
    */
   public Command getTestCommand() {
     return Commands.sequence(
-      intakeCommand().withTimeout(5),
+      Commands.print("Intaking..."),
+      intakeCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Moving shooter down..."),
       SHOOTER_SUBSYSTEM.shootManualCommand(
         new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()))
-      ).withTimeout(5),
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Moving shooter up..."),
       SHOOTER_SUBSYSTEM.shootManualCommand(
         new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()))
-      ).withTimeout(5),
-      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(5),
-      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(5)
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Scoring amp..."),
+      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Scoring speaker..."),
+      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Driving forwards..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> 0.1,
+        () -> 0.0,
+        () -> 0.0
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Driving backwards..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> -0.1,
+        () -> 0.0,
+        () -> 0.0
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Driving left..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> 0.0,
+        () -> 0.1,
+        () -> 0.0
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Driving right..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> 0.0,
+        () -> -0.1,
+        () -> 0.0
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Rotating left..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> 0.0,
+        () -> 0.0,
+        () -> 0.1
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Rotating right..."),
+      DRIVE_SUBSYSTEM.driveCommand(
+        () -> 0.0,
+        () -> 0.0,
+        () -> -0.1
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME)
     );
   }
 

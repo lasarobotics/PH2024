@@ -101,6 +101,7 @@ public final class Constants {
     public static final Pair<String, String> RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = new Pair<String, String>("Disrupt auto (amp side - source side)", "Right_FarDisrupt_FarTop");
     public static final Pair<String, String> SIDEWAYS_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go sideways", "sideways auto");
     public static final Pair<String, String> TEST_180_FAR_PATH_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go amp side and flip 180", "test 180 far path");
+    public static final double TEST_COMMAND_TIME = 5.0;
   }
 
   public static class Drive {
