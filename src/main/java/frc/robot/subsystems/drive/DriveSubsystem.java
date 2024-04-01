@@ -715,6 +715,26 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Call method during initialization of disabled mode to set motors to brake mode
+   */
+  public void disabledInit() {
+    m_lFrontModule.disabledInit();
+    m_rFrontModule.disabledInit();
+    m_lRearModule.disabledInit();
+    m_rRearModule.disabledInit();
+  }
+
+  /**
+   * Call method when exiting disabled mode to set motors to coast mode
+   */
+  public void disabledExit() {
+    m_lFrontModule.disabledExit();
+    m_rFrontModule.disabledExit();
+    m_lRearModule.disabledExit();
+    m_rRearModule.disabledExit();
+  }
+
+  /**
    * Toggle traction control
    */
   private void toggleTractionControl() {
