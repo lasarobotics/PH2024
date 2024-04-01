@@ -83,7 +83,7 @@ public class RobotContainer {
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
-    // Register Named Commands
+    // Register named commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
     NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.1));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
@@ -91,7 +91,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
-    NamedCommands.registerCommand("auto intake", aimAndIntakeObjectCommand());
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_INTAKE_COMMAND_NAME, aimAndIntakeObjectCommand());
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -107,11 +107,11 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
     // Back button - toggles centricity between robot and field centric
-    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentriciyCommand());
+    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentricityCommand());
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
+    PRIMARY_CONTROLLER.a().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());

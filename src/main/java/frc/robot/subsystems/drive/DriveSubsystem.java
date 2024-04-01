@@ -94,6 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
+  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
   public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.15);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
@@ -108,12 +109,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
-  private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 2160.0);
+  private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
 
-  private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
-  private static final Measure<Angle> BLUE_SOURCE_DIRECTION = Units.Radians.of(-1.060);
+  private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI / 2);
+  private static final Measure<Angle> BLUE_SOURCE_DIRECTION = Units.Radians.of(-1.060 + Math.PI);
 
-  private static final Measure<Angle> RED_AMP_DIRECTION = Units.Radians.of(-Math.PI/2);
+  private static final Measure<Angle> RED_AMP_DIRECTION = Units.Radians.of(-Math.PI / 2);
   private static final Measure<Angle> RED_SOURCE_DIRECTION = Units.Radians.of(-2.106 + Math.PI);
 
   private static Measure<Angle> m_selectedAmpDirection = BLUE_AMP_DIRECTION;
@@ -211,7 +212,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     while (m_navx.isCalibrating()) stop();
     m_navx.reset();
 
-    // Setup turn PID
+    // Setup rotate PID
     m_rotatePIDController.setTolerance(TOLERANCE);
     m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
 
@@ -1034,7 +1035,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Toggles between field and robot oriented drive control
    * @return Command to toggle control centricity between robot and field centric drive control
    */
-  public Command toggleCentriciyCommand() {
+  public Command toggleCentricityCommand() {
     return runOnce(() -> toggleControlCentricity());
   }
 
@@ -1188,8 +1189,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
            Math.abs(getRoll().in(Units.Degrees)) < BALANCED_THRESHOLD;
   }
 
+  /**
+   * Get if robot is aimed at desired target
+   * @return True if aimed
+   */
   public boolean isAimed() {
-    return m_autoAimPIDControllerFront.atGoal() || m_autoAimPIDControllerBack.atGoal();
+    return (m_autoAimPIDControllerFront.atGoal() || m_autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(AIM_VELOCITY_THRESHOLD);
   }
 
   /**
@@ -1230,7 +1235,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Get rotate rate of robot
-   * @return Current rotate rate of robot (degrees/s)
+   * @return Current rotate rate of robot
    */
   public Measure<Velocity<Angle>> getRotateRate() {
     return m_navx.getInputs().yawRate;

@@ -111,9 +111,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
   private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
-  private final Measure<Time> READY_TIME_THRESHOLD = Units.Seconds.of(0.05);
+  private final Measure<Time> READY_TIME_THRESHOLD = Units.Seconds.of(GlobalConstants.ROBOT_LOOP_PERIOD * 2);
   private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kRising);
-  private final Debouncer READY_DEBOUNCER = new Debouncer(READY_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kRising);
+  private final Debouncer READY_DEBOUNCER = new Debouncer(READY_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kBoth);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;
@@ -223,7 +223,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       var state = getAutomaticState();
       state = new State(SPINUP_SPEED, state.angle);
       setState(state);
-      feedStop();
     }));
 
     // Initialize sim variables
@@ -444,17 +443,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to intake to the shooter
    */
   public Command intakeCommand() {
-    return startEnd(
-      () -> {
-        setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
-        m_indexerMotor.enableForwardLimitSwitch();
-        feedStart(true);
-      },
+    return runEnd(
+      () -> getDefaultCommand().execute(),
       () -> {
         m_indexerMotor.disableForwardLimitSwitch();
         feedStop();
       }
-    ).until(() -> isObjectPresent());
+    ).beforeStarting(() -> {
+        m_indexerMotor.enableForwardLimitSwitch();
+        feedStart(true);
+    }).until(() -> isObjectPresent());
   }
 
   /**
@@ -543,7 +541,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return runEnd(
       () -> {
         setState(getAutomaticState());
-        if (RobotBase.isSimulation() | isReady() && isAimed.getAsBoolean())
+        if ((RobotBase.isSimulation() | isReady() && isAimed.getAsBoolean()) || override.getAsBoolean())
           feedStart(false);
         else feedStop();
       },

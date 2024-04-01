@@ -31,6 +31,7 @@ import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
@@ -186,6 +187,7 @@ public class ShooterSubsystemTest {
 
     // Execute the command when the state is ready
     command.execute();
+    Timer.delay(0.1);
     command.execute();
 
     // Verify that motors are being driven with expected values

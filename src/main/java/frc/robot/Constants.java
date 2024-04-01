@@ -88,6 +88,7 @@ public final class Constants {
     public static final String FEEDTHROUGH_COMMAND_NAME = "feed through";
     public static final String AUTO_SHOOT_COMMAND_NAME = "auto shoot";
     public static final String AUTO_SHOOT_LONG_COMMAND_NAME = "auto shoot long";
+    public static final String AUTO_INTAKE_COMMAND_NAME = "auto intake";
   }
 
 
