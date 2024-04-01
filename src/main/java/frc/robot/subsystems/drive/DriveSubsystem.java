@@ -884,6 +884,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  public Alliance getAlliance() {
+    return m_currentAlliance;
+  }
+
   /**
    * Call this repeatedly to drive during autonomous
    * @param moduleStates Calculated swerve module states

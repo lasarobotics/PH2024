@@ -102,7 +102,9 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    m_robotContainer.autonomousPeriodic();
+  }
 
   @Override
   public void autonomousExit() {}

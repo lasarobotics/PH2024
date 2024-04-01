@@ -388,6 +388,19 @@ public class RobotContainer {
   }
 
   /**
+   * Run checks in auto
+   */
+  public void autonomousPeriodic() {
+    // stop auto if we go too far
+    if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Blue)) {
+      if (DRIVE_SUBSYSTEM.getPose().getX() > 9.73) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
+    }
+    else if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Red)) {
+      if (DRIVE_SUBSYSTEM.getPose().getX() < 6.84) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
+    }
+  }
+
+  /**
    * Initialization code for disabled mode
    */
   public void disabledInit() {
