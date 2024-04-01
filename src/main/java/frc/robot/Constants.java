@@ -239,6 +239,10 @@ public final class Constants {
     public static final Spark.ID RIGHT_CLIMBER_MOTOR_ID = new Spark.ID("ClimberHardware/Right", 16);
   }
 
+  public static class AccessoryHardware {
+    public static final int BLINKIN_CHANNEL = 0;
+  }
+
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";

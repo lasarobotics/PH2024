@@ -12,10 +12,12 @@ import java.util.function.Supplier;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.util.Precision;
+import org.lasarobotics.hardware.revrobotics.Blinkin;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.FeedbackSensor;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
+import org.lasarobotics.hardware.revrobotics.Blinkin.BlinkinPattern;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
@@ -409,6 +411,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Put note indicator on SmartDashboard
     SmartDashboard.putBoolean(SHOOTER_NOTE_INSIDE_INDICATOR, isObjectPresent());
+
+    if (isObjectPresent()) Blinkin.getInstance().setPattern(BlinkinPattern.YELLOW);
+    else Blinkin.getInstance().setPattern(BlinkinPattern.CP1_2_COLOR_WAVES);
 
     // Log outputs
     var currentState = getCurrentState();
