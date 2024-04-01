@@ -75,7 +75,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Angle> angle;
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.0), Units.Degrees.of(56.0));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.1), Units.Degrees.of(56.0));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
@@ -218,7 +218,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(SPINUP_SPEED, state.angle);
+      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
       setState(state);
       feedStop();
     }));
@@ -366,6 +366,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         m_topFlywheelMotor.getInputs().encoderVelocity,
         m_desiredShooterState.speed.in(Units.MetersPerSecond),
         m_flywheelConfig.getTolerance()
+      ) &&
+      Precision.equals(
+        m_bottomFlywheelMotor.getInputs().encoderVelocity,
+        m_desiredShooterState.speed.in(Units.MetersPerSecond),
+        m_flywheelConfig.getTolerance()
       );
   }
 
@@ -438,7 +443,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command intakeCommand() {
     return startEnd(
       () -> {
-        setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
+        setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle));
 
         m_indexerMotor.enableForwardLimitSwitch();
         feedStart(true);

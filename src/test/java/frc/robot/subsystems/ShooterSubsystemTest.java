@@ -180,6 +180,7 @@ public class ShooterSubsystemTest {
     flywheelInputs.encoderVelocity = state.speed.in(Units.MetersPerSecond);
     angleInputs.absoluteEncoderPosition = state.angle.in(Units.Radians);
     when(m_topFlywheelMotor.getInputs()).thenReturn(flywheelInputs);
+    when(m_bottomFlywheelMotor.getInputs()).thenReturn(flywheelInputs);
     when(m_angleMotor.isSmoothMotionFinished()).thenReturn(true);
     when(m_angleMotor.getInputs()).thenReturn(angleInputs);
 

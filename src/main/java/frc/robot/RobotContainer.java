@@ -373,8 +373,6 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.SIDEWAYS_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.SIDEWAYS_AUTO_NAME.getSecond()).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.TEST_180_FAR_PATH_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.TEST_180_FAR_PATH_AUTO_NAME.getSecond()).getCommand());
   }
 
   /**
