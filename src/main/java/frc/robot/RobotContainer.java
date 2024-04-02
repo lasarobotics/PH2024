@@ -73,9 +73,6 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
-    // Initialize Blinkin module
-    Blinkin.setChannel(Constants.AccessoryHardware.BLINKIN_CHANNEL);
-
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -116,7 +113,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.a().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -188,12 +185,9 @@ public class RobotContainer {
    */
   private Command rumbleCommand() {
     return Commands.run(() -> {
-      if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
       if (SHOOTER_SUBSYSTEM.isObjectPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0);
     }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
   }
 
@@ -454,43 +448,7 @@ public class RobotContainer {
       Commands.print("Scoring amp..."),
       SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
       Commands.print("Scoring speaker..."),
-      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Driving forwards..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> 0.1,
-        () -> 0.0,
-        () -> 0.0
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Driving backwards..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> -0.1,
-        () -> 0.0,
-        () -> 0.0
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Driving left..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> 0.0,
-        () -> 0.1,
-        () -> 0.0
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Driving right..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> 0.0,
-        () -> -0.1,
-        () -> 0.0
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Rotating left..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> 0.0,
-        () -> 0.0,
-        () -> 0.1
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
-      Commands.print("Rotating right..."),
-      DRIVE_SUBSYSTEM.driveCommand(
-        () -> 0.0,
-        () -> 0.0,
-        () -> -0.1
-      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME)
+      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME)
     );
   }
 
