@@ -3,22 +3,23 @@
   "robotLength": 0.9398,
   "holonomicMode": true,
   "pathFolders": [
-    "paths",
+    "pose estimation test paths",
     "Old",
     "Starts Close",
     "Starts Far",
     "Starts Speaker",
-    "Starts Stage"
+    "Starts Stage",
+    "paths"
   ],
   "autoFolders": [
     "Center",
     "Left",
+    "Right",
     "built",
-    "Old",
-    "Right"
+    "pose estimation testing autos"
   ],
   "defaultMaxVel": 5.1,
-  "defaultMaxAccel": 3.5,
+  "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 2160.0,
   "defaultMaxAngAccel": 2160.0,
   "maxModuleSpeed": 4.5

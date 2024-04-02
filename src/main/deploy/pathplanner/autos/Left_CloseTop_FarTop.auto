@@ -49,7 +49,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CloseTop_FarTop"
+                  "pathName": "CloseTop_FarTop2"
                 }
               },
               {
@@ -64,7 +64,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarTop_RightStage"
+            "pathName": "FarTop_LeftStage"
           }
         },
         {

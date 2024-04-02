@@ -6,11 +6,15 @@ package frc.robot;
 
 import java.util.function.BooleanSupplier;
 
+import org.lasarobotics.hardware.revrobotics.Blinkin;
+
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -24,12 +28,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Shooter;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem.State;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
@@ -44,12 +50,14 @@ public class RobotContainer {
     Constants.HID.CONTROLLER_DEADBAND,
     Constants.Drive.DRIVE_LOOKAHEAD
   );
+
   private static final ShooterSubsystem SHOOTER_SUBSYSTEM = new ShooterSubsystem(
     ShooterSubsystem.initializeHardware(),
     Constants.Shooter.FLYWHEEL_CONFIG,
     Constants.Shooter.ANGLE_CONFIG,
     Constants.Shooter.ANGLE_MOTION_CONSTRAINT,
-    Constants.Shooter.FLYWHEEL_DIAMETER,
+    Constants.Shooter.TOP_FLYWHEEL_DIAMETER,
+    Constants.Shooter.BOTTOM_FLYWHEEL_DIAMETER,
     Constants.Shooter.SHOOTER_MAP,
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
@@ -77,14 +85,15 @@ public class RobotContainer {
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
-    // Register Named Commands
+    // Register named commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
-    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.2));
+    NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.1));
     NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
-    
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
-    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(1.2));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
+    NamedCommands.registerCommand(Constants.NamedCommands.AUTO_INTAKE_COMMAND_NAME, aimAndIntakeObjectCommand());
 
     VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
@@ -99,27 +108,33 @@ public class RobotContainer {
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
+    // Back button - toggles centricity between robot and field centric
+    PRIMARY_CONTROLLER.back().onTrue(DRIVE_SUBSYSTEM.toggleCentricityCommand());
+
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
-    // Click right stick to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.rightStick().getAsBoolean()));
+    // Click DPAD down to override and shoot now
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
 
-    // Left trigger button - aim at game piece and intake
+    // Left trigger button - intake game piece
     PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
 
-    // Left bumper button - outtake game piece
+    // Left bumper button - intake game piece from source
     PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
 
     // A button - go to amp and score
-    PRIMARY_CONTROLLER.a().whileTrue(
-      DRIVE_SUBSYSTEM.goToPoseCommand(
-        Constants.Field.AMP,
-        SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-        SHOOTER_SUBSYSTEM.scoreAmpCommand()
-      )
-    );
+    // PRIMARY_CONTROLLER.a().whileTrue(
+    //   DRIVE_SUBSYSTEM.goToPoseCommand(
+    //     Constants.Field.AMP,
+    //     SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+    //     SHOOTER_SUBSYSTEM.scoreAmpCommand()
+    //   )
+    // );
+
+    // Left stick click - pass note
+    PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // B button - go to source and intake game piece
     // PRIMARY_CONTROLLER.b().whileTrue(
@@ -130,14 +145,33 @@ public class RobotContainer {
     //   )
     // );
 
+    // Right stick click - snap robot to the nearest cardinal direction
+    PRIMARY_CONTROLLER.rightStick().whileTrue(
+      DRIVE_SUBSYSTEM.snapToCardinalDirectionCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX()
+      )
+    );
+
+    // B Button - automatically aim at object
+    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
-    // Y button - aim and shoot at speaker, regardless if shooting if speaker tag is visible
+    // Y button - spit out note
     PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
+    // DPAD up - shoot manual
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+
+    // DPAD right - feed a note through
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
+
+    // DPAD left - PARTY BUTTON!!
+    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
+
+    PRIMARY_CONTROLLER.povDown().onTrue(aimAndIntakeObjectCommand());
   }
 
   /**
@@ -151,12 +185,9 @@ public class RobotContainer {
    */
   private Command rumbleCommand() {
     return Commands.run(() -> {
-      if (VISION_SUBSYSTEM.getObjectLocation().isPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
       if (SHOOTER_SUBSYSTEM.isObjectPresent())
-        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 1.0);
-      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kRightRumble, 0.0);
+        PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+      else PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0);
     }).finallyDo(() -> PRIMARY_CONTROLLER.getHID().setRumble(RumbleType.kBothRumble, 0.0));
   }
 
@@ -235,6 +266,7 @@ public class RobotContainer {
 
   /**
    * Compose command to feed a note through the robot
+   * @return Command to feed note through the robot
    */
   private Command feedThroughCommand() {
     return Commands.parallel(
@@ -249,7 +281,7 @@ public class RobotContainer {
    * @return Command to aim at object
    */
   private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointCommand(
+    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
       () -> PRIMARY_CONTROLLER.getLeftY(),
       () -> PRIMARY_CONTROLLER.getLeftX(),
       () -> PRIMARY_CONTROLLER.getRightX(),
@@ -260,6 +292,50 @@ public class RobotContainer {
       },
       false,
       false
+    );
+  }
+
+  /**
+   * Automatically aim robot heading at object, drive, and intake a game object
+   * @return Command to aim robot at object, drive, and intake a game object
+   */
+   private Command aimAndIntakeObjectCommand() {
+     return Commands.parallel(
+    //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
+    //   DRIVE_SUBSYSTEM.aimAtPointCommand(
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftX() : 0,
+    //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getRightX() : 0,
+    //       () -> {
+    //         return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+    //       },
+    //       false,
+    //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
+    //  Commands.parallel(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75 : 0,
+        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75 : 0,
+        () -> 0,
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false),
+
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.intakeCommand()
+     )
+     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
+  }
+
+  /**
+   * PARTY BUTTON!!!!
+   * @return Command that spins the robot and moves the shooter up and down
+   */
+  private Command partyMode() {
+    return Commands.parallel(
+      DRIVE_SUBSYSTEM.driveCommand(() -> 0.0, () -> 0.0, () -> 1.0),
+      SHOOTER_SUBSYSTEM.shootPartyMode()
     );
   }
 
@@ -290,12 +366,12 @@ public class RobotContainer {
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
-    m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME).getCommand());
-    m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME, new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
   }
 
   /**
@@ -303,6 +379,26 @@ public class RobotContainer {
    */
   public void simulationPeriodic() {
     REVPhysicsSim.getInstance().run();
+  }
+
+  /**
+   * Run checks in auto
+   */
+  public void autonomousPeriodic() {
+    // stop auto if we go too far
+    if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Blue)) {
+      if (DRIVE_SUBSYSTEM.getPose().getX() > 9.73) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
+    }
+    else if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Red)) {
+      if (DRIVE_SUBSYSTEM.getPose().getX() < 6.84) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
+    }
+  }
+
+  /**
+   * Initialization code for disabled mode
+   */
+  public void disabledInit() {
+    DRIVE_SUBSYSTEM.disabledInit();
   }
 
   /**
@@ -318,12 +414,42 @@ public class RobotContainer {
   }
 
   /**
+   * Exit code for disabled mode
+   */
+  public void disabledExit() {
+    DRIVE_SUBSYSTEM.disabledExit();
+  }
+
+  /**
    * Get currently selected autonomous command
    *
    * @return Autonomous command
    */
   public Command getAutonomousCommand() {
     return m_automodeChooser.getSelected();
+  }
+
+  /**
+   * Compose command to test intake, amp shoot, and speaker shoot
+   * @return Command that does the intake command, amp shoot command, and speaker shoot command
+   */
+  public Command getTestCommand() {
+    return Commands.sequence(
+      Commands.print("Intaking..."),
+      intakeCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Moving shooter down..."),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()))
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Moving shooter up..."),
+      SHOOTER_SUBSYSTEM.shootManualCommand(
+        new State(ShooterSubsystem.ZERO_FLYWHEEL_SPEED, Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()))
+      ).withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Scoring amp..."),
+      SHOOTER_SUBSYSTEM.scoreAmpCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME),
+      Commands.print("Scoring speaker..."),
+      SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(Constants.AutoNames.TEST_COMMAND_TIME)
+    );
   }
 
   /**

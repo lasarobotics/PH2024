@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.813900214195981,
-        "y": 0.8415336572567862
+        "x": 6.813569356462021,
+        "y": 1.0451936292343766
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.048812194846612,
-        "y": 0.7825079492751585
+        "x": 8.445141301310171,
+        "y": 0.8353319162778667
       },
       "prevControl": {
-        "x": 6.95998546269166,
-        "y": 0.8404851243812946
+        "x": 7.4328671564611275,
+        "y": 0.8229871096333656
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Far_Bottom_Intake"
     }
   ],
   "rotationTargets": [],
