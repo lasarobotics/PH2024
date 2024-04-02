@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
@@ -9,6 +11,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -73,6 +76,36 @@ public class ObjectCamera implements AutoCloseable {
    */
   public PhotonCameraSim getCameraSim() {
     return m_cameraSim;
+  }
+
+  private Optional<PhotonTrackedTarget> getBestTarget() {
+    List<PhotonTrackedTarget> targets = m_camera.getLatestResult().getTargets();
+
+    PhotonTrackedTarget bestTarget = null;
+    double bestTargetScore = Double.MAX_VALUE; // lower is better
+    for (var target : targets) {
+      double avgX = 0, avgY = 0;
+      int count = 0;
+
+      for (var corner : target.getMinAreaRectCorners()) {
+        avgX += corner.x;
+        avgY += corner.y;
+        count++;
+      }
+      avgX /= count;
+      avgY /= count;
+
+      double score = Math.hypot(avgX-(1920/2), avgY-1080); // TODO get frame size from photonvision
+
+
+      if (score < bestTargetScore) {
+        bestTarget = target;
+        bestTargetScore = score;
+      }
+    }
+
+    if (bestTarget == null) return Optional.empty();
+    return Optional.of(bestTarget);
   }
 
   /**
