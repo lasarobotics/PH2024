@@ -77,8 +77,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
     public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.1), Units.Degrees.of(56.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(56.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(53.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(53.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
     public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
@@ -136,6 +136,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private MechanismLigament2d m_simShooterJoint;
   private TrapezoidProfile m_simShooterAngleMotionProfile;
   private TrapezoidProfile.State m_simShooterAngleState;
+  private Measure<Distance> m_targetDistance;
 
   /**
    * Create an instance of ShooterSubsystem
@@ -169,6 +170,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_angleConstraint = angleConstraint;
     this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
+
 
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
@@ -346,11 +348,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Distance to target
    */
   private Measure<Distance> getTargetDistance() {
-    return Units.Meters.of(MathUtil.clamp(
-      m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().pose.toPose2d().getTranslation()),
-      MIN_SHOOTING_DISTANCE.in(Units.Meters),
-      MAX_SHOOTING_DISTANCE.in(Units.Meters)
-    ));
+    return m_targetDistance;
   }
 
   /**
@@ -409,6 +407,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Put note indicator on SmartDashboard
     SmartDashboard.putBoolean(SHOOTER_NOTE_INSIDE_INDICATOR, isObjectPresent());
+
+    // Update target distance
+    m_targetDistance = Units.Meters.of(MathUtil.clamp(
+      m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().pose.toPose2d().getTranslation()),
+      MIN_SHOOTING_DISTANCE.in(Units.Meters),
+      MAX_SHOOTING_DISTANCE.in(Units.Meters)
+    ));
 
     // Log outputs
     var currentState = getCurrentState();
