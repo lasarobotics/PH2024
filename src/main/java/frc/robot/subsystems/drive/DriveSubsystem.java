@@ -96,7 +96,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
+  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.15);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
