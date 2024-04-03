@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.9959808841615208,
-      "y": 7.00722290166912
+      "x": 2.0,
+      "y": 7.0
     },
-    "rotation": 0
+    "rotation": 179.53732270786617
   },
   "command": {
     "type": "sequential",
@@ -14,12 +14,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Leave"
+            "pathName": "go sideways"
           }
         }
       ]
     }
   },
-  "folder": "Old",
+  "folder": "pose estimation testing autos",
   "choreoAuto": false
 }

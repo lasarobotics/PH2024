@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6570624081419103,
-        "y": 6.864468657712245
+        "x": 7.0,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.868472675406889,
-        "y": 6.891750052645405
+        "x": 6.913734625190047,
+        "y": 6.969716047694203
       },
       "isLocked": false,
-      "linkedName": "Close_Top"
+      "linkedName": "end test 180 far path"
     },
     {
       "anchor": {
-        "x": 5.883593922576317,
-        "y": 7.2011372092919625
+        "x": 2.0,
+        "y": 5.5
       },
       "prevControl": {
-        "x": 5.698348516456052,
-        "y": 7.162138176424539
+        "x": 2.1542137671169925,
+        "y": 5.531335051274091
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "start test 180 far path"
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 8.652541791114864,
-    "rotateFast": true
+    "rotation": 0,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts Close",
+  "folder": "pose estimation test paths",
   "previewStartingState": {
-    "rotation": 26.4590195940451,
+    "rotation": -179.22116690574393,
     "velocity": 0
   },
   "useDefaultConstraints": true

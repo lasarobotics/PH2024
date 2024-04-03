@@ -96,6 +96,6 @@ public class IntakeSubsystem extends SubsystemBase {
    * @return Command to stop the intake
    */
   public Command stopCommand() {
-    return run(() -> stop());
+    return runOnce(() -> stop());
   }
 }

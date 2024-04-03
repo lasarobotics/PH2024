@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.369967973011977,
-      "y": 5.597021986033711
+      "x": 0.6938428577561385,
+      "y": 4.369431441327672
     },
-    "rotation": 0
+    "rotation": -61.37901950766995
   },
   "command": {
     "type": "sequential",
@@ -14,25 +14,25 @@
         {
           "type": "named",
           "data": {
-            "name": "first time shoot"
+            "name": "preload"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right_FarAutoIntake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "intake"
+            "name": "auto intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "CloseMid_Center"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Anywhere_Center"
+            "pathName": "MidBottom_Stage"
           }
         },
         {
@@ -42,20 +42,32 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Stage_FarMidBottom_AutoIntake"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "intake"
+            "name": "auto intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Leave"
+            "pathName": "MidBottom_Stage"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         }
       ]
     }
   },
-  "folder": "Old",
+  "folder": "Right",
   "choreoAuto": false
 }

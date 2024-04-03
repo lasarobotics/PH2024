@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.98,
-        "y": 7.41
+        "x": 5.904168600317151,
+        "y": 7.355447292348219
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.83375362674716,
-        "y": 7.36125120891572
+        "x": 5.809297539503859,
+        "y": 7.323832709950839
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Far_Top"
     },
     {
       "anchor": {
-        "x": 4.34,
-        "y": 6.58
+        "x": 3.863365826494124,
+        "y": 6.298343808089041
       },
       "prevControl": {
-        "x": 4.5642444389876875,
-        "y": 6.6384985493011355
+        "x": 4.087610265481813,
+        "y": 6.3568423573901764
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "Starts Far",
   "previewStartingState": {
-    "rotation": 12.90740867126588,
+    "rotation": 13.172553423769461,
     "velocity": 0
   },
   "useDefaultConstraints": true

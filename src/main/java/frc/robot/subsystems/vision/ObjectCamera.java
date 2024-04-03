@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
@@ -9,6 +10,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +27,8 @@ import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
  * Camera that looks for rings on the ground
  */
 public class ObjectCamera implements AutoCloseable {
-  private static final double TARGET_HEIGHT_METERS = 0.0508;
+  private static final double TARGET_HEIGHT_METERS = 0;
+  private static final double MIN_OBJECT_AREA = 0.1;
 
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
@@ -34,7 +37,6 @@ public class ObjectCamera implements AutoCloseable {
 
   /**
     * Create Object Camera
-    *
     * @param name       Name of device
     * @param transform  Location on robot in meters
     * @param resolution Resolution used by camera
@@ -75,11 +77,43 @@ public class ObjectCamera implements AutoCloseable {
     return m_cameraSim;
   }
 
+  public Optional<PhotonTrackedTarget> getBestTarget() {
+    List<PhotonTrackedTarget> targets = m_camera.getLatestResult().getTargets();
+
+    PhotonTrackedTarget bestTarget = null;
+    double bestTargetScore = Double.MAX_VALUE; // lower is better
+    for (var target : targets) {
+      double avgX = 0, avgY = 0;
+      int count = 0;
+
+      for (var corner : target.getMinAreaRectCorners()) {
+        avgX += corner.x;
+        avgY += corner.y;
+        count++;
+      }
+      avgX /= count;
+      avgY /= count;
+
+      double score = Math.hypot(avgX-(1920/2), avgY-1080); // TODO get frame size from photonvision
+
+
+      if (score < bestTargetScore) {
+        bestTarget = target;
+        bestTargetScore = score;
+      }
+    }
+
+    if (bestTarget == null) return Optional.empty();
+    return Optional.of(bestTarget);
+  }
+
   /**
     * Get distance to game object
     * @return Distance to object, empty if undetected
     */
   public Optional<Measure<Distance>> getDistance() {
+    if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
+
     PhotonPipelineResult result = m_camera.getLatestResult();
     if (!result.hasTargets()) return Optional.empty();
 
@@ -98,6 +132,7 @@ public class ObjectCamera implements AutoCloseable {
     * @return Yaw angle to target, empty if undetected
     */
   public Optional<Measure<Angle>> getYaw() {
+    if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
     PhotonPipelineResult result = m_camera.getLatestResult();
     if (!result.hasTargets()) return Optional.empty();
     return Optional.of(Units.Degrees.of(result.getBestTarget().getYaw()));
@@ -109,6 +144,16 @@ public class ObjectCamera implements AutoCloseable {
    */
   public Transform3d getTransform() {
     return m_transform;
+  }
+
+  public Optional<Double> getObjectArea() {
+    PhotonPipelineResult result = m_camera.getLatestResult();
+    if (!result.hasTargets()) return Optional.empty();
+    return Optional.of(result.getBestTarget().getArea());
+  }
+
+  public boolean objectIsVisible() {
+    return m_camera.getLatestResult().hasTargets();
   }
 
   @Override
