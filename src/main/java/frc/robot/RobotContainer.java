@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.function.BooleanSupplier;
 
+import org.apache.commons.math3.ode.SecondaryEquations;
 import org.lasarobotics.hardware.revrobotics.Blinkin;
 
 import com.pathplanner.lib.auto.NamedCommands;
@@ -69,6 +70,7 @@ public class RobotContainer {
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final CommandXboxController OPERATOR_KEYPAD = new CommandXboxController(Constants.HID.SECONDARY_CONTROLLER_PORT);
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
@@ -113,7 +115,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.povDown().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.a().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -154,7 +156,7 @@ public class RobotContainer {
     );
 
     // B Button - automatically aim at object
-    PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+    // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
@@ -171,7 +173,8 @@ public class RobotContainer {
     // DPAD left - PARTY BUTTON!!
     PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
 
-    PRIMARY_CONTROLLER.povDown().onTrue(aimAndIntakeObjectCommand());
+    // Operator keypad button 1 - PARTY BUTTON!!
+    OPERATOR_KEYPAD.button(1).whileTrue(partyMode());
   }
 
   /**

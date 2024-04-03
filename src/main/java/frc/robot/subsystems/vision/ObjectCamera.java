@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,7 +77,7 @@ public class ObjectCamera implements AutoCloseable {
     return m_cameraSim;
   }
 
-  private Optional<PhotonTrackedTarget> getBestTarget() {
+  public Optional<PhotonTrackedTarget> getBestTarget() {
     List<PhotonTrackedTarget> targets = m_camera.getLatestResult().getTargets();
 
     PhotonTrackedTarget bestTarget = null;
