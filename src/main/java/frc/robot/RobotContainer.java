@@ -75,6 +75,9 @@ public class RobotContainer {
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    // Silence controller warnings on driver station
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(

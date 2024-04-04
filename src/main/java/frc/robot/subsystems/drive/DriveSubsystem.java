@@ -94,9 +94,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
+  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(3.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.15);
+  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, 0.0);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
@@ -946,18 +946,18 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return runEnd(() -> {
-      aimAtPoint(
-        m_controlCentricity,
-        xRequestSupplier.getAsDouble(),
-        yRequestSupplier.getAsDouble(),
-        rotateRequestSupplier.getAsDouble(),
-        pointSupplier.get(),
-        reversed,
-        velocityCorrection
-      );
-
-    },
+    return runEnd(
+      () -> {
+        aimAtPoint(
+          m_controlCentricity,
+          xRequestSupplier.getAsDouble(),
+          yRequestSupplier.getAsDouble(),
+          rotateRequestSupplier.getAsDouble(),
+          pointSupplier.get(),
+          reversed,
+          velocityCorrection
+        );
+      },
       () -> resetRotatePID()
     );
   }
