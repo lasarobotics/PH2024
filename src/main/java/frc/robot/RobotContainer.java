@@ -93,7 +93,7 @@ public class RobotContainer {
     // Register named commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
     NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.1));
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
+    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
@@ -174,10 +174,10 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD left - PARTY BUTTON!!
-    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
+    //PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
 
     // Operator keypad button 1 - PARTY BUTTON!!
-    OPERATOR_KEYPAD.button(1).whileTrue(partyMode());
+    //OPERATOR_KEYPAD.button(1).whileTrue(partyMode());
   }
 
   /**
@@ -287,7 +287,7 @@ public class RobotContainer {
    * @return Command to aim at object
    */
   private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
+    return DRIVE_SUBSYSTEM.aimAtPointRobotCentricCommand(
       () -> PRIMARY_CONTROLLER.getLeftY(),
       () -> PRIMARY_CONTROLLER.getLeftX(),
       () -> PRIMARY_CONTROLLER.getRightX(),
@@ -318,15 +318,16 @@ public class RobotContainer {
     //       false,
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75 : 0,
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75 : 0,
+      DRIVE_SUBSYSTEM.aimAtPointRobotCentricCommand(
+        () -> VISION_SUBSYSTEM.shouldIntake() ? 0.75 : 0,
+        () -> 0,
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false),
+        false
+      ),
 
       INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
@@ -378,6 +379,7 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
+    m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_AUTO_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(2.5));
   }
 
   /**

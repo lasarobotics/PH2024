@@ -91,12 +91,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
+  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(50.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(3.0);
+  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(10.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, 0.0);
+  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.3);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
@@ -148,6 +148,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Rotation2d m_allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
+  private Translation2d m_aimOffset;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
   private MedianFilter m_xVelocityFilter;
@@ -205,6 +206,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
     this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
+    this.m_aimOffset = AIM_OFFSET;
     this.m_xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
     this.m_yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
@@ -537,10 +539,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
    * @param rotateRequest Desired rotate speed (ONLY USED IF POINT IS NULL) [-1.0, +1.0]
    * @param point Target point, pass in null to signify invalid point
+   * @param offset Offset to apply to target point
    * @param boolean True to point back of robot to target
    * @param velocityCorrection True to compensate for robot's own velocity
    */
-  private void aimAtPoint(ControlCentricity controlCentricity, double xRequest, double yRequest, double rotateRequest, Translation2d point, boolean reversed, boolean velocityCorrection) {
+  private void aimAtPoint(ControlCentricity controlCentricity,
+                          double xRequest, double yRequest, double rotateRequest,
+                          Translation2d point, Translation2d aimOffset,
+                          boolean reversed, boolean velocityCorrection) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
@@ -559,10 +565,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
 
-    // Adjust point
-    point = point.plus(AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
+    // Adjust point
+    point = point.plus(aimOffset.times(currentPose.getTranslation().getDistance(point) / 5));
     // Angle to target point
     Rotation2d targetAngle = new Rotation2d(point.getX() - currentPose.getX(), point.getY() - currentPose.getY());
     // Movement vector of robot
@@ -878,6 +884,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (m_currentAlliance.equals(Alliance.Red)){
       m_selectedAmpDirection = RED_AMP_DIRECTION;
       m_selectedSourceDirection = RED_SOURCE_DIRECTION;
+      m_aimOffset = AIM_OFFSET.times(-1);
     } else {
       m_selectedAmpDirection = BLUE_AMP_DIRECTION;
       m_selectedSourceDirection = BLUE_SOURCE_DIRECTION;
@@ -947,17 +954,33 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
     return runEnd(
-      () -> {
-        aimAtPoint(
-          m_controlCentricity,
-          xRequestSupplier.getAsDouble(),
-          yRequestSupplier.getAsDouble(),
-          rotateRequestSupplier.getAsDouble(),
-          pointSupplier.get(),
-          reversed,
-          velocityCorrection
-        );
-      },
+      () -> aimAtPoint(
+        m_controlCentricity,
+        xRequestSupplier.getAsDouble(),
+        yRequestSupplier.getAsDouble(),
+        rotateRequestSupplier.getAsDouble(),
+        pointSupplier.get(),
+        m_aimOffset,
+        reversed,
+        velocityCorrection
+      ),
+      () -> resetRotatePID()
+    );
+  }
+
+  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
+                                   Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection, boolean aimCorrection) {
+    return runEnd(
+      () -> aimAtPoint(
+        m_controlCentricity,
+        xRequestSupplier.getAsDouble(),
+        yRequestSupplier.getAsDouble(),
+        rotateRequestSupplier.getAsDouble(),
+        pointSupplier.get(),
+        aimCorrection ? m_aimOffset : new Translation2d(),
+        reversed,
+        velocityCorrection
+      ),
       () -> resetRotatePID()
     );
   }
@@ -1095,15 +1118,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * @return Command to aim a point on the field in robot centric mode
    */
-  public Command aimAtPointRobotCentric(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
+  public Command aimAtPointRobotCentricCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                         Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return runEnd(() ->
-      aimAtPoint(
+    return runEnd(
+      () -> aimAtPoint(
         ControlCentricity.ROBOT_CENTRIC,
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
         rotateRequestSupplier.getAsDouble(),
         pointSupplier.get(),
+        new Translation2d(),
         reversed,
         velocityCorrection
       ),

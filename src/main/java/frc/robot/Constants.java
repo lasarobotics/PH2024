@@ -95,12 +95,13 @@ public final class Constants {
   public static class AutoNames {
     public static final Pair<String, String> CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME = new Pair<String, String>("Belton 4-Note", "Center_CloseTop_CloseMid_CloseBottom");
     public static final Pair<String, String> CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("5-Note", "Center_CloseBottom_CloseMid_CloseTop_FarTop");
-    public static final Pair<String, String> RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = new Pair<String, String>("Two far notes closest to source", "Right_FarBottom_FarMidBottom");
+    public static final Pair<String, String> RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME = new Pair<String, String>("Two far notes closest to source", "Right_FarBottom_FarMidBottom_AutoIntake");
     public static final Pair<String, String> LEFT_CLOSETOP_FARTOP_AUTO_NAME = new Pair<String, String>("Closest amp side close note and far note", "Left_CloseTop_FarTop");
     public static final Pair<String, String> LEFT_WAIT_FARTOP_AUTO_NAME = new Pair<String, String>("Wait, then do closest amp side far note", "Left_Wait_FarTop");
     public static final Pair<String, String> RIGHT_FARDISRUPT_FARTOP_AUTO_NAME = new Pair<String, String>("Disrupt auto (amp side - source side)", "Right_FarDisrupt_FarTop");
     public static final Pair<String, String> SIDEWAYS_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go sideways", "sideways auto");
     public static final Pair<String, String> TEST_180_FAR_PATH_AUTO_NAME  = new Pair<String, String>("[Pose-estimation] Go amp side and flip 180", "test 180 far path");
+    public static final String PRELOAD_AUTO_NAME = "Preload";
     public static final double TEST_COMMAND_TIME = 5.0;
   }
 
@@ -163,10 +164,10 @@ public final class Constants {
       Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(53.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(53.0))),
       Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(44.5))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(37.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(34.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(27.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(33.5))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(31.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(28.5))),
       Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(25.5))),
       Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.40),    Units.Degrees.of(25.0))),
       Map.entry(Units.Meters.of(5.50), new State(Units.MetersPerSecond.of(17.45),    Units.Degrees.of(24.0))),
@@ -209,16 +210,16 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(-0.102, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), Math.toRadians(+180.0))
+      new Translation3d(-0.102, -0.286, 0.584),
+      new Rotation3d(Math.toRadians(-0.2), Math.toRadians(-21.5), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-      new Translation3d(0.0254, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), 0.0)
+      new Translation3d(0.0254, -0.286, 0.584),
+      new Rotation3d(Math.toRadians(+8.0), Math.toRadians(-21.5), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);

@@ -38,7 +38,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
           }
         },
         {
@@ -62,7 +62,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": "auto shoot"
           }
         }
       ]

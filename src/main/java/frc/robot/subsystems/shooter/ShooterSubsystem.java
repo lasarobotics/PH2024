@@ -75,13 +75,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public final Measure<Velocity<Distance>> speed;
     public final Measure<Angle> angle;
 
-    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
-    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.1), Units.Degrees.of(56.0));
+    public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.5));
+    public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.2), Units.Degrees.of(56.5));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(53.0));
     public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(53.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
-    public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
+    public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+16.0), Units.Degrees.of(45.0));
     public static final State TEST_STOP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(30.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
@@ -286,8 +286,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
-    }
-    else {
+    } else {
       m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
