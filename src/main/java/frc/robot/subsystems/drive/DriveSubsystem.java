@@ -891,6 +891,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  /**
+   * Get current alliance
+   * @return Alliance
+   */
   public Alliance getAlliance() {
     return m_currentAlliance;
   }
@@ -961,23 +965,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         rotateRequestSupplier.getAsDouble(),
         pointSupplier.get(),
         m_aimOffset,
-        reversed,
-        velocityCorrection
-      ),
-      () -> resetRotatePID()
-    );
-  }
-
-  public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
-                                   Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection, boolean aimCorrection) {
-    return runEnd(
-      () -> aimAtPoint(
-        m_controlCentricity,
-        xRequestSupplier.getAsDouble(),
-        yRequestSupplier.getAsDouble(),
-        rotateRequestSupplier.getAsDouble(),
-        pointSupplier.get(),
-        aimCorrection ? m_aimOffset : new Translation2d(),
         reversed,
         velocityCorrection
       ),

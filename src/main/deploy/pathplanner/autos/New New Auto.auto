@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3674521584632144,
+      "y": 5.555162990025228
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "deleteme"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "auto intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "deleteme"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Right",
+  "choreoAuto": false
+}

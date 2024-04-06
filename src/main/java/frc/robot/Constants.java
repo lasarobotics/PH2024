@@ -160,13 +160,13 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(44.5))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(38.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(33.5))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(31.0))),
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(54.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(54.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(54.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(45.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(39.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(35.5))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(33.0))),
       Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(28.5))),
       Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(25.5))),
       Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.40),    Units.Degrees.of(25.0))),

@@ -319,7 +319,7 @@ public class RobotContainer {
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointRobotCentricCommand(
-        () -> VISION_SUBSYSTEM.shouldIntake() ? 0.75 : 0,
+        () -> VISION_SUBSYSTEM.shouldIntake() ? -0.75 : 0,
         () -> 0,
         () -> 0,
         () -> {
@@ -380,6 +380,7 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.PRELOAD_AUTO_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(2.5));
+    m_automodeChooser.addOption("deleteme", new AutoTrajectory(DRIVE_SUBSYSTEM, "New New Auto").getCommand());
   }
 
   /**

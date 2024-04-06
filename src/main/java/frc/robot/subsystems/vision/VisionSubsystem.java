@@ -56,7 +56,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String OBJECT_POSE_LOG_ENTRY = "/ObjectPose";
   private static final String OBJECT_DETECTED_LOG_ENTRY = "/ObjectDetected";
 
-  private static final double INTAKE_YAW_TOLERANCE = 1;
+  private static final double INTAKE_YAW_TOLERANCE = 10;
 
   private AtomicReference<List<AprilTagCameraResult>> m_estimatedRobotPoses;
   private AtomicReference<List<AprilTag>> m_visibleTags;
