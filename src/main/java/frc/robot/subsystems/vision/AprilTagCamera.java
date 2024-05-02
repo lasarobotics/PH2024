@@ -5,6 +5,7 @@
 package frc.robot.subsystems.vision;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -18,6 +19,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -27,14 +29,15 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 /** Create a camera */
 public class AprilTagCamera implements Runnable, AutoCloseable {
-  private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.2;
+  private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.1;
   private final double POSE_MAX_HEIGHT = 0.75;
-  private final Measure<Distance> MAX_TAG_DISTANCE = Units.Meters.of(100.0);
+  private final Measure<Distance> MAX_TAG_DISTANCE = Units.Meters.of(5.0);
 
   public static class AprilTagCameraResult {
     public final EstimatedRobotPose estimatedRobotPose;
@@ -63,6 +66,8 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     }
   }
 
+  private static Supplier<Pose2d> m_referencePoseSupplier;
+
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
   private PhotonPoseEstimator m_poseEstimator;
@@ -77,13 +82,14 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
    * @param fovDiag Diagonal FOV of camera
    */
   public AprilTagCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
+    m_referencePoseSupplier = null;
     this.m_camera = new PhotonCamera(name);
     this.m_transform = transform;
     var fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     // PV estimates will always be blue
     fieldLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
     this.m_poseEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera, m_transform);
-    m_poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    m_poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
 
     this.m_atomicEstimatedRobotPose = new AtomicReference<AprilTagCameraResult>();
 
@@ -94,6 +100,14 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
 
     // Enable wireframe in sim camera stream
     m_cameraSim.enableDrawWireframe(true);
+  }
+
+  /**
+   * Set reference pose supplier for all AprilTag cameras
+   * @param referencePoseSupplier Method to get reference pose
+   */
+  public static void setReferencePoseSupplier(Supplier<Pose2d> referencePoseSupplier) {
+    m_referencePoseSupplier = referencePoseSupplier;
   }
 
   /**
@@ -121,6 +135,16 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     return true;
   }
 
+  /**
+   * Get standard deviation
+   * @param closestTagDistance Distance to closest tag
+   * @param numTargetsUsed Number of tags used for pose estimate
+   * @return Standard deviation of measurement
+   */
+  private double getStandardDeviation(Measure<Distance> closestTagDistance, int numTagsUsed) {
+    return 0.01 * Math.pow(closestTagDistance.in(Units.Meters), 2.0) / numTagsUsed;
+  }
+
   @Override
   public void run() {
     // Return if camera or field layout failed to load
@@ -140,21 +164,29 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     if (pipelineResult.targets.size() == 1
         && pipelineResult.targets.get(0).getPoseAmbiguity() > APRILTAG_POSE_AMBIGUITY_THRESHOLD) return;
 
+    // Set reference pose
+    if (m_referencePoseSupplier != null) m_poseEstimator.setReferencePose(m_referencePoseSupplier.get());
+
     // Update pose estimate
     m_poseEstimator.update(pipelineResult).ifPresent(estimatedRobotPose -> {
         // Make sure the measurement is valid
         if (!isEstimatedPoseValid(estimatedRobotPose.estimatedPose)) return;
 
         // Get distance to closest tag
-        var closestTagDistance = MAX_TAG_DISTANCE;
+        var closestTagDistance = Units.Meters.of(100.0);
         for (var target : estimatedRobotPose.targetsUsed) {
           var tagDistance = Units.Meters.of(target.getBestCameraToTarget().getTranslation().getDistance(new Translation3d()));
           if (tagDistance.lte(closestTagDistance)) closestTagDistance = tagDistance;
         }
 
+        // Ignore if tags are too far
+        if (closestTagDistance.gte(MAX_TAG_DISTANCE)) return;
+
         // Calculate standard deviation
-        double xyStdDev = 0.01 * Math.pow(closestTagDistance.in(Units.Meters), 2.0) / estimatedRobotPose.targetsUsed.size();
-        double thetaStdDev = 0.01 * Math.pow(closestTagDistance.in(Units.Meters), 2.0) / estimatedRobotPose.targetsUsed.size();
+        double xyStdDev = getStandardDeviation(closestTagDistance, estimatedRobotPose.targetsUsed.size());
+        double thetaStdDev = RobotState.isDisabled()
+          ? xyStdDev
+          : Double.MAX_VALUE;
 
         // Set result
         var result = new AprilTagCameraResult(

@@ -71,9 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    m_rollerMotor.periodic();
-  }
+  public void periodic() {}
 
   /**
    * Intake game piece from ground

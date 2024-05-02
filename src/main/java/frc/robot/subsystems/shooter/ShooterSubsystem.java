@@ -400,11 +400,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_topFlywheelMotor.periodic();
-    m_bottomFlywheelMotor.periodic();
-    m_angleMotor.periodic();
-    m_indexerMotor.periodic();
-
     // Put note indicator on SmartDashboard
     SmartDashboard.putBoolean(SHOOTER_NOTE_INSIDE_INDICATOR, isObjectPresent());
 

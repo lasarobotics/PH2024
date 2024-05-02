@@ -6,32 +6,24 @@ package frc.robot;
 
 import java.util.function.BooleanSupplier;
 
-import org.apache.commons.math3.ode.SecondaryEquations;
-import org.lasarobotics.hardware.revrobotics.Blinkin;
-
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.Shooter;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.autonomous.SimpleAuto;
-import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -70,11 +62,13 @@ public class RobotContainer {
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
-  private static final CommandXboxController OPERATOR_KEYPAD = new CommandXboxController(Constants.HID.SECONDARY_CONTROLLER_PORT);
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    // Silence warnings
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -115,7 +109,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.a().getAsBoolean()));
+    PRIMARY_CONTROLLER.b().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.a().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -172,9 +166,6 @@ public class RobotContainer {
 
     // DPAD left - PARTY BUTTON!!
     PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
-
-    // Operator keypad button 1 - PARTY BUTTON!!
-    OPERATOR_KEYPAD.button(1).whileTrue(partyMode());
   }
 
   /**
@@ -395,32 +386,6 @@ public class RobotContainer {
     else if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Red)) {
       if (DRIVE_SUBSYSTEM.getPose().getX() < 6.84) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
     }
-  }
-
-  /**
-   * Initialization code for disabled mode
-   */
-  public void disabledInit() {
-    DRIVE_SUBSYSTEM.disabledInit();
-  }
-
-  /**
-   * Call while disabled
-   */
-  public void disabledPeriodic() {
-    // Try to get alliance
-    var alliance = DriverStation.getAlliance();
-    if (alliance.isEmpty()) return;
-
-    // Set alliance if available
-    DRIVE_SUBSYSTEM.setAlliance(alliance.get());
-  }
-
-  /**
-   * Exit code for disabled mode
-   */
-  public void disabledExit() {
-    DRIVE_SUBSYSTEM.disabledExit();
   }
 
   /**
