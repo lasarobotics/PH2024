@@ -149,6 +149,12 @@ public class RobotContainer {
       )
     );
 
+    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+        () -> PRIMARY_CONTROLLER.getRightX(),
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX()
+    ));
+
     // B Button - automatically aim at object
     // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 

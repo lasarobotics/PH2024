@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -658,6 +659,44 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public Command snapToImportantDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
       () -> snapToImportantDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()), 
+      () -> resetRotatePID()
+    );
+  }
+
+    private void autoDefense(double rotateRequest, double xRequest, double yRequest) {
+      Optional<Measure<Angle>> objectYaw = VisionSubsystem.getInstance().getObjectHeading();
+      double moveRequest = Math.hypot(xRequest, yRequest);
+      double moveDirection = Math.atan2(yRequest, xRequest);
+      double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+      double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+      
+      if (objectYaw.isEmpty()) {
+        drive(
+          m_controlCentricity,
+          Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+          Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+          Units.RadiansPerSecond.of(rotateOutput),
+          getInertialVelocity()
+        ); 
+        return;
+      }
+
+      moveRequest = Math.hypot(xRequest, 0.0);
+      moveDirection = Math.atan2(0.0, xRequest);
+      velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+      System.out.println(rotateOutput);
+      drive(
+        ControlCentricity.ROBOT_CENTRIC,
+        Units.MetersPerSecond.of(velocityOutput),
+        DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees)/Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
+        Units.RadiansPerSecond.of(rotateOutput),
+        getInertialVelocity()
+      );
+    }
+
+    public Command autoDefenseCommand(DoubleSupplier rotateRequestSupplier, DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
+    return runEnd(
+      () -> autoDefense(rotateRequestSupplier.getAsDouble(), xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
       () -> resetRotatePID()
     );
   }
