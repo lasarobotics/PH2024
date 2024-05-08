@@ -101,6 +101,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
@@ -109,7 +110,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.b().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.a().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -122,11 +123,11 @@ public class RobotContainer {
 
     // A button - go to amp and score
     // PRIMARY_CONTROLLER.a().whileTrue(
-    //   DRIVE_SUBSYSTEM.goToPoseCommand(
-    //     Constants.Field.AMP,
-    //     SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-    //     SHOOTER_SUBSYSTEM.scoreAmpCommand()
-    //   )
+      // DRIVE_SUBSYSTEM.goToPoseCommand(
+        // Constants.Field.AMP,
+        // SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+        // SHOOTER_SUBSYSTEM.scoreAmpCommand()
+      // )
     // );
 
     // Left stick click - pass note
@@ -149,12 +150,6 @@ public class RobotContainer {
       )
     );
 
-    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
-        () -> PRIMARY_CONTROLLER.getRightX(),
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX()
-    ));
-
     // B Button - automatically aim at object
     // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 
@@ -170,8 +165,12 @@ public class RobotContainer {
     // DPAD right - feed a note through
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
-    // DPAD left - PARTY BUTTON!!
-    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
+    // DPAD down - auto defense
+    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX()
+    ));
   }
 
   /**
@@ -295,12 +294,12 @@ public class RobotContainer {
     );
   }
 
-  /**
-   * Automatically aim robot heading at object, drive, and intake a game object
-   * @return Command to aim robot at object, drive, and intake a game object
-   */
+   /**
+    * Automatically aim robot heading at object, drive, and intake a game object
+    * @return Command to aim robot at object, drive, and intake a game object
+    */
    private Command aimAndIntakeObjectCommand() {
-     return Commands.parallel(
+     return Commands.sequence(
     //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
     //   DRIVE_SUBSYSTEM.aimAtPointCommand(
     //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
@@ -313,20 +312,21 @@ public class RobotContainer {
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75 : 0,
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75 : 0,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false),
+        false)
 
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-     )
-     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
-  }
+        //  INTAKE_SUBSYSTEM.intakeCommand(),
+        //  SHOOTER_SUBSYSTEM.intakeCommand()
+    //  )
+    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+    );
+   }
 
   /**
    * PARTY BUTTON!!!!
