@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Distance;
@@ -38,6 +37,7 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
   private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.1;
   private final double POSE_MAX_HEIGHT = 0.75;
   private final Measure<Distance> MAX_TAG_DISTANCE = Units.Meters.of(5.0);
+  private final Measure<Distance> SINGLE_TO_MULTI_TAG_POSE_DELTA = Units.Meters.of(0.1);
 
   public static class AprilTagCameraResult {
     public final EstimatedRobotPose estimatedRobotPose;
@@ -125,11 +125,11 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
    */
   private boolean isEstimatedPoseValid(Pose3d pose) {
     // Make sure pose is on the field
-    if (pose.getX() < 0.0 || pose.getX() >= Constants.Field.FIELD_LENGTH
-     || pose.getY() < 0.0 || pose.getY() >= Constants.Field.FIELD_WIDTH) return false;
+    if (pose.getX() < 0.0 || pose.getX() > Constants.Field.FIELD_LENGTH
+     || pose.getY() < 0.0 || pose.getY() > Constants.Field.FIELD_WIDTH) return false;
 
     // Make sure pose is near the floor
-    if (pose.getZ() > POSE_MAX_HEIGHT) return false;
+    if (pose.getZ() < 0.0 || pose.getZ() > POSE_MAX_HEIGHT) return false;
 
     // Pose is acceptable
     return true;
@@ -174,8 +174,20 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
 
         // Get distance to closest tag
         var closestTagDistance = Units.Meters.of(100.0);
+        // Loop through all targets used for this estimate
         for (var target : estimatedRobotPose.targetsUsed) {
-          var tagDistance = Units.Meters.of(target.getBestCameraToTarget().getTranslation().getDistance(new Translation3d()));
+          // Get tag
+          var tag = VisionSubsystem.getInstance().getTag(target.getFiducialId());
+          // Get distance to tag
+          var tagDistance = Units.Meters.of(target.getBestCameraToTarget().getTranslation().getNorm());
+          // Get pose estimate based on just this tag
+          var singleTargetPose = tag.get().pose
+                                .transformBy(target.getBestCameraToTarget().inverse())
+                                .transformBy(m_transform.inverse());
+          // Ignore if single tag pose estimate is too far from multi-tag estimate
+          if (estimatedRobotPose.estimatedPose.relativeTo(singleTargetPose).getTranslation().getNorm() >
+              SINGLE_TO_MULTI_TAG_POSE_DELTA.in(Units.Meters)) return;
+          // Check if tag distance is closest yet
           if (tagDistance.lte(closestTagDistance)) closestTagDistance = tagDistance;
         }
 
