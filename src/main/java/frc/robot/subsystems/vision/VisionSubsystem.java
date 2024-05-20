@@ -197,7 +197,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void setPoseSupplier(Supplier<Pose2d> poseSupplier) {
     m_poseSupplier = poseSupplier;
-    AprilTagCamera.setReferencePoseSupplier(m_poseSupplier);
   }
 
   @Override

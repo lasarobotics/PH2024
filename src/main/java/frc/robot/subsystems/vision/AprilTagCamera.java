@@ -5,7 +5,6 @@
 package frc.robot.subsystems.vision;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -19,7 +18,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -66,8 +64,6 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     }
   }
 
-  private static Supplier<Pose2d> m_referencePoseSupplier;
-
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
   private PhotonPoseEstimator m_poseEstimator;
@@ -82,14 +78,13 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
    * @param fovDiag Diagonal FOV of camera
    */
   public AprilTagCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
-    m_referencePoseSupplier = null;
     this.m_camera = new PhotonCamera(name);
     this.m_transform = transform;
     var fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     // PV estimates will always be blue
     fieldLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
     this.m_poseEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, m_camera, m_transform);
-    m_poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+    m_poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     this.m_atomicEstimatedRobotPose = new AtomicReference<AprilTagCameraResult>();
 
@@ -100,14 +95,6 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
 
     // Enable wireframe in sim camera stream
     m_cameraSim.enableDrawWireframe(true);
-  }
-
-  /**
-   * Set reference pose supplier for all AprilTag cameras
-   * @param referencePoseSupplier Method to get reference pose
-   */
-  public static void setReferencePoseSupplier(Supplier<Pose2d> referencePoseSupplier) {
-    m_referencePoseSupplier = referencePoseSupplier;
   }
 
   /**
@@ -163,9 +150,6 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
     if (!pipelineResult.hasTargets()) return;
     if (pipelineResult.targets.size() == 1
         && pipelineResult.targets.get(0).getPoseAmbiguity() > APRILTAG_POSE_AMBIGUITY_THRESHOLD) return;
-
-    // Set reference pose
-    if (m_referencePoseSupplier != null) m_poseEstimator.setReferencePose(m_referencePoseSupplier.get());
 
     // Update pose estimate
     m_poseEstimator.update(pipelineResult).ifPresent(estimatedRobotPose -> {
