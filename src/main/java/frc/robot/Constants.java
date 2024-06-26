@@ -126,7 +126,7 @@ public final class Constants {
 
   public static class Shooter {
     public static final Measure<Distance> TOP_FLYWHEEL_DIAMETER = Units.Inches.of(2.40);
-    public static final Measure<Distance> BOTTOM_FLYWHEEL_DIAMETER = Units.Inches.of(2.43);
+    public static final Measure<Distance> BOTTOM_FLYWHEEL_DIAMETER = Units.Inches.of(2.42);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
       new PIDConstants(
         0.32,

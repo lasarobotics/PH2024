@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -33,7 +34,8 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
+  private static final DriveSubsystem
+  DRIVE_SUBSYSTEM = new DriveSubsystem(
     DriveSubsystem.initializeHardware(),
     Constants.Drive.DRIVE_ROTATE_PID,
     Constants.Drive.DRIVE_CONTROL_CENTRICITY,
@@ -101,7 +103,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
@@ -171,6 +172,8 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX()
     ));
+
+    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(() -> new Pose2d()));
   }
 
   /**
@@ -372,7 +375,7 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
-  }
+      }
 
   /**
    * Run simlation related methods
