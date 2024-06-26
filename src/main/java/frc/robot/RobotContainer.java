@@ -101,7 +101,6 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    System.out.println("fehfehfjehfuiebehiurghe");
     // Start button - toggle traction control
     PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
@@ -110,7 +109,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    // PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -129,9 +128,6 @@ public class RobotContainer {
         // SHOOTER_SUBSYSTEM.scoreAmpCommand()
       // )
     // );
-
-    // Left stick click - pass note
-    PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // B button - go to source and intake game piece
     // PRIMARY_CONTROLLER.b().whileTrue(
@@ -153,6 +149,12 @@ public class RobotContainer {
     // B Button - automatically aim at object
     // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 
+    // A Button - shoot note into speaker from podium
+    PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
+
+    // B Button - pass note
+    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+  
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
@@ -166,11 +168,11 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD down - auto defense
-    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX()
-    ));
+    // PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+    //     () -> PRIMARY_CONTROLLER.getLeftY(),
+    //     () -> PRIMARY_CONTROLLER.getLeftX(),
+    //     () -> PRIMARY_CONTROLLER.getRightX()
+    // ));
   }
 
   /**
