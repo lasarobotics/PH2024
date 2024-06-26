@@ -19,7 +19,7 @@
     "pose estimation testing autos"
   ],
   "defaultMaxVel": 5.1,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 2160.0,
   "defaultMaxAngAccel": 2160.0,
   "maxModuleSpeed": 4.5

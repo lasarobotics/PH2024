@@ -210,7 +210,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.2),
       new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
@@ -295,6 +295,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set VisionSubsystem pose supplier for simulation
     VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
+
+
+    m_rRearModule.disableAutoLock();
+    m_rFrontModule.disableAutoLock();
+    m_lRearModule.disableAutoLock();
+    m_lFrontModule.disableAutoLock();
   }
 
   /**
@@ -367,6 +373,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
+
+
 
     Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 
@@ -1294,6 +1302,20 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Rotation2d getRotation2d() {
     return m_navx.getInputs().rotation2d;
+  }
+
+  public Command testMotor() {
+    return Commands.runEnd(
+      () -> {
+        System.out.println("fefefeffef");
+        m_lFrontModule.set(new SwerveModuleState(1, m_lFrontModule.getState().angle.plus(new Rotation2d(Units.Degrees.fromBaseUnits(0.1)))));
+        // m_lFrontModule.set(new SwerveModuleState(0.0001, new Rotation2d(Units.Degrees.fromBaseUnits(30))));
+      },
+      () -> {
+        m_lFrontModule.stop();
+      },
+      this
+    );
   }
 
   @Override
