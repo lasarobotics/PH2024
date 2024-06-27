@@ -24,6 +24,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
@@ -40,6 +41,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -95,6 +97,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
+  private static final Measure<Voltage> ANGLE_MOTOR_FF = Units.Volts.of(0.1);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
@@ -284,15 +287,21 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Normalize state to valid range
     m_desiredShooterState = normalizeState(state);
 
+    // Set flywheel speeds, allow coasting to zero
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
-    }
-    else {
+    } else {
       m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
-    m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
+    // Set angle
+    m_angleMotor.set(
+      m_desiredShooterState.angle.in(Units.Radians),
+      ControlType.kPosition,
+      ANGLE_MOTOR_FF.in(Units.Volts),
+      ArbFFUnits.kVoltage
+    );
   }
 
   /**
