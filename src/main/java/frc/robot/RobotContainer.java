@@ -6,32 +6,25 @@ package frc.robot;
 
 import java.util.function.BooleanSupplier;
 
-import org.apache.commons.math3.ode.SecondaryEquations;
-import org.lasarobotics.hardware.revrobotics.Blinkin;
-
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.Shooter;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.autonomous.SimpleAuto;
-import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -41,7 +34,8 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
+  private static final DriveSubsystem
+  DRIVE_SUBSYSTEM = new DriveSubsystem(
     DriveSubsystem.initializeHardware(),
     Constants.Drive.DRIVE_ROTATE_PID,
     Constants.Drive.DRIVE_CONTROL_CENTRICITY,
@@ -70,11 +64,13 @@ public class RobotContainer {
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
-  private static final CommandXboxController OPERATOR_KEYPAD = new CommandXboxController(Constants.HID.SECONDARY_CONTROLLER_PORT);
 
   private static SendableChooser<Command> m_automodeChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    // Silence warnings
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
@@ -115,7 +111,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.a().getAsBoolean()));
+    // PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -128,15 +124,12 @@ public class RobotContainer {
 
     // A button - go to amp and score
     // PRIMARY_CONTROLLER.a().whileTrue(
-    //   DRIVE_SUBSYSTEM.goToPoseCommand(
-    //     Constants.Field.AMP,
-    //     SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-    //     SHOOTER_SUBSYSTEM.scoreAmpCommand()
-    //   )
+      // DRIVE_SUBSYSTEM.goToPoseCommand(
+        // Constants.Field.AMP,
+        // SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+        // SHOOTER_SUBSYSTEM.scoreAmpCommand()
+      // )
     // );
-
-    // Left stick click - pass note
-    PRIMARY_CONTROLLER.leftStick().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // B button - go to source and intake game piece
     // PRIMARY_CONTROLLER.b().whileTrue(
@@ -149,7 +142,7 @@ public class RobotContainer {
 
     // Right stick click - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
-      DRIVE_SUBSYSTEM.snapToCardinalDirectionCommand(
+      DRIVE_SUBSYSTEM.snapToImportantDirectionCommand(
         () -> PRIMARY_CONTROLLER.getLeftY(),
         () -> PRIMARY_CONTROLLER.getLeftX()
       )
@@ -157,6 +150,12 @@ public class RobotContainer {
 
     // B Button - automatically aim at object
     // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
+
+    // A Button - shoot note into speaker from podium
+    PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
+
+    // B Button - pass note
+    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
@@ -170,11 +169,12 @@ public class RobotContainer {
     // DPAD right - feed a note through
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
-    // DPAD left - PARTY BUTTON!!
-    PRIMARY_CONTROLLER.povLeft().whileTrue(partyMode());
-
-    // Operator keypad button 1 - PARTY BUTTON!!
-    OPERATOR_KEYPAD.button(1).whileTrue(partyMode());
+    // DPAD down - auto defense
+    // PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+    //     () -> PRIMARY_CONTROLLER.getLeftY(),
+    //     () -> PRIMARY_CONTROLLER.getLeftX(),
+    //     () -> PRIMARY_CONTROLLER.getRightX()
+    // ));
   }
 
   /**
@@ -298,12 +298,12 @@ public class RobotContainer {
     );
   }
 
-  /**
-   * Automatically aim robot heading at object, drive, and intake a game object
-   * @return Command to aim robot at object, drive, and intake a game object
-   */
+   /**
+    * Automatically aim robot heading at object, drive, and intake a game object
+    * @return Command to aim robot at object, drive, and intake a game object
+    */
    private Command aimAndIntakeObjectCommand() {
-     return Commands.parallel(
+     return Commands.sequence(
     //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
     //   DRIVE_SUBSYSTEM.aimAtPointCommand(
     //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
@@ -316,20 +316,21 @@ public class RobotContainer {
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75 : 0,
-        () -> VISION_SUBSYSTEM.objectIsVisible() ? -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75 : 0,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false),
+        false)
 
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-     )
-     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
-  }
+        //  INTAKE_SUBSYSTEM.intakeCommand(),
+        //  SHOOTER_SUBSYSTEM.intakeCommand()
+    //  )
+    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
+    );
+   }
 
   /**
    * PARTY BUTTON!!!!
@@ -375,7 +376,7 @@ public class RobotContainer {
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.LEFT_WAIT_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARDISRUPT_FARTOP_AUTO_NAME.getSecond()).getCommand());
-  }
+      }
 
   /**
    * Run simlation related methods
@@ -395,32 +396,6 @@ public class RobotContainer {
     else if (DRIVE_SUBSYSTEM.getAlliance().equals(Alliance.Red)) {
       if (DRIVE_SUBSYSTEM.getPose().getX() < 6.84) Commands.run(() -> {}, DRIVE_SUBSYSTEM);
     }
-  }
-
-  /**
-   * Initialization code for disabled mode
-   */
-  public void disabledInit() {
-    DRIVE_SUBSYSTEM.disabledInit();
-  }
-
-  /**
-   * Call while disabled
-   */
-  public void disabledPeriodic() {
-    // Try to get alliance
-    var alliance = DriverStation.getAlliance();
-    if (alliance.isEmpty()) return;
-
-    // Set alliance if available
-    DRIVE_SUBSYSTEM.setAlliance(alliance.get());
-  }
-
-  /**
-   * Exit code for disabled mode
-   */
-  public void disabledExit() {
-    DRIVE_SUBSYSTEM.disabledExit();
   }
 
   /**

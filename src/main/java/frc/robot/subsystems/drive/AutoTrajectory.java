@@ -66,7 +66,7 @@ public class AutoTrajectory {
       : new PathPlannerAuto(m_auto.getFirst());
 
     return Commands.sequence(
-      m_driveSubsystem.resetPoseCommand(() -> getInitialPose()),
+      //m_driveSubsystem.resetPoseCommand(() -> getInitialPose()),
       autoCommand,
       m_driveSubsystem.stopCommand(),
       m_driveSubsystem.lockCommand()

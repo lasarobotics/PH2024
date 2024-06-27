@@ -16,6 +16,48 @@
           "data": {
             "pathName": "go sideways"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "sideways opposite "
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "go sideways"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "sideways opposite "
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "go sideways"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "sideways opposite "
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "go sideways"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "sideways opposite "
+          }
         }
       ]
     }

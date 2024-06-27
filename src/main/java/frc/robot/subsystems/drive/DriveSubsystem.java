@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
+import org.lasarobotics.utils.CommonTriggers;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
@@ -62,6 +64,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
@@ -95,8 +99,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
+  public static final Measure<Velocity<Angle>> VISION_ANGULAR_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(720.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
@@ -105,8 +109,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double TOLERANCE = 1.5;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
-  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
-  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
+  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.5;
+  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.1, 0.1, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
@@ -155,6 +159,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   private Alliance m_currentAlliance;
 
+  public final Command SET_ALLIANCE_COMMAND = Commands.runOnce(() -> {
+    // Try to get alliance
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isEmpty()) return;
+
+    // Set alliance if available
+    setAlliance(alliance.get());
+  }).andThen(Commands.waitSeconds(5)).ignoringDisable(true).repeatedly();
+
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
     () -> antiTip(),
@@ -197,7 +210,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
     this.m_pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.2),
       new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
@@ -242,15 +255,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_desiredChassisSpeeds = new ChassisSpeeds();
 
     // Setup anti-tip command
-    //new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
+    new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
 
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
     m_autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerFront.setTolerance(TOLERANCE);
+    m_autoAimPIDControllerFront.setIZone(AUTO_AIM_PID.kIZone);
     m_autoAimPIDControllerBack = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
     m_autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
     m_autoAimPIDControllerBack.setTolerance(TOLERANCE);
+    m_autoAimPIDControllerBack.setIZone(AUTO_AIM_PID.kIZone);
 
     // Initialise other variables
     m_previousPose = new Pose2d();
@@ -258,6 +273,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Initalise PurplePathClient
     m_purplePathClient = new PurplePathClient(this);
+
+    // Set alliance triggers
+    CommonTriggers.isDSAttached().onTrue(SET_ALLIANCE_COMMAND);
+    RobotModeTriggers.disabled().whileTrue(SET_ALLIANCE_COMMAND);
 
     // Initialise field
     m_field = new Field2d();
@@ -348,6 +367,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       DRIVE_CURRENT_LIMIT,
       Constants.Drive.DRIVE_SLIP_RATIO
     );
+
+
 
     Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 
@@ -486,9 +507,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Exit if no valid vision pose estimates
     if (apriltagCameraResults.isEmpty()) return;
 
+    // Exit if robot is spinning too fast
+    if (getRotateRate().gt(VISION_ANGULAR_VELOCITY_THRESHOLD)) return;
+
     // Add vision measurements to pose estimator
     for (var result : apriltagCameraResults) {
-      //if (result.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
       m_poseEstimator.addVisionMeasurement(
         result.estimatedRobotPose.estimatedPose.toPose2d(),
         result.estimatedRobotPose.timestampSeconds,
@@ -559,8 +582,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
 
-    // Adjust point
-    point = point.plus(AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -604,7 +625,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
    */
-  private void snapToCardinalDirection(double xRequest, double yRequest) {
+  private void snapToImportantDirection(double xRequest, double yRequest) {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
@@ -637,10 +658,47 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param yRequestSupplier Y axis speed supplier
    * @return Command to snap to the nearest cardinal direction
    */
-  public Command snapToCardinalDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
+  public Command snapToImportantDirectionCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier) {
     return runEnd(
-      () -> snapToCardinalDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
+      () -> snapToImportantDirection(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble()),
       () -> resetRotatePID()
+    );
+  }
+
+  /**
+   *
+   * @param xRequest
+   * @param yRequest
+   * @param rotateRequest
+   */
+  private void autoDefense(double xRequest, double yRequest, double rotateRequest) {
+    Optional<Measure<Angle>> objectYaw = VisionSubsystem.getInstance().getObjectHeading();
+    double moveRequest = Math.hypot(xRequest, yRequest);
+    double moveDirection = Math.atan2(yRequest, xRequest);
+    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+    double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+
+    if (objectYaw.isEmpty()) {
+      drive(
+        m_controlCentricity,
+        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
+        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+        Units.RadiansPerSecond.of(rotateOutput),
+        getInertialVelocity()
+      );
+      return;
+    }
+
+    moveRequest = Math.hypot(xRequest, 0.0);
+    moveDirection = Math.atan2(0.0, xRequest);
+    velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+    System.out.println(rotateOutput);
+    drive(
+      ControlCentricity.ROBOT_CENTRIC,
+      Units.MetersPerSecond.of(velocityOutput),
+      DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees)/Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
+      Units.RadiansPerSecond.of(rotateOutput),
+      getInertialVelocity()
     );
   }
 
@@ -716,26 +774,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Call method during initialization of disabled mode to set motors to brake mode
-   */
-  public void disabledInit() {
-    m_lFrontModule.disabledInit();
-    m_rFrontModule.disabledInit();
-    m_lRearModule.disabledInit();
-    m_rRearModule.disabledInit();
-  }
-
-  /**
-   * Call method when exiting disabled mode to set motors to coast mode
-   */
-  public void disabledExit() {
-    m_lFrontModule.disabledExit();
-    m_rFrontModule.disabledExit();
-    m_lRearModule.disabledExit();
-    m_rRearModule.disabledExit();
-  }
-
-  /**
    * Toggle traction control
    */
   private void toggleTractionControl() {
@@ -803,12 +841,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_navx.periodic();
-    m_lFrontModule.periodic();
-    m_rFrontModule.periodic();
-    m_lRearModule.periodic();
-    m_rRearModule.periodic();
-
     // Filter inertial velocity
     m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(
       m_xVelocityFilter.calculate(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond))
@@ -826,12 +858,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
-    m_lFrontModule.simulationPeriodic();
-    m_rFrontModule.simulationPeriodic();
-    m_lRearModule.simulationPeriodic();
-    m_rRearModule.simulationPeriodic();
-
-    double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
+    double randomNoise = ThreadLocalRandom.current().nextDouble(0.9, 1.0);
     m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
     m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
     m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise);
@@ -995,6 +1022,20 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
     return run(() -> aimAtAngle(angleRequestSupplier.getAsDouble()));
+  }
+
+  /**
+   *
+   * @param xRequestSupplier
+   * @param yRequestSupplier
+   * @param rotateRequestSupplier
+   * @return
+   */
+  public Command autoDefenseCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier) {
+    return runEnd(
+      () -> autoDefense(xRequestSupplier.getAsDouble(), yRequestSupplier.getAsDouble(), rotateRequestSupplier.getAsDouble()),
+      () -> resetRotatePID()
+    );
   }
 
   /**
@@ -1255,6 +1296,20 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Rotation2d getRotation2d() {
     return m_navx.getInputs().rotation2d;
+  }
+
+  public Command testMotor() {
+    return Commands.runEnd(
+      () -> {
+        System.out.println("fefefeffef");
+        m_lFrontModule.set(new SwerveModuleState(1, m_lFrontModule.getState().angle.plus(new Rotation2d(Units.Degrees.fromBaseUnits(0.1)))));
+        // m_lFrontModule.set(new SwerveModuleState(0.0001, new Rotation2d(Units.Degrees.fromBaseUnits(30))));
+      },
+      () -> {
+        m_lFrontModule.stop();
+      },
+      this
+    );
   }
 
   @Override

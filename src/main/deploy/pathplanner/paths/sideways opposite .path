@@ -4,28 +4,28 @@
     {
       "anchor": {
         "x": 2.0,
-        "y": 7.0
+        "y": 3.0
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.0,
-        "y": 6.840796391201032
+        "y": 3.1339527959172506
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "sidwaysAmp"
     },
     {
       "anchor": {
         "x": 2.0,
-        "y": 3.0
+        "y": 7.0
       },
       "prevControl": {
         "x": 2.0,
-        "y": 3.12863569886684
+        "y": 6.9
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "startsidewaysAmp"
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 179.1911028755941,
+    "rotation": 180.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "pose estimation test paths",
+  "folder": null,
   "previewStartingState": {
-    "rotation": 179.1264591874457,
+    "rotation": 180.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

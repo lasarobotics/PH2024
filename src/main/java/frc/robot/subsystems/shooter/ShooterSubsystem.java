@@ -24,6 +24,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
@@ -40,6 +41,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -82,6 +84,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
     public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
+    public static final State PODIUM_SCORE_STATE = new State(Units.MetersPerSecond.of(+16.25786), Units.Degrees.of(36));
     public static final State TEST_STOP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(30.0));
 
     public State(Measure<Velocity<Distance>> speed, Measure<Angle> angle) {
@@ -94,6 +97,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
+  private static final Measure<Voltage> ANGLE_MOTOR_FF = Units.Volts.of(0.1);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
@@ -223,7 +227,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(SPINUP_SPEED, state.angle);
+      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
       setState(state);
     }));
 
@@ -283,15 +287,21 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Normalize state to valid range
     m_desiredShooterState = normalizeState(state);
 
+    // Set flywheel speeds, allow coasting to zero
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
-    }
-    else {
+    } else {
       m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
-    m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
+    // Set angle
+    m_angleMotor.set(
+      m_desiredShooterState.angle.in(Units.Radians),
+      ControlType.kPosition,
+      ANGLE_MOTOR_FF.in(Units.Volts),
+      ArbFFUnits.kVoltage
+    );
   }
 
   /**
@@ -400,11 +410,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_topFlywheelMotor.periodic();
-    m_bottomFlywheelMotor.periodic();
-    m_angleMotor.periodic();
-    m_indexerMotor.periodic();
-
     // Put note indicator on SmartDashboard
     SmartDashboard.putBoolean(SHOOTER_NOTE_INSIDE_INDICATOR, isObjectPresent());
 
@@ -580,6 +585,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command passCommand() {
     return shootManualCommand(State.PASSING_STATE);
+  }
+
+  /**
+   * Shoot note into speaker from podium
+   * @return Command to shoot note into speaker when near podium
+   */
+  public Command shootPodiumCommand() {
+    return shootManualCommand(State.PODIUM_SCORE_STATE);
   }
 
   /**

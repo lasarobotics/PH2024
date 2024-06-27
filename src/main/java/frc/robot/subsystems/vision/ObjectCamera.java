@@ -33,6 +33,7 @@ public class ObjectCamera implements AutoCloseable {
   private PhotonCamera m_camera;
   private PhotonCameraSim m_cameraSim;
   private Transform3d m_transform;
+  private Resolution m_resolution;
   private VisionTargetSim m_targetSim;
 
   /**
@@ -45,6 +46,7 @@ public class ObjectCamera implements AutoCloseable {
   public ObjectCamera(String name, Transform3d transform, Resolution resolution, Rotation2d fovDiag) {
     m_camera = new PhotonCamera(name);
     m_transform = transform;
+    m_resolution = resolution;
 
 
     TargetModel targetModel = new TargetModel(0.5, 0.25);
@@ -94,7 +96,7 @@ public class ObjectCamera implements AutoCloseable {
       avgX /= count;
       avgY /= count;
 
-      double score = Math.hypot(avgX-(1920/2), avgY-1080); // TODO get frame size from photonvision
+      double score = Math.hypot(avgX - (m_resolution.width / 2), avgY - m_resolution.height);
 
 
       if (score < bestTargetScore) {

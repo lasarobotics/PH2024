@@ -88,7 +88,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    m_lClimberMotor.periodic();
     m_rClimberMotor.stopMotor();
   }
 }
