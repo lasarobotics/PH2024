@@ -10,7 +10,6 @@ import org.lasarobotics.hardware.PurpleManager;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.LoggedRobot;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;

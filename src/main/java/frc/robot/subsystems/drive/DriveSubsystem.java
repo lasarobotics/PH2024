@@ -295,12 +295,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set VisionSubsystem pose supplier for simulation
     VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
-
-
-    m_rRearModule.disableAutoLock();
-    m_rFrontModule.disableAutoLock();
-    m_lRearModule.disableAutoLock();
-    m_lFrontModule.disableAutoLock();
   }
 
   /**
