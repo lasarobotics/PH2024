@@ -25,6 +25,7 @@ import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Angle;
@@ -114,7 +115,9 @@ public class ShooterSubsystemTest {
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition)
+      ArgumentMatchers.eq(ControlType.kPosition),
+      ArgumentMatchers.anyDouble(),
+      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
     );
   }
 
@@ -137,7 +140,9 @@ public class ShooterSubsystemTest {
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getUpperLimit(), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition)
+      ArgumentMatchers.eq(ControlType.kPosition),
+      ArgumentMatchers.anyDouble(),
+      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
     );
   }
 
@@ -160,7 +165,9 @@ public class ShooterSubsystemTest {
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
     verify(m_angleMotor, times(1)).set(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getLowerLimit(), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition)
+      ArgumentMatchers.eq(ControlType.kPosition),
+      ArgumentMatchers.anyDouble(),
+      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
     );
   }
 
