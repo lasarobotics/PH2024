@@ -159,8 +159,8 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(53.0))),
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(56.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(56.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(53.0))),
       Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(44.5))),
       Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(37.0))),

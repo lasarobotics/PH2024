@@ -368,8 +368,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.DRIVE_SLIP_RATIO
     );
 
-
-
     Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 
     return drivetrainHardware;

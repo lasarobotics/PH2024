@@ -111,7 +111,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    // PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
