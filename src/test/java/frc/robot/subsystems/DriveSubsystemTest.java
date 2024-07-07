@@ -24,11 +24,13 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.lasarobotics.utils.GlobalConstants;
+import org.lasarobotics.vision.AprilTagCamera;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -105,10 +107,11 @@ public class DriveSubsystemTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
@@ -116,10 +119,11 @@ public class DriveSubsystemTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
@@ -127,10 +131,11 @@ public class DriveSubsystemTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
@@ -138,10 +143,25 @@ public class DriveSubsystemTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_A_NAME,
+        Constants.VisionHardware.CAMERA_A_LOCATION,
+        Constants.VisionHardware.CAMERA_A_RESOLUTION,
+        Constants.VisionHardware.CAMERA_A_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_B_NAME,
+        Constants.VisionHardware.CAMERA_B_LOCATION,
+        Constants.VisionHardware.CAMERA_B_RESOLUTION,
+        Constants.VisionHardware.CAMERA_B_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
       )
     );
 
@@ -470,8 +490,8 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim left towards specified point")
   public void aimLeftTowardsPoint() {
     // Rotate left towards point
-    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
-    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH), false, true).execute();
+    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LAYOUT.getFieldLength() / 2, Constants.Field.FIELD_LAYOUT.getFieldWidth() / 2, Rotation2d.fromDegrees(0.0))).initialize();
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_LAYOUT.getFieldWidth()), false, true).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.gt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -489,7 +509,7 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim right towards specified point")
   public void aimRightTowardsPoint() {
     // Rotate right towards point
-    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
+    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LAYOUT.getFieldLength() / 2, Constants.Field.FIELD_LAYOUT.getFieldWidth() / 2, Rotation2d.fromDegrees(0.0))).initialize();
     m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0), false, true).execute();
 
     // Verify that motors are being driven with expected values

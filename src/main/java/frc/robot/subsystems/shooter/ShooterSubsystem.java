@@ -24,6 +24,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
@@ -40,6 +41,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -77,8 +79,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(56.0));
     public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.1), Units.Degrees.of(56.0));
-    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(53.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(53.0));
+    public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(55.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
     public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
@@ -92,6 +94,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
+  private static final Measure<Voltage> ANGLE_FF = Units.Volts.of(0.1);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
@@ -224,7 +227,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
       state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
-      setState(state);
+      setState(state, true);
     }));
 
     // Initialize sim variables
@@ -279,19 +282,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Set shooter to desired state
    * @param state Desired shooter state
    */
-  private void setState(State state) {
+  private void setState(State state, boolean continuous) {
     // Normalize state to valid range
     m_desiredShooterState = normalizeState(state);
 
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
-    }
-    else {
+    } else {
       m_topFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
-    m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition);
+
+    if (continuous) m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition, ANGLE_FF.in(Units.Volts), ArbFFUnits.kVoltage);
+    else m_angleMotor.smoothMotion(m_desiredShooterState.angle.in(Units.Radians), m_angleConstraint, motionState -> ANGLE_FF.in(Units.Volts));
   }
 
   /**
@@ -317,7 +321,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(SPINUP_SPEED, m_desiredShooterState.angle));
+    setState(new State(SPINUP_SPEED, m_desiredShooterState.angle), false);
   }
 
   /**
@@ -464,7 +468,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       () -> {
         m_indexerMotor.enableReverseLimitSwitch();
         feedReverse(true);
-        setState(State.SOURCE_INTAKE_STATE);
+        setState(State.SOURCE_INTAKE_STATE, false);
       },
       () -> {
         m_indexerMotor.disableReverseLimitSwitch();
@@ -485,7 +489,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command feedThroughCommand(BooleanSupplier isAimed) {
     return startEnd(() -> {
       feedStart(false);
-      setState(new State(Units.MetersPerSecond.of(2.0), m_desiredShooterState.angle));
+      setState(new State(Units.MetersPerSecond.of(2.0), m_desiredShooterState.angle), false);
     },
     () -> {
       feedStop();
@@ -519,7 +523,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         feedStop();
         resetState();
       }
-    ).beforeStarting(() -> setState(stateSupplier.get()), this);
+    ).beforeStarting(() -> setState(stateSupplier.get(), false), this);
   }
 
   /**
@@ -540,7 +544,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command shootCommand(BooleanSupplier isAimed, BooleanSupplier override) {
     return runEnd(
       () -> {
-        setState(getAutomaticState());
+        setState(getAutomaticState(), true);
         if ((RobotBase.isSimulation() | isReady() && isAimed.getAsBoolean()) || override.getAsBoolean())
           feedStart(false);
         else feedStop();
@@ -586,8 +590,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     final State BOTTOM = new State(ZERO_FLYWHEEL_SPEED, Units.Radians.of(m_angleConfig.getLowerLimit()));
 
     return Commands.sequence(
-      run(() -> setState(TOP)).until(() -> isReady()),
-      run(() -> setState(BOTTOM)).until(() -> isReady())
+      run(() -> setState(TOP, false)).until(() -> isReady()),
+      run(() -> setState(BOTTOM, false)).until(() -> isReady())
     ).repeatedly();
   }
 
@@ -597,7 +601,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command prepareForAmpCommand() {
     return startEnd(
-      () -> setState(State.AMP_PREP_STATE),
+      () -> setState(State.AMP_PREP_STATE, false),
       () -> resetState()
     ).until(() -> isReady());
   }
@@ -615,7 +619,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command that spins up flywheel
    */
   public Command spinupCommand() {
-    return run(() -> setState(new State(SPINUP_SPEED, m_desiredShooterState.angle)));
+    return run(() -> setState(new State(SPINUP_SPEED, m_desiredShooterState.angle), false));
   }
 
   /**

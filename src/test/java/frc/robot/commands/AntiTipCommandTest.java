@@ -25,11 +25,13 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.lasarobotics.utils.GlobalConstants;
+import org.lasarobotics.vision.AprilTagCamera;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -108,10 +110,11 @@ public class AntiTipCommandTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
@@ -119,10 +122,11 @@ public class AntiTipCommandTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
@@ -130,10 +134,11 @@ public class AntiTipCommandTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
@@ -141,10 +146,25 @@ public class AntiTipCommandTest {
         Constants.Drive.GEAR_RATIO,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
+        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        Constants.Drive.FRICTION_COEFFICIENT
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_A_NAME,
+        Constants.VisionHardware.CAMERA_A_LOCATION,
+        Constants.VisionHardware.CAMERA_A_RESOLUTION,
+        Constants.VisionHardware.CAMERA_A_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_B_NAME,
+        Constants.VisionHardware.CAMERA_B_LOCATION,
+        Constants.VisionHardware.CAMERA_B_RESOLUTION,
+        Constants.VisionHardware.CAMERA_B_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
       )
     );
 

@@ -15,6 +15,7 @@ import org.lasarobotics.drive.AdvancedSwerveKinematics;
 import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
+import org.lasarobotics.drive.SwervePoseEstimatorService;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
@@ -23,6 +24,7 @@ import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.CommonTriggers;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.PIDConstants;
+import org.lasarobotics.vision.AprilTagCamera;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -31,10 +33,10 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -51,6 +53,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Mass;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
@@ -76,23 +79,30 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     MAXSwerveModule rFrontModule;
     MAXSwerveModule lRearModule;
     MAXSwerveModule rRearModule;
+    AprilTagCamera frontCamera;
+    AprilTagCamera rearCamera;
 
     public Hardware(NavX2 navx,
                     MAXSwerveModule lFrontModule,
                     MAXSwerveModule rFrontModule,
                     MAXSwerveModule lRearModule,
-                    MAXSwerveModule rRearModule) {
+                    MAXSwerveModule rRearModule,
+                    AprilTagCamera frontCamera,
+                    AprilTagCamera rearCamera) {
       this.navx = navx;
       this.lFrontModule = lFrontModule;
       this.rFrontModule = rFrontModule;
       this.lRearModule = lRearModule;
       this.rRearModule = rRearModule;
+      this.frontCamera = frontCamera;
+      this.rearCamera = rearCamera;
     }
   }
 
   // Drive specs
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.5588);
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
+  public static final Measure<Mass> MASS = Units.Pounds.of(110.0);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
@@ -110,7 +120,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.5;
-  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.1, 0.1, Math.toRadians(1.0));
+  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
@@ -129,37 +139,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
   private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
 
-
-  private ThrottleMap m_throttleMap;
-  private RotatePIDController m_rotatePIDController;
-  private ProfiledPIDController m_autoAimPIDControllerFront;
-  private ProfiledPIDController m_autoAimPIDControllerBack;
-  private SwerveDriveKinematics m_kinematics;
-  private SwerveDrivePoseEstimator m_poseEstimator;
-  private AdvancedSwerveKinematics m_advancedKinematics;
-  private HolonomicPathFollowerConfig m_pathFollowerConfig;
-
-  private NavX2 m_navx;
-  private MAXSwerveModule m_lFrontModule;
-  private MAXSwerveModule m_rFrontModule;
-  private MAXSwerveModule m_lRearModule;
-  private MAXSwerveModule m_rRearModule;
-
-
-  private ControlCentricity m_controlCentricity;
-  private ChassisSpeeds m_desiredChassisSpeeds;
-  private boolean m_isTractionControlEnabled = true;
-  private Rotation2d m_allianceCorrection;
-  private Pose2d m_previousPose;
-  private Rotation2d m_currentHeading;
-  private PurplePathClient m_purplePathClient;
-  private Field2d m_field;
-  private MedianFilter m_xVelocityFilter;
-  private MedianFilter m_yVelocityFilter;
-
-  private Alliance m_currentAlliance;
-
-  public final Command SET_ALLIANCE_COMMAND = Commands.runOnce(() -> {
+  private final Command SET_ALLIANCE_COMMAND = Commands.runOnce(() -> {
     // Try to get alliance
     var alliance = DriverStation.getAlliance();
     if (alliance.isEmpty()) return;
@@ -180,6 +160,34 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this::isBalanced,
     this
   );
+
+  private ThrottleMap m_throttleMap;
+  private RotatePIDController m_rotatePIDController;
+  private ProfiledPIDController m_autoAimPIDControllerFront;
+  private ProfiledPIDController m_autoAimPIDControllerBack;
+  private SwerveDriveKinematics m_kinematics;
+  private SwervePoseEstimatorService m_swervePoseEstimatorService;
+  private AdvancedSwerveKinematics m_advancedKinematics;
+  private HolonomicPathFollowerConfig m_pathFollowerConfig;
+
+  private NavX2 m_navx;
+  private MAXSwerveModule m_lFrontModule;
+  private MAXSwerveModule m_rFrontModule;
+  private MAXSwerveModule m_lRearModule;
+  private MAXSwerveModule m_rRearModule;
+
+
+  private ControlCentricity m_controlCentricity;
+  private ChassisSpeeds m_desiredChassisSpeeds;
+  private boolean m_isTractionControlEnabled = true;
+  private Rotation2d m_allianceCorrection;
+  private Pose2d m_previousPose;
+  private Rotation2d m_currentHeading;
+  private PurplePathClient m_purplePathClient;
+  private Field2d m_field;
+  private MedianFilter m_xVelocityFilter;
+  private MedianFilter m_yVelocityFilter;
+  private Alliance m_currentAlliance;
 
   /**
    * Create an instance of DriveSubsystem
@@ -242,14 +250,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                                                         m_rRearModule.getModuleCoordinate());
 
     // Initialise pose estimator
-    m_poseEstimator = new SwerveDrivePoseEstimator(
-      m_kinematics,
-      getRotation2d(),
-      getModulePositions(),
-      new Pose2d(),
+    m_swervePoseEstimatorService = new SwervePoseEstimatorService(
       ODOMETRY_STDDEV,
-      VISION_STDDEV
+      m_navx,
+      m_lFrontModule,
+      m_rFrontModule,
+      m_lRearModule,
+      m_rRearModule
     );
+    m_swervePoseEstimatorService.addAprilTagCamera(drivetrainHardware.frontCamera, drivetrainHardware.rearCamera);
+    m_swervePoseEstimatorService.start();
 
     // Initialise chassis speeds
     m_desiredChassisSpeeds = new ChassisSpeeds();
@@ -283,18 +293,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SmartDashboard.putData(m_field);
 
     // Setup path logging callback
-    PathPlannerLogging.setLogActivePathCallback((poses) -> {
+    PathPlannerLogging.setLogActivePathCallback(poses -> {
       if (poses.size() < 1) return;
       var trajectory = TrajectoryGenerator.generateTrajectory(
         poses,
         new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
       );
-
       m_field.getObject("currentPath").setTrajectory(trajectory);
     });
-
-    // Set VisionSubsystem pose supplier for simulation
-    VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
   }
 
   /**
@@ -314,10 +320,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.GEAR_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
+      MASS,
       AUTO_LOCK_TIME,
-      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      Constants.Drive.FRICTION_COEFFICIENT
     );
 
     MAXSwerveModule rFrontModule = new MAXSwerveModule(
@@ -330,10 +337,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.GEAR_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
+      MASS,
       AUTO_LOCK_TIME,
-      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      Constants.Drive.FRICTION_COEFFICIENT
     );
 
     MAXSwerveModule lRearModule = new MAXSwerveModule(
@@ -346,10 +354,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.GEAR_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
+      MASS,
       AUTO_LOCK_TIME,
-      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      Constants.Drive.FRICTION_COEFFICIENT
     );
 
     MAXSwerveModule rRearModule = new MAXSwerveModule(
@@ -362,13 +371,30 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Drive.GEAR_RATIO,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
+      MASS,
       AUTO_LOCK_TIME,
-      MAX_SLIPPING_TIME,
       DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      Constants.Drive.FRICTION_COEFFICIENT
     );
 
-    Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
+    AprilTagCamera frontCamera = new AprilTagCamera(
+      Constants.VisionHardware.CAMERA_A_NAME,
+      Constants.VisionHardware.CAMERA_A_LOCATION,
+      Constants.VisionHardware.CAMERA_A_RESOLUTION,
+      Constants.VisionHardware.CAMERA_A_FOV,
+      AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+    );
+
+    AprilTagCamera rearCamera = new AprilTagCamera(
+      Constants.VisionHardware.CAMERA_B_NAME,
+      Constants.VisionHardware.CAMERA_B_LOCATION,
+      Constants.VisionHardware.CAMERA_B_RESOLUTION,
+      Constants.VisionHardware.CAMERA_B_FOV,
+      AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+    );
+
+    Hardware drivetrainHardware = new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule, frontCamera, rearCamera);
 
     return drivetrainHardware;
   }
@@ -494,7 +520,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_previousPose = getPose();
 
     // Update pose based on odometry
-    m_poseEstimator.update(getRotation2d(), getModulePositions());
+    //m_poseEstimator.update(getRotation2d(), getModulePositions());
 
     // Update current heading
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
@@ -509,13 +535,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     if (getRotateRate().gt(VISION_ANGULAR_VELOCITY_THRESHOLD)) return;
 
     // Add vision measurements to pose estimator
-    for (var result : apriltagCameraResults) {
-      m_poseEstimator.addVisionMeasurement(
-        result.estimatedRobotPose.estimatedPose.toPose2d(),
-        result.estimatedRobotPose.timestampSeconds,
-        result.visionMeasurementStdDevs
-      );
-    }
+    // for (var result : apriltagCameraResults) {
+    //   m_poseEstimator.addVisionMeasurement(
+    //     result.estimatedRobotPose.estimatedPose.toPose2d(),
+    //     result.estimatedRobotPose.timestampSeconds,
+    //     result.visionMeasurementStdDevs
+    //   );
+    // }
   }
 
   /**
@@ -809,31 +835,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param pose Pose to set robot to
    */
   private void resetPose(Pose2d pose) {
-    m_poseEstimator.resetPosition(
-      getRotation2d(),
-      getModulePositions(),
-      pose
-    );
-  }
-
-  /**
-   * Reset current pose to vision estimate
-   */
-  private void resetPoseToVision() {
-    // Get vision estimated poses
-    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (visionEstimatedRobotPoses.isEmpty()) return;
-
-    // Add vision measurements to pose estimator
-    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-      m_poseEstimator.resetPosition(
-        getRotation2d(),
-        getModulePositions(),
-        visionEstimatedRobotPose.estimatedRobotPose.estimatedPose.toPose2d()
-      );
-    }
+    m_swervePoseEstimatorService.resetPose(pose);
   }
 
   @Override
@@ -847,8 +849,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_yVelocityFilter.calculate(m_navx.getInputs().yVelocity.in(Units.MetersPerSecond))
     );
 
+    // Save previous pose
+    m_previousPose = getPose();
+
+    // Update current heading
+    m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
+
     if (RobotBase.isSimulation()) return;
-    updatePose();
+    //updatePose();
     smartDashboard();
     logOutputs();
   }
@@ -866,7 +874,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                    + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
     m_navx.setSimAngle(angle);
 
-    updatePose();
+    //updatePose();
     smartDashboard();
     logOutputs();
   }
@@ -1108,14 +1116,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Reset pose estimator to vision estimated pose
-   * @return Command to reset pose to current vision estimated pose
-   */
-  public Command resetPoseToVisionCommand() {
-    return runOnce(() -> resetPoseToVision());
-  }
-
-  /**
    * Go to goal pose
    * @param goal Desired goal pose
    * @param parallelCommand Command to run in parallel on final approach
@@ -1202,7 +1202,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Currently estimated robot pose
    */
   public Pose2d getPose() {
-    return m_poseEstimator.getEstimatedPosition();
+    return m_swervePoseEstimatorService.getPose();
   }
 
   /**

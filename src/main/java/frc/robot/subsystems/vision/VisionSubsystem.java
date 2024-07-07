@@ -29,7 +29,6 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;
 
 public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
@@ -128,24 +127,24 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private static Hardware initializeHardware() {
     Hardware visionHardware = new Hardware(
-      new ObjectCamera(
-        Constants.VisionHardware.CAMERA_OBJECT_NAME,
-        Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
-        Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
-        Constants.VisionHardware.CAMERA_OBJECT_FOV
-      ),
-      new AprilTagCamera(
-        Constants.VisionHardware.CAMERA_A_NAME,
-        Constants.VisionHardware.CAMERA_A_LOCATION,
-        Constants.VisionHardware.CAMERA_A_RESOLUTION,
-        Constants.VisionHardware.CAMERA_A_FOV
-      ),
-      new AprilTagCamera(
-        Constants.VisionHardware.CAMERA_B_NAME,
-        Constants.VisionHardware.CAMERA_B_LOCATION,
-        Constants.VisionHardware.CAMERA_B_RESOLUTION,
-        Constants.VisionHardware.CAMERA_B_FOV
-      )
+      // new ObjectCamera(
+      //   Constants.VisionHardware.CAMERA_OBJECT_NAME,
+      //   Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
+      //   Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
+      //   Constants.VisionHardware.CAMERA_OBJECT_FOV
+      // ),
+      // new AprilTagCamera(
+      //   Constants.VisionHardware.CAMERA_A_NAME,
+      //   Constants.VisionHardware.CAMERA_A_LOCATION,
+      //   Constants.VisionHardware.CAMERA_A_RESOLUTION,
+      //   Constants.VisionHardware.CAMERA_A_FOV
+      // ),
+      // new AprilTagCamera(
+      //   Constants.VisionHardware.CAMERA_B_NAME,
+      //   Constants.VisionHardware.CAMERA_B_LOCATION,
+      //   Constants.VisionHardware.CAMERA_B_RESOLUTION,
+      //   Constants.VisionHardware.CAMERA_B_FOV
+      // )
     );
 
     return visionHardware;

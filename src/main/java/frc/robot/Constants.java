@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
@@ -18,8 +19,11 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
+import org.lasarobotics.vision.AprilTagCamera.Resolution;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,8 +38,6 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -51,12 +53,11 @@ import frc.robot.subsystems.vision.VisionSubsystem;
  */
 public final class Constants {
   public static class Field {
-    public static final double FIELD_WIDTH = 8.21;
-    public static final double FIELD_LENGTH = 16.54;
+    public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    public static final Translation2d CENTER = new Translation2d(FIELD_LAYOUT.getFieldLength() / 2, FIELD_LAYOUT.getFieldWidth() / 2);
 
-    public static final Translation2d CENTER = new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2);
-    public static final AprilTag BLUE_SPEAKER = VisionSubsystem.getInstance().getTag(7).get();
-    public static final AprilTag RED_SPEAKER = VisionSubsystem.getInstance().getTag(4).get();
+    public static final AprilTag BLUE_SPEAKER = getTag(7).get();
+    public static final AprilTag RED_SPEAKER = getTag(4).get();
 
     public static final PurplePathPose AMP = new PurplePathPose(
       new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
@@ -70,6 +71,15 @@ public final class Constants {
       Units.Meters.of(0.5),
       true
     );
+
+    /**
+     * Get AprilTag from field
+     * @param id Tag ID
+     * @return AprilTag matching ID
+     */
+    public static Optional<AprilTag> getTag(int id) {
+      return FIELD_LAYOUT.getTags().stream().filter((tag) -> tag.ID == id).findFirst();
+    }
   }
 
   public static class HID {
@@ -106,7 +116,8 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.08;
+    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
+    public static final Measure<Dimensionless> FRICTION_COEFFICIENT = Units.Value.of(1.1);
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
@@ -156,7 +167,7 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 6).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(53.0))),
