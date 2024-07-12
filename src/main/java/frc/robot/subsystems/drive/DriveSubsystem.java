@@ -677,16 +677,18 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
 
     if (objectYaw.isEmpty()) {
+      System.out.println(rotateOutput);
       drive(
         m_controlCentricity,
         Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
         Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-        Units.RadiansPerSecond.of(rotateOutput),
+        Units.DegreesPerSecond.of(rotateOutput),
         getInertialVelocity()
       );
       return;
     }
 
+    System.out.println("object yaw is not empy");
     moveRequest = Math.hypot(xRequest, 0.0);
     moveDirection = Math.atan2(0.0, xRequest);
     velocityOutput = m_throttleMap.throttleLookup(moveRequest);
@@ -695,7 +697,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       ControlCentricity.ROBOT_CENTRIC,
       Units.MetersPerSecond.of(velocityOutput),
       DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees)/Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
-      Units.RadiansPerSecond.of(rotateOutput),
+      Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity()
     );
   }

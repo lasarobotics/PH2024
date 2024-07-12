@@ -170,11 +170,11 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD down - auto defense
-    // PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
-    //     () -> PRIMARY_CONTROLLER.getLeftY(),
-    //     () -> PRIMARY_CONTROLLER.getLeftX(),
-    //     () -> PRIMARY_CONTROLLER.getRightX()
-    // ));
+    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX()
+    ));
   }
 
   /**
