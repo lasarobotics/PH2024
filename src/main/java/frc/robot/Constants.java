@@ -116,9 +116,9 @@ public final class Constants {
 
   public static class Drive {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
-    public static final Measure<Dimensionless> FRICTION_COEFFICIENT = Units.Value.of(1.1);
-    public static final double DRIVE_TURN_SCALAR = 60.0;
+    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(3.0);
+    public static final Measure<Dimensionless> FRICTION_COEFFICIENT = Units.Value.of(0.2);
+    public static final double DRIVE_TURN_SCALAR = 70.0;
     public static final double DRIVE_LOOKAHEAD = 6;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;

@@ -104,7 +104,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
   public static final Measure<Mass> MASS = Units.Pounds.of(110.0);
   public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
@@ -115,9 +114,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
 
   // Other settings
-  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.5;
   private static final double TIP_THRESHOLD = 35.0;
+  private static final double TOLERANCE = 1.5;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.5;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
@@ -185,8 +183,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
-  private MedianFilter m_xVelocityFilter;
-  private MedianFilter m_yVelocityFilter;
   private Alliance m_currentAlliance;
 
   /**
@@ -226,8 +222,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
     this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
-    this.m_xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
-    this.m_yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -415,7 +409,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Set swerve modules, automatically applying traction control
    * @param moduleStates Array of calculated module states
    * @param inertialVelocity Current inertial velocity
-   * @param rotateRate Desired robot rotate rate
+   * @param rotateRate Current robot rotate rate
    */
   private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
     m_lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
@@ -431,13 +425,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param yRequest Desired Y (sideways) velocity
    * @param rotateRequest Desired rotate rate
    * @param inertialVelocity Current robot inertial velocity
-   * @param rotateRate Current robot rotate rate
    */
   private void drive(ControlCentricity controlCentricity,
                      Measure<Velocity<Distance>> xRequest,
                      Measure<Velocity<Distance>> yRequest,
                      Measure<Velocity<Angle>> rotateRequest,
-                     Measure<Velocity<Distance>> inertialVelocity) {
+                     Measure<Velocity<Distance>> inertialVelocity,
+                     Measure<Velocity<Angle>> rotateRate) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -454,7 +448,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
     // Set modules to calculated states, WITH traction control
-    setSwerveModules(moduleStates, inertialVelocity, Units.RadiansPerSecond.of(m_desiredChassisSpeeds.omegaRadiansPerSecond));
+    setSwerveModules(moduleStates, inertialVelocity, rotateRate);
   }
 
   /**
@@ -601,7 +595,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
         Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
         Units.DegreesPerSecond.of(rotateOutput),
-        getInertialVelocity()
+        getInertialVelocity(),
+        getRotateRate()
       );
       return;
     }
@@ -640,7 +635,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      getInertialVelocity(),
+      getRotateRate()
     );
   }
 
@@ -672,7 +668,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      getInertialVelocity(),
+      getRotateRate()
     );
   }
 
@@ -708,7 +705,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
         Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
         Units.RadiansPerSecond.of(rotateOutput),
-        getInertialVelocity()
+        getInertialVelocity(),
+        getRotateRate()
       );
       return;
     }
@@ -722,7 +720,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(velocityOutput),
       DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees)/Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
       Units.RadiansPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      getInertialVelocity(),
+      getRotateRate()
     );
   }
 
@@ -738,7 +737,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(0),
       Units.MetersPerSecond.of(0),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      getInertialVelocity(),
+      getRotateRate()
     );
   }
 
@@ -773,7 +773,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
       Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      getInertialVelocity(),
+      getRotateRate()
     );
   }
 
@@ -841,14 +842,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // Filter inertial velocity
-    m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(
-      m_xVelocityFilter.calculate(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond))
-    );
-    m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(
-      m_yVelocityFilter.calculate(m_navx.getInputs().yVelocity.in(Units.MetersPerSecond))
-    );
-
     // Save previous pose
     m_previousPose = getPose();
 
