@@ -14,6 +14,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.AdvancedSwerveKinematics;
 import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.MAXSwerveModule;
+import org.lasarobotics.drive.ModuleLocation;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.SwervePoseEstimatorService;
 import org.lasarobotics.drive.ThrottleMap;
@@ -37,7 +38,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -310,15 +310,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
         MotorKind.NEO_VORTEX
       ),
-      MAXSwerveModule.ModuleLocation.LeftFront,
+      ModuleLocation.LeftFront,
       Constants.Drive.GEAR_RATIO,
+      Constants.Drive.DRIVE_WHEEL,
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      MASS,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      MASS,
       AUTO_LOCK_TIME,
-      DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO,
-      Constants.Drive.FRICTION_COEFFICIENT
+      DRIVE_CURRENT_LIMIT
     );
 
     MAXSwerveModule rFrontModule = new MAXSwerveModule(
@@ -327,15 +327,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
         MotorKind.NEO_VORTEX
       ),
-      MAXSwerveModule.ModuleLocation.RightFront,
+      ModuleLocation.RightFront,
       Constants.Drive.GEAR_RATIO,
+      Constants.Drive.DRIVE_WHEEL,
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      MASS,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      MASS,
       AUTO_LOCK_TIME,
-      DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO,
-      Constants.Drive.FRICTION_COEFFICIENT
+      DRIVE_CURRENT_LIMIT
     );
 
     MAXSwerveModule lRearModule = new MAXSwerveModule(
@@ -344,15 +344,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
         MotorKind.NEO_VORTEX
       ),
-      MAXSwerveModule.ModuleLocation.LeftRear,
+      ModuleLocation.LeftRear,
       Constants.Drive.GEAR_RATIO,
+      Constants.Drive.DRIVE_WHEEL,
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      MASS,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      MASS,
       AUTO_LOCK_TIME,
-      DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO,
-      Constants.Drive.FRICTION_COEFFICIENT
+      DRIVE_CURRENT_LIMIT
     );
 
     MAXSwerveModule rRearModule = new MAXSwerveModule(
@@ -361,15 +361,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
         MotorKind.NEO_VORTEX
       ),
-      MAXSwerveModule.ModuleLocation.RightRear,
+      ModuleLocation.RightRear,
       Constants.Drive.GEAR_RATIO,
+      Constants.Drive.DRIVE_WHEEL,
+      Constants.Drive.DRIVE_SLIP_RATIO,
+      MASS,
       DRIVE_WHEELBASE,
       DRIVE_TRACK_WIDTH,
-      MASS,
       AUTO_LOCK_TIME,
-      DRIVE_CURRENT_LIMIT,
-      Constants.Drive.DRIVE_SLIP_RATIO,
-      Constants.Drive.FRICTION_COEFFICIENT
+      DRIVE_CURRENT_LIMIT
     );
 
     AprilTagCamera frontCamera = new AprilTagCamera(
@@ -585,16 +585,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+    var velocityOutput = m_throttleMap.throttleLookup(moveRequest).negate();
 
     // Drive normally and return if invalid point
     if (point == null) {
-      double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+      var rotateOutput = m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).negate();
       drive(
-        controlCentricity,
-        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-        Units.DegreesPerSecond.of(rotateOutput),
+        m_controlCentricity,
+        velocityOutput.times(Math.cos(moveDirection)),
+        velocityOutput.times(Math.sin(moveDirection)),
+        rotateOutput,
         getInertialVelocity(),
         getRotateRate()
       );
@@ -606,7 +606,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Angle to target point
     Rotation2d targetAngle = new Rotation2d(point.getX() - currentPose.getX(), point.getY() - currentPose.getY());
     // Movement vector of robot
-    Vector2D robotVector = new Vector2D(velocityOutput * m_currentHeading.getCos(), velocityOutput * m_currentHeading.getSin());
+    Vector2D robotVector = new Vector2D(velocityOutput.times(m_currentHeading.getCos()).in(Units.MetersPerSecond), velocityOutput.times(m_currentHeading.getSin()).in(Units.MetersPerSecond));
     // Aim point
     Translation2d aimPoint = point.minus(new Translation2d(robotVector.getX(), robotVector.getY()));
     // Vector from robot to target
@@ -620,9 +620,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Calculate new angle using adjusted point
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
     // Calculate necessary rotate rate
-    double rotateOutput = reversed
-      ? m_autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees())
-      : m_autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
+    var rotateOutput = reversed
+      ? Units.DegreesPerSecond.of(m_autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees()))
+      : Units.DegreesPerSecond.of(m_autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees()));
 
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
@@ -630,11 +630,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/AimError", Math.copySign(((180 - Math.abs(aimError)) % 180), (aimError)));
 
     // Drive robot accordingly
-    drive(
-      controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-      Units.DegreesPerSecond.of(rotateOutput),
+     drive(
+      m_controlCentricity,
+      velocityOutput.times(Math.cos(moveDirection)),
+      velocityOutput.times(Math.sin(moveDirection)),
+      rotateOutput,
       getInertialVelocity(),
       getRotateRate()
     );
@@ -649,7 +649,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
+    var velocityOutput = m_throttleMap.throttleLookup(moveRequest).negate();
 
     double sourceDistance = getPose().getTranslation().getDistance(Constants.Field.SOURCE.getGoalPose().getTranslation());
 
@@ -660,14 +660,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       desiredAngle = m_selectedSourceDirection.in(Units.Degrees);
     } else desiredAngle = m_selectedAmpDirection.in(Units.Degrees);
 
-    double rotateOutput = m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle);
+    var rotateOutput = Units.DegreesPerSecond.of(m_autoAimPIDControllerFront.calculate(currentRotation.getDegrees(), desiredAngle));
 
     // Drive with the pose to the snapped cardinal direction
     drive(
       m_controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-      Units.DegreesPerSecond.of(rotateOutput),
+      velocityOutput.times(Math.cos(moveDirection)),
+      velocityOutput.times(Math.sin(moveDirection)),
+      rotateOutput,
       getInertialVelocity(),
       getRotateRate()
     );
@@ -696,15 +696,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     Optional<Measure<Angle>> objectYaw = VisionSubsystem.getInstance().getObjectHeading();
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
-    double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+    var velocityOutput = m_throttleMap.throttleLookup(moveRequest).negate();
+    var rotateOutput = m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).negate();
 
     if (objectYaw.isEmpty()) {
       drive(
         m_controlCentricity,
-        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-        Units.RadiansPerSecond.of(rotateOutput),
+        velocityOutput.times(Math.cos(moveDirection)),
+        velocityOutput.times(Math.sin(moveDirection)),
+        rotateOutput,
         getInertialVelocity(),
         getRotateRate()
       );
@@ -717,9 +717,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     System.out.println(rotateOutput);
     drive(
       ControlCentricity.ROBOT_CENTRIC,
-      Units.MetersPerSecond.of(velocityOutput),
-      DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees)/Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
-      Units.RadiansPerSecond.of(rotateOutput),
+      velocityOutput,
+      DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees) / Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
+      rotateOutput,
       getInertialVelocity(),
       getRotateRate()
     );
@@ -754,8 +754,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     double moveDirection = Math.atan2(yRequest, xRequest);
 
     // Get throttle and rotate output
-    double velocityOutput = m_throttleMap.throttleLookup(moveRequest);
-    double rotateOutput = -m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+    var velocityOutput = m_throttleMap.throttleLookup(moveRequest).negate();
+    var rotateOutput = m_rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).negate();
 
     // Update auto-aim controllers
     m_autoAimPIDControllerFront.calculate(
@@ -770,9 +770,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Drive robot
     drive(
       m_controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-      Units.DegreesPerSecond.of(rotateOutput),
+      velocityOutput.times(Math.cos(moveDirection)),
+      velocityOutput.times(Math.sin(moveDirection)),
+      rotateOutput,
       getInertialVelocity(),
       getRotateRate()
     );
@@ -972,8 +972,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command aimAtPointCommand(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
                                    Supplier<Translation2d> pointSupplier, boolean reversed, boolean velocityCorrection) {
-    return runEnd(() -> {
-      aimAtPoint(
+    return runEnd(
+      () -> aimAtPoint(
         m_controlCentricity,
         xRequestSupplier.getAsDouble(),
         yRequestSupplier.getAsDouble(),
@@ -981,9 +981,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         pointSupplier.get(),
         reversed,
         velocityCorrection
-      );
-
-    },
+      ),
       () -> resetRotatePID()
     );
   }

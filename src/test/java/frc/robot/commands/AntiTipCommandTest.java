@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.lasarobotics.drive.MAXSwerveModule;
-import org.lasarobotics.drive.MAXSwerveModule.ModuleLocation;
+import org.lasarobotics.drive.ModuleLocation;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
@@ -107,50 +107,50 @@ public class AntiTipCommandTest {
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lFrontDriveMotor, m_lFrontRotateMotor),
         ModuleLocation.LeftFront,
-        Constants.Drive.GEAR_RATIO,
+         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO,
-        Constants.Drive.FRICTION_COEFFICIENT
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
         ModuleLocation.RightFront,
-        Constants.Drive.GEAR_RATIO,
+         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO,
-        Constants.Drive.FRICTION_COEFFICIENT
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
         ModuleLocation.LeftRear,
-        Constants.Drive.GEAR_RATIO,
+         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO,
-        Constants.Drive.FRICTION_COEFFICIENT
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
         ModuleLocation.RightRear,
-        Constants.Drive.GEAR_RATIO,
+         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
-        DriveSubsystem.MASS,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO,
-        Constants.Drive.FRICTION_COEFFICIENT
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new AprilTagCamera(
         Constants.VisionHardware.CAMERA_A_NAME,
@@ -197,7 +197,7 @@ public class AntiTipCommandTest {
    * @param moduleLocation Swerve module location
    * @return Spark inputs to return
    */
-  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, MAXSwerveModule.ModuleLocation moduleLocation) {
+  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, ModuleLocation moduleLocation) {
     var sparkInputs = new SparkInputsAutoLogged();
     sparkInputs.absoluteEncoderPosition = rotation.minus(moduleLocation.offset).getRadians();
 
@@ -212,10 +212,10 @@ public class AntiTipCommandTest {
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
     inputs.rollAngle = Units.Degrees.of(+35.0);
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
