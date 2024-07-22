@@ -323,7 +323,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(SPINUP_SPEED, m_desiredShooterState.angle), false);
+    setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle), false);
   }
 
   /**

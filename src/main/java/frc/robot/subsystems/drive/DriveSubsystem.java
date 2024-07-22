@@ -136,6 +136,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final String POSE_LOG_ENTRY = "/Pose";
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
   private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
+  private static final String IS_AIMED_LOG_ENTRY = "/IsAimed";
 
   private final Command SET_ALLIANCE_COMMAND = Commands.runOnce(() -> {
     // Try to get alliance
@@ -224,6 +225,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
+    this.m_currentAlliance = Alliance.Blue;
     this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
 
     // Calibrate and reset navX
@@ -547,6 +549,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private void logOutputs() {
     Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
     Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
+    Logger.recordOutput(getName() + IS_AIMED_LOG_ENTRY, isAimed());
   }
 
   /**
@@ -557,6 +560,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SmartDashboard.putBoolean("TC", m_isTractionControlEnabled);
     SmartDashboard.putBoolean("PurplePath", m_purplePathClient.isConnected());
     SmartDashboard.putBoolean("FC", m_controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
+    SmartDashboard.putString("Alliance", m_currentAlliance.name());
   }
 
   /**

@@ -172,17 +172,15 @@ public final class Constants {
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(57.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(57.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.95),    Units.Degrees.of(57.0))),
       Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(57.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(48.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(44.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(48.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(44.0))),
       Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(39.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.00), Units.Degrees.of(36.5))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(36.5))),
       Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(33.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.40),    Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(5.50), new State(Units.MetersPerSecond.of(17.45),    Units.Degrees.of(24.0))),
-      Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.50),    Units.Degrees.of(23.5)))
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.35),    Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.50),    Units.Degrees.of(25.0)))
     );
   }
 
