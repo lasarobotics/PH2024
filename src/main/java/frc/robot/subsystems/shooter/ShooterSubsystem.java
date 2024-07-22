@@ -286,6 +286,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Normalize state to valid range
     m_desiredShooterState = normalizeState(state);
 
+    // Set flywheel speed, coast to a stop if speed not desired
     if (state.speed.isNear(ZERO_FLYWHEEL_SPEED, 0.01)) {
       m_topFlywheelMotor.stopMotor();
       m_bottomFlywheelMotor.stopMotor();
@@ -294,6 +295,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_bottomFlywheelMotor.set(m_desiredShooterState.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
     }
 
+    // Set angle
     if (continuous) m_angleMotor.set(m_desiredShooterState.angle.in(Units.Radians), ControlType.kPosition, ANGLE_FF.in(Units.Volts), ArbFFUnits.kVoltage);
     else m_angleMotor.smoothMotion(m_desiredShooterState.angle.in(Units.Radians), m_angleConstraint, motionState -> ANGLE_FF.in(Units.Volts));
   }
