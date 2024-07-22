@@ -116,11 +116,11 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(3.0), Units.Value.of(1.0), Units.Value.of(0.8));
+    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(3.0), Units.Value.of(1.0), Units.Value.of(0.9));
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(3.0);
-    public static final double DRIVE_TURN_SCALAR = 70.0;
-    public static final double DRIVE_LOOKAHEAD = 6;
+    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
+    public static final double DRIVE_TURN_SCALAR = 90.0;
+    public static final double DRIVE_LOOKAHEAD = 8;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
@@ -171,15 +171,15 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 6).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(44.5))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(37.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(34.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(27.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(25.5))),
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(57.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(57.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(57.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(48.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(44.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(39.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.00), Units.Degrees.of(36.5))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(33.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(30.0))),
       Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.40),    Units.Degrees.of(25.0))),
       Map.entry(Units.Meters.of(5.50), new State(Units.MetersPerSecond.of(17.45),    Units.Degrees.of(24.0))),
       Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.50),    Units.Degrees.of(23.5)))
@@ -221,16 +221,16 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(-0.102, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), Math.toRadians(+180.0))
+      new Translation3d(-0.1016, -0.2921, 0.521),
+      new Rotation3d(0.0, Math.toRadians(-26.0), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-      new Translation3d(0.0254, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), 0.0)
+      new Translation3d(0.0254, -0.2921, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-25.6), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);

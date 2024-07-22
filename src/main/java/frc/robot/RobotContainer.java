@@ -109,7 +109,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    PRIMARY_CONTROLLER.y().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -156,7 +156,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
     // Y button - spit out note
-    //PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
+    PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
     // DPAD up - shoot manual
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
