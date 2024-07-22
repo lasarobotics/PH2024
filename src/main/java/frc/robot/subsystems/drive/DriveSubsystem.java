@@ -177,13 +177,16 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
-  private boolean m_isTractionControlEnabled = true;
   private Rotation2d m_allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d m_currentHeading;
   private PurplePathClient m_purplePathClient;
   private Field2d m_field;
   private Alliance m_currentAlliance;
+
+  private boolean m_isTractionControlEnabled = true;
+  private boolean m_autoAimFront = false;
+  private boolean m_autoAimBack = false;
 
   /**
    * Create an instance of DriveSubsystem
@@ -601,6 +604,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
 
+    // Mark PID controller being used
+    if (reversed) {
+      m_autoAimFront = false;
+      m_autoAimBack = true;
+    } else {
+      m_autoAimFront = true;
+      m_autoAimBack = false;
+    }
+
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -625,8 +637,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       : Units.DegreesPerSecond.of(m_autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees()));
 
     // Log aim point
-    Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
     double aimError = currentPose.getRotation().getDegrees() - adjustedAngle.getDegrees();
+    Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
     Logger.recordOutput(getName() + "/AimError", Math.copySign(((180 - Math.abs(aimError)) % 180), (aimError)));
 
     // Drive robot accordingly
@@ -766,6 +778,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
       getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
     );
+    m_autoAimFront = false;
+    m_autoAimBack = false;
 
     // Drive robot
     drive(
@@ -1228,7 +1242,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if aimed
    */
   public boolean isAimed() {
-    return (m_autoAimPIDControllerFront.atGoal() || m_autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(AIM_VELOCITY_THRESHOLD);
+    return (
+      m_autoAimPIDControllerFront.atGoal() & m_autoAimFront
+      |
+      m_autoAimPIDControllerBack.atGoal() & m_autoAimBack
+    ) && getRotateRate().lt(AIM_VELOCITY_THRESHOLD);
   }
 
   /**
