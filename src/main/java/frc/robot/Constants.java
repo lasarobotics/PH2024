@@ -171,16 +171,37 @@ public final class Constants {
       Units.DegreesPerSecond.of(360.0 * 6).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(57.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.95),    Units.Degrees.of(57.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(57.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(48.0))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(44.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(39.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(36.5))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(33.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.35),    Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.50),    Units.Degrees.of(25.0)))
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.40), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.0))),
+      Map.entry(Units.Meters.of(1.60), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(51.0))),
+      Map.entry(Units.Meters.of(1.70), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(49.0))),
+      Map.entry(Units.Meters.of(1.80), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(47.0))),
+      Map.entry(Units.Meters.of(1.90), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(46.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
+      Map.entry(Units.Meters.of(2.10), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(44.0))),
+      Map.entry(Units.Meters.of(2.20), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(43.0))),
+      Map.entry(Units.Meters.of(2.30), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
+      Map.entry(Units.Meters.of(2.40), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(41.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(40.0))),
+      Map.entry(Units.Meters.of(2.60), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(39.0))),
+      Map.entry(Units.Meters.of(2.70), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(2.80), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
+      Map.entry(Units.Meters.of(2.90), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.10), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.20), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(34.0))),
+      Map.entry(Units.Meters.of(3.30), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(33.0))),
+      Map.entry(Units.Meters.of(3.40), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(3.60), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(31.0))),
+      Map.entry(Units.Meters.of(3.70), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(3.80), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(3.90), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(28.0))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0)))
     );
   }
 
