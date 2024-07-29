@@ -4,10 +4,14 @@
 
 package frc.robot.subsystems;
 
+import static org.mockito.ArgumentMatchers.doubleThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+// import static org.mockito.AdditionalMatchers.eq;
+// import static org.mockito.AdditionalMatchers.or;
+// import static org.mockito.AdditionalMatchers.and;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +30,7 @@ import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.vision.AprilTagCamera;
 import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
@@ -39,6 +44,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.Constants;
+import frc.robot.AbsoluteValueMatcher;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -52,6 +58,8 @@ public class DriveSubsystemTest {
   private Spark m_rFrontDriveMotor, m_rFrontRotateMotor;
   private Spark m_lRearDriveMotor, m_lRearRotateMotor;
   private Spark m_rRearDriveMotor, m_rRearRotateMotor;
+
+  private ArgumentMatcher<Double> m_matchMaxLinearVelocity;
 
   @BeforeEach
   public void setup() {
@@ -177,6 +185,8 @@ public class DriveSubsystemTest {
       Constants.Drive.DRIVE_LOOKAHEAD
     );
 
+    m_matchMaxLinearVelocity = new AbsoluteValueMatcher(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond), DELTA);
+
     // Disable traction control for unit tests
     m_driveSubsystem.disableTractionControlCommand().initialize();
   }
@@ -219,14 +229,14 @@ public class DriveSubsystemTest {
     m_driveSubsystem.driveCommand(() -> +1.0, () -> 0.0, () -> 0.0).execute();
 
     // Verify that motors are being driven with expected values
-    verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rFrontDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rFrontRotateMotor, times(1)).set(AdditionalMatchers.eq(0.0, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_lRearDriveMotor, times(1)).set(AdditionalMatchers.eq(-m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lRearRotateMotor, times(1)).set(AdditionalMatchers.eq(+Math.PI, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
-    verify(m_rRearDriveMotor, times(1)).set(AdditionalMatchers.eq(+m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rRearRotateMotor, times(1)).set(AdditionalMatchers.eq(-Math.PI / 2, DELTA), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lFrontDriveMotor, times(1)).set(doubleThat(m_matchMaxLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lFrontRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rFrontDriveMotor, times(1)).set(doubleThat(m_matchMaxLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rFrontRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(0.0, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lRearDriveMotor, times(1)).set(doubleThat(m_matchMaxLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_lRearRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(0.0, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rRearDriveMotor, times(1)).set(doubleThat(m_matchMaxLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
+    verify(m_rRearRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
   }
 
   @Test
