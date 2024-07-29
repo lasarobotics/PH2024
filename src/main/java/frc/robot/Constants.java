@@ -8,18 +8,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
+import org.lasarobotics.drive.DriveWheel;
 import org.lasarobotics.drive.MAXSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
+import org.lasarobotics.vision.AprilTagCamera.Resolution;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,8 +39,6 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -51,12 +54,11 @@ import frc.robot.subsystems.vision.VisionSubsystem;
  */
 public final class Constants {
   public static class Field {
-    public static final double FIELD_WIDTH = 8.21;
-    public static final double FIELD_LENGTH = 16.54;
+    public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    public static final Translation2d CENTER = new Translation2d(FIELD_LAYOUT.getFieldLength() / 2, FIELD_LAYOUT.getFieldWidth() / 2);
 
-    public static final Translation2d CENTER = new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2);
-    public static final AprilTag BLUE_SPEAKER = VisionSubsystem.getInstance().getTag(7).get();
-    public static final AprilTag RED_SPEAKER = VisionSubsystem.getInstance().getTag(4).get();
+    public static final AprilTag BLUE_SPEAKER = getTag(7).get();
+    public static final AprilTag RED_SPEAKER = getTag(4).get();
 
     public static final PurplePathPose AMP = new PurplePathPose(
       new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
@@ -70,6 +72,15 @@ public final class Constants {
       Units.Meters.of(0.5),
       true
     );
+
+    /**
+     * Get AprilTag from field
+     * @param id Tag ID
+     * @return AprilTag matching ID
+     */
+    public static Optional<AprilTag> getTag(int id) {
+      return FIELD_LAYOUT.getTags().stream().filter((tag) -> tag.ID == id).findFirst();
+    }
   }
 
   public static class HID {
@@ -105,10 +116,11 @@ public final class Constants {
   }
 
   public static class Drive {
+    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(3.0), Units.Value.of(1.0), Units.Value.of(0.9));
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final double DRIVE_SLIP_RATIO = 0.08;
-    public static final double DRIVE_TURN_SCALAR = 60.0;
-    public static final double DRIVE_LOOKAHEAD = 6;
+    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
+    public static final double DRIVE_TURN_SCALAR = 90.0;
+    public static final double DRIVE_LOOKAHEAD = 8;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
@@ -156,21 +168,40 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(360.0 * 10).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 6).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
-      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(14.90),    Units.Degrees.of(56.0))),
-      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(14.94),    Units.Degrees.of(56.0))),
-      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.00),    Units.Degrees.of(53.0))),
-      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.00781), Units.Degrees.of(44.5))),
-      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.10964), Units.Degrees.of(37.0))),
-      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.50),    Units.Degrees.of(34.0))),
-      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(16.25786), Units.Degrees.of(30.0))),
-      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.00),    Units.Degrees.of(27.0))),
-      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.34737), Units.Degrees.of(25.5))),
-      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.40),    Units.Degrees.of(25.0))),
-      Map.entry(Units.Meters.of(5.50), new State(Units.MetersPerSecond.of(17.45),    Units.Degrees.of(24.0))),
-      Map.entry(Units.Meters.of(6.00), new State(Units.MetersPerSecond.of(17.50),    Units.Degrees.of(23.5)))
+      Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.40), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
+      Map.entry(Units.Meters.of(1.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(53.0))),
+      Map.entry(Units.Meters.of(1.60), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(51.0))),
+      Map.entry(Units.Meters.of(1.70), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(49.0))),
+      Map.entry(Units.Meters.of(1.80), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(47.0))),
+      Map.entry(Units.Meters.of(1.90), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(46.0))),
+      Map.entry(Units.Meters.of(2.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(45.0))),
+      Map.entry(Units.Meters.of(2.10), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(44.0))),
+      Map.entry(Units.Meters.of(2.20), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(43.0))),
+      Map.entry(Units.Meters.of(2.30), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(42.0))),
+      Map.entry(Units.Meters.of(2.40), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(41.0))),
+      Map.entry(Units.Meters.of(2.50), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(40.0))),
+      Map.entry(Units.Meters.of(2.60), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(39.0))),
+      Map.entry(Units.Meters.of(2.70), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(38.0))),
+      Map.entry(Units.Meters.of(2.80), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(37.0))),
+      Map.entry(Units.Meters.of(2.90), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(36.0))),
+      Map.entry(Units.Meters.of(3.10), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(35.0))),
+      Map.entry(Units.Meters.of(3.20), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(34.0))),
+      Map.entry(Units.Meters.of(3.30), new State(Units.MetersPerSecond.of(16.0), Units.Degrees.of(33.0))),
+      Map.entry(Units.Meters.of(3.40), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(3.50), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(32.0))),
+      Map.entry(Units.Meters.of(3.60), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(31.0))),
+      Map.entry(Units.Meters.of(3.70), new State(Units.MetersPerSecond.of(17.0), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(3.80), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(3.90), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(30.0))),
+      Map.entry(Units.Meters.of(4.50), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(28.0))),
+      Map.entry(Units.Meters.of(5.00), new State(Units.MetersPerSecond.of(17.5), Units.Degrees.of(25.0)))
     );
   }
 
@@ -209,16 +240,16 @@ public final class Constants {
   public static class VisionHardware {
     public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
     public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-      new Translation3d(-0.102, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), Math.toRadians(+180.0))
+      new Translation3d(-0.1016, -0.2921, 0.521),
+      new Rotation3d(0.0, Math.toRadians(-26.0), Math.toRadians(+180.0))
     );
     public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
 
     public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
     public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-      new Translation3d(0.0254, -0.279, 0.584),
-      new Rotation3d(0.0, Math.toRadians(-21.5), 0.0)
+      new Translation3d(0.0254, -0.2921, 0.584),
+      new Rotation3d(0.0, Math.toRadians(-25.6), 0.0)
     );
     public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
     public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);

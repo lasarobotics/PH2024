@@ -35,7 +35,7 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
   private final double APRILTAG_POSE_AMBIGUITY_THRESHOLD = 0.1;
   private final double POSE_MAX_HEIGHT = 0.75;
   private final Measure<Distance> MAX_TAG_DISTANCE = Units.Meters.of(5.0);
-  private final Measure<Distance> SINGLE_TO_MULTI_TAG_POSE_DELTA = Units.Meters.of(0.1);
+  private final Measure<Distance> SINGLE_TO_MULTI_TAG_POSE_DELTA = Units.Meters.of(0.5);
 
   public static class AprilTagCameraResult {
     public final EstimatedRobotPose estimatedRobotPose;
@@ -112,8 +112,8 @@ public class AprilTagCamera implements Runnable, AutoCloseable {
    */
   private boolean isEstimatedPoseValid(Pose3d pose) {
     // Make sure pose is on the field
-    if (pose.getX() < 0.0 || pose.getX() > Constants.Field.FIELD_LENGTH
-     || pose.getY() < 0.0 || pose.getY() > Constants.Field.FIELD_WIDTH) return false;
+    if (pose.getX() < 0.0 || pose.getX() > Constants.Field.FIELD_LAYOUT.getFieldLength()
+     || pose.getY() < 0.0 || pose.getY() > Constants.Field.FIELD_LAYOUT.getFieldWidth()) return false;
 
     // Make sure pose is near the floor
     if (pose.getZ() < 0.0 || pose.getZ() > POSE_MAX_HEIGHT) return false;

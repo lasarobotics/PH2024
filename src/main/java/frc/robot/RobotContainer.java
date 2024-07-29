@@ -61,7 +61,7 @@ public class RobotContainer {
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
-  private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
+  //private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
@@ -92,8 +92,6 @@ public class RobotContainer {
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_INTAKE_COMMAND_NAME, aimAndIntakeObjectCommand());
-
-    VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Bind buttons and triggers
     configureBindings();
@@ -253,7 +251,7 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getRightX(),
         () -> speakerSupplier().pose.getTranslation().toTranslation2d(),
         true,
-        true
+        false
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
     );
@@ -283,20 +281,20 @@ public class RobotContainer {
    * Command to aim at detected game object automatically, driving normally if none is detected
    * @return Command to aim at object
    */
-  private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
-      () -> PRIMARY_CONTROLLER.getLeftY(),
-      () -> PRIMARY_CONTROLLER.getLeftX(),
-      () -> PRIMARY_CONTROLLER.getRightX(),
-      () -> {
-        return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-                ? VISION_SUBSYSTEM.getObjectLocation().get()
-                : null;
-      },
-      false,
-      false
-    );
-  }
+  // private Command aimAtObject() {
+  //   return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
+  //     () -> PRIMARY_CONTROLLER.getLeftY(),
+  //     () -> PRIMARY_CONTROLLER.getLeftX(),
+  //     () -> PRIMARY_CONTROLLER.getRightX(),
+  //     () -> {
+  //       return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+  //               ? VISION_SUBSYSTEM.getObjectLocation().get()
+  //               : null;
+  //     },
+  //     false,
+  //     false
+  //   );
+  // }
 
    /**
     * Automatically aim robot heading at object, drive, and intake a game object
@@ -315,15 +313,15 @@ public class RobotContainer {
     //       false,
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
     //  Commands.parallel(
-      DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
-        () -> 0,
-        () -> {
-          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-        },
-        false,
-        false)
+      // DRIVE_SUBSYSTEM.aimAtPointCommand(
+      //   () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
+      //   () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
+      //   () -> 0,
+      //   () -> {
+      //     return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+      //   },
+      //   false,
+      //   false)
 
         //  INTAKE_SUBSYSTEM.intakeCommand(),
         //  SHOOTER_SUBSYSTEM.intakeCommand()

@@ -97,11 +97,11 @@ dependencies {
   nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
   simulationRelease wpi.sim.enableRelease()
 
-  implementation 'com.github.lasarobotics:PurpleLib:cf9cba2e03'
+  implementation 'com.github.lasarobotics:PurpleLib:90fa55fbf4'
 
   implementation 'org.apache.commons:commons-math3:3.+'
 
-  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
   testImplementation 'org.mockito:mockito-core:3.+'
 
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'

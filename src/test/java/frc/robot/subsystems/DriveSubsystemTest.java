@@ -17,18 +17,20 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.lasarobotics.drive.MAXSwerveModule;
-import org.lasarobotics.drive.MAXSwerveModule.ModuleLocation;
+import org.lasarobotics.drive.ModuleLocation;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
 import org.lasarobotics.utils.GlobalConstants;
+import org.lasarobotics.vision.AprilTagCamera;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
 
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -103,45 +105,63 @@ public class DriveSubsystemTest {
         new MAXSwerveModule.Hardware(m_lFrontDriveMotor, m_lFrontRotateMotor),
         ModuleLocation.LeftFront,
         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
         ModuleLocation.RightFront,
         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
         ModuleLocation.LeftRear,
         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
       new MAXSwerveModule(
         new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
         ModuleLocation.RightRear,
         Constants.Drive.GEAR_RATIO,
+        Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_SLIP_RATIO,
+        DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
         DriveSubsystem.DRIVE_TRACK_WIDTH,
         DriveSubsystem.AUTO_LOCK_TIME,
-        DriveSubsystem.MAX_SLIPPING_TIME,
-        DriveSubsystem.DRIVE_CURRENT_LIMIT,
-        Constants.Drive.DRIVE_SLIP_RATIO
+        DriveSubsystem.DRIVE_CURRENT_LIMIT
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_A_NAME,
+        Constants.VisionHardware.CAMERA_A_LOCATION,
+        Constants.VisionHardware.CAMERA_A_RESOLUTION,
+        Constants.VisionHardware.CAMERA_A_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+      ),
+      new AprilTagCamera(
+        Constants.VisionHardware.CAMERA_B_NAME,
+        Constants.VisionHardware.CAMERA_B_LOCATION,
+        Constants.VisionHardware.CAMERA_B_RESOLUTION,
+        Constants.VisionHardware.CAMERA_B_FOV,
+        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
       )
     );
 
@@ -173,7 +193,7 @@ public class DriveSubsystemTest {
    * @param moduleLocation Swerve module location
    * @return Spark inputs to return
    */
-  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, MAXSwerveModule.ModuleLocation moduleLocation) {
+  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, ModuleLocation moduleLocation) {
     var sparkInputs = new SparkInputsAutoLogged();
     sparkInputs.absoluteEncoderPosition = rotation.minus(moduleLocation.offset).getRadians();
 
@@ -188,10 +208,10 @@ public class DriveSubsystemTest {
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
     inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -217,10 +237,10 @@ public class DriveSubsystemTest {
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
     inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -246,10 +266,10 @@ public class DriveSubsystemTest {
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
     inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -275,10 +295,10 @@ public class DriveSubsystemTest {
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
     inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -445,10 +465,10 @@ public class DriveSubsystemTest {
     when(m_lRearDriveMotor.getInputs()).thenReturn(sparkInputs);
     when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, MAXSwerveModule.ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
 
     // Try to drive forward without traction control
     m_driveSubsystem.disableTractionControlCommand().initialize();
@@ -470,8 +490,9 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim left towards specified point")
   public void aimLeftTowardsPoint() {
     // Rotate left towards point
-    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
-    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_WIDTH), false, true).execute();
+    var initialPose = new Pose2d(Constants.Field.FIELD_LAYOUT.getFieldLength() / 2, Constants.Field.FIELD_LAYOUT.getFieldWidth() / 2, Rotation2d.fromDegrees(0.0));
+    m_driveSubsystem.resetPoseCommand(() -> initialPose).initialize();
+    m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, Constants.Field.FIELD_LAYOUT.getFieldWidth()), false, true).execute();
 
     // Verify that motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(AdditionalMatchers.gt(0.0), ArgumentMatchers.eq(ControlType.kVelocity));
@@ -489,7 +510,8 @@ public class DriveSubsystemTest {
   @DisplayName("Test if robot can aim right towards specified point")
   public void aimRightTowardsPoint() {
     // Rotate right towards point
-    m_driveSubsystem.resetPoseCommand(() -> new Pose2d(Constants.Field.FIELD_LENGTH / 2, Constants.Field.FIELD_WIDTH / 2, Rotation2d.fromDegrees(0.0))).initialize();
+    var initialPose = new Pose2d(Constants.Field.FIELD_LAYOUT.getFieldLength() / 2, Constants.Field.FIELD_LAYOUT.getFieldWidth() / 2, Rotation2d.fromDegrees(0.0));
+    m_driveSubsystem.resetPoseCommand(() -> initialPose).initialize();
     m_driveSubsystem.aimAtPointCommand(new Translation2d(0.0, 0.0), false, true).execute();
 
     // Verify that motors are being driven with expected values
