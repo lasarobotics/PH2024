@@ -29,6 +29,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;
 
 public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
@@ -92,18 +93,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     // Set field layout for sim
     m_sim.addAprilTags(m_fieldLayout);
 
-    // Setup camera pose estimation threads
-    this.m_cameraNotifier = (RobotBase.isReal())
-    ? new Notifier(() -> {
-      for (var camera : m_apriltagCameras) camera.run();
-      updateEstimatedGlobalPoses();
-    })
-    : new Notifier(() -> {
-      if (m_poseSupplier != null) m_sim.update(m_poseSupplier.get());
-      for (var camera : m_apriltagCameras) camera.run();
-      updateEstimatedGlobalPoses();
-    });
-
     // Set all cameras to primary pipeline
     for (var camera : m_apriltagCameras) camera.setPipelineIndex(0);
 
@@ -115,10 +104,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Add AprilTag cameras to sim
     for (var camera : m_apriltagCameras) m_sim.addCamera(camera.getCameraSim(), camera.getTransform());
-
-    // Start camera thread
-    m_cameraNotifier.setName(getName());
-    m_cameraNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
   }
 
   /**
@@ -127,12 +112,12 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private static Hardware initializeHardware() {
     Hardware visionHardware = new Hardware(
-      // new ObjectCamera(
-      //   Constants.VisionHardware.CAMERA_OBJECT_NAME,
-      //   Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
-      //   Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
-      //   Constants.VisionHardware.CAMERA_OBJECT_FOV
-      // ),
+      new ObjectCamera(
+        Constants.VisionHardware.CAMERA_OBJECT_NAME,
+        Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
+        Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
+        Constants.VisionHardware.CAMERA_OBJECT_FOV
+      )
       // new AprilTagCamera(
       //   Constants.VisionHardware.CAMERA_A_NAME,
       //   Constants.VisionHardware.CAMERA_A_LOCATION,

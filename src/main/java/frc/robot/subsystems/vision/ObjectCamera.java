@@ -21,7 +21,7 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
+import org.lasarobotics.vision.AprilTagCamera.Resolution;
 
 /**
  * Camera that looks for rings on the ground

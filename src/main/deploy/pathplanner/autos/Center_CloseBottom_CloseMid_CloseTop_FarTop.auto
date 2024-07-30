@@ -93,35 +93,28 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "CloseTop_FarTop"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "intake"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "CloseTop_FarTop2"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "FarTop_LeftStage"
-                      }
-                    }
-                  ]
+                  "name": "auto intake"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarTop_LeftStage"
           }
         },
         {

@@ -228,7 +228,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Set default command to track speaker angle
     setDefaultCommand(run(() -> {
       var state = getAutomaticState();
-      state = new State(SPINUP_SPEED, state.angle);
+      state = new State(ZERO_FLYWHEEL_SPEED, state.angle);
       setState(state, true);
     }));
 
@@ -325,7 +325,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset shooter state
    */
   private void resetState() {
-    setState(new State(SPINUP_SPEED, m_desiredShooterState.angle), false);
+    setState(new State(ZERO_FLYWHEEL_SPEED, m_desiredShooterState.angle), false);
   }
 
   /**

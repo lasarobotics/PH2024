@@ -61,7 +61,7 @@ public class RobotContainer {
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
-  //private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
+  private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
 
@@ -82,6 +82,8 @@ public class RobotContainer {
 
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
+
+    VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Register named commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
@@ -173,6 +175,8 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getLeftX(),
         () -> PRIMARY_CONTROLLER.getRightX()
     ));
+
+    PRIMARY_CONTROLLER.povLeft().whileTrue(aimAndIntakeObjectCommand());
   }
 
   /**
@@ -301,7 +305,7 @@ public class RobotContainer {
     * @return Command to aim robot at object, drive, and intake a game object
     */
    private Command aimAndIntakeObjectCommand() {
-     return Commands.sequence(
+    //  return Commands.sequence(
     //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
     //   DRIVE_SUBSYSTEM.aimAtPointCommand(
     //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
@@ -312,22 +316,21 @@ public class RobotContainer {
     //       },
     //       false,
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
-    //  Commands.parallel(
-      // DRIVE_SUBSYSTEM.aimAtPointCommand(
-      //   () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
-      //   () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
-      //   () -> 0,
-      //   () -> {
-      //     return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-      //   },
-      //   false,
-      //   false)
+     return Commands.parallel(
+      DRIVE_SUBSYSTEM.aimAtPointCommand(
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
+        () -> 0,
+        () -> {
+          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
+        },
+        false,
+        false),
 
-        //  INTAKE_SUBSYSTEM.intakeCommand(),
-        //  SHOOTER_SUBSYSTEM.intakeCommand()
-    //  )
-    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
-    );
+         INTAKE_SUBSYSTEM.intakeCommand(),
+         SHOOTER_SUBSYSTEM.intakeCommand()
+     )
+     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
    }
 
   /**
