@@ -157,7 +157,7 @@ public final class Constants {
         0.01,
         0.0,
         0.0,
-        0.035
+        0.0
       ),
       false,
       true,
