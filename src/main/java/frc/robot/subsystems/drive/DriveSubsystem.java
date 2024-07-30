@@ -145,7 +145,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set alliance if available
     setAlliance(alliance.get());
-  }).andThen(Commands.waitSeconds(5)).ignoringDisable(true).repeatedly();
+  }).andThen(Commands.waitSeconds(1)).ignoringDisable(true).repeatedly();
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
