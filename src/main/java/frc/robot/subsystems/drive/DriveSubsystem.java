@@ -1312,16 +1312,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   public Command testMotor() {
-    return Commands.runEnd(
+    return runEnd(
       () -> {
-        System.out.println("fefefeffef");
         m_lFrontModule.set(new SwerveModuleState(1, m_lFrontModule.getState().angle.plus(new Rotation2d(Units.Degrees.fromBaseUnits(0.1)))));
-        // m_lFrontModule.set(new SwerveModuleState(0.0001, new Rotation2d(Units.Degrees.fromBaseUnits(30))));
       },
       () -> {
         m_lFrontModule.stop();
-      },
-      this
+      }
     );
   }
 
