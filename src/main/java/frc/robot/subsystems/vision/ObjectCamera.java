@@ -21,7 +21,7 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
+import org.lasarobotics.vision.AprilTagCamera.Resolution;
 
 /**
  * Camera that looks for rings on the ground
@@ -50,7 +50,7 @@ public class ObjectCamera implements AutoCloseable {
 
 
     TargetModel targetModel = new TargetModel(0.5, 0.25);
-    Pose3d targetPose = new Pose3d(Constants.Field.FIELD_LENGTH, Constants.Field.FIELD_WIDTH / 2, TARGET_HEIGHT_METERS, new Rotation3d(0, 0, Math.PI));
+    Pose3d targetPose = new Pose3d(Constants.Field.FIELD_LAYOUT.getFieldLength(), Constants.Field.FIELD_LAYOUT.getFieldWidth() / 2, TARGET_HEIGHT_METERS, new Rotation3d(0, 0, Math.PI));
 
     m_targetSim = new VisionTargetSim(targetPose, targetModel);
 

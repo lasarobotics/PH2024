@@ -93,18 +93,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     // Set field layout for sim
     m_sim.addAprilTags(m_fieldLayout);
 
-    // Setup camera pose estimation threads
-    this.m_cameraNotifier = (RobotBase.isReal())
-    ? new Notifier(() -> {
-      for (var camera : m_apriltagCameras) camera.run();
-      updateEstimatedGlobalPoses();
-    })
-    : new Notifier(() -> {
-      if (m_poseSupplier != null) m_sim.update(m_poseSupplier.get());
-      for (var camera : m_apriltagCameras) camera.run();
-      updateEstimatedGlobalPoses();
-    });
-
     // Set all cameras to primary pipeline
     for (var camera : m_apriltagCameras) camera.setPipelineIndex(0);
 
@@ -116,10 +104,6 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Add AprilTag cameras to sim
     for (var camera : m_apriltagCameras) m_sim.addCamera(camera.getCameraSim(), camera.getTransform());
-
-    // Start camera thread
-    m_cameraNotifier.setName(getName());
-    m_cameraNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
   }
 
   /**
@@ -133,19 +117,19 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.VisionHardware.CAMERA_OBJECT_LOCATION,
         Constants.VisionHardware.CAMERA_OBJECT_RESOLUTION,
         Constants.VisionHardware.CAMERA_OBJECT_FOV
-      ),
-      new AprilTagCamera(
-        Constants.VisionHardware.CAMERA_A_NAME,
-        Constants.VisionHardware.CAMERA_A_LOCATION,
-        Constants.VisionHardware.CAMERA_A_RESOLUTION,
-        Constants.VisionHardware.CAMERA_A_FOV
-      ),
-      new AprilTagCamera(
-        Constants.VisionHardware.CAMERA_B_NAME,
-        Constants.VisionHardware.CAMERA_B_LOCATION,
-        Constants.VisionHardware.CAMERA_B_RESOLUTION,
-        Constants.VisionHardware.CAMERA_B_FOV
       )
+      // new AprilTagCamera(
+      //   Constants.VisionHardware.CAMERA_A_NAME,
+      //   Constants.VisionHardware.CAMERA_A_LOCATION,
+      //   Constants.VisionHardware.CAMERA_A_RESOLUTION,
+      //   Constants.VisionHardware.CAMERA_A_FOV
+      // ),
+      // new AprilTagCamera(
+      //   Constants.VisionHardware.CAMERA_B_NAME,
+      //   Constants.VisionHardware.CAMERA_B_LOCATION,
+      //   Constants.VisionHardware.CAMERA_B_RESOLUTION,
+      //   Constants.VisionHardware.CAMERA_B_FOV
+      // )
     );
 
     return visionHardware;

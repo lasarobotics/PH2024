@@ -113,11 +113,10 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).set(
+    verify(m_angleMotor, times(1)).smoothMotion(
       AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition),
-      ArgumentMatchers.anyDouble(),
-      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
+      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
+      ArgumentMatchers.any()
     );
   }
 
@@ -138,11 +137,10 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).set(
+    verify(m_angleMotor, times(1)).smoothMotion(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getUpperLimit(), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition),
-      ArgumentMatchers.anyDouble(),
-      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
+      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
+      ArgumentMatchers.any()
     );
   }
 
@@ -163,11 +161,10 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).set(
+    verify(m_angleMotor, times(1)).smoothMotion(
       AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getLowerLimit(), DELTA),
-      ArgumentMatchers.eq(ControlType.kPosition),
-      ArgumentMatchers.anyDouble(),
-      ArgumentMatchers.eq(ArbFFUnits.kVoltage)
+      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
+      ArgumentMatchers.any()
     );
   }
 

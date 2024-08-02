@@ -57,10 +57,12 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
   );
+
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
+
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
@@ -83,17 +85,17 @@ public class RobotContainer {
     // Configure auto builder
     DRIVE_SUBSYSTEM.configureAutoBuilder();
 
+    VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
+
     // Register named commands
     NamedCommands.registerCommand(Constants.NamedCommands.INTAKE_COMMAND_NAME, autoIntakeCommand().withTimeout(7));
     NamedCommands.registerCommand(Constants.NamedCommands.PRELOAD_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(1.1));
-    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.7));
+    NamedCommands.registerCommand(Constants.NamedCommands.SHOOT_COMMAND_NAME, SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.SPINUP_COMMAND_NAME, SHOOTER_SUBSYSTEM.spinupCommand());
     NamedCommands.registerCommand(Constants.NamedCommands.FEEDTHROUGH_COMMAND_NAME, feedThroughCommand().withTimeout(2));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_COMMAND_NAME, shootCommand().withTimeout(0.9));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_SHOOT_LONG_COMMAND_NAME, shootCommand().withTimeout(2.0));
     NamedCommands.registerCommand(Constants.NamedCommands.AUTO_INTAKE_COMMAND_NAME, aimAndIntakeObjectCommand());
-
-    VISION_SUBSYSTEM.setPoseSupplier(() -> DRIVE_SUBSYSTEM.getPose());
 
     // Bind buttons and triggers
     configureBindings();
@@ -111,7 +113,7 @@ public class RobotContainer {
 
     // Right trigger button - aim and shoot at speaker, shooting only if speaker tag is visible and robot is in range
     // Click DPAD down to override and shoot now
-    // PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
+    PRIMARY_CONTROLLER.rightTrigger().whileTrue(shootCommand(() -> PRIMARY_CONTROLLER.b().getAsBoolean()));
 
     // Right bumper button - amp score, also use for outtake
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
@@ -170,11 +172,13 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
     // DPAD down - auto defense
-    // PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
-    //     () -> PRIMARY_CONTROLLER.getLeftY(),
-    //     () -> PRIMARY_CONTROLLER.getLeftX(),
-    //     () -> PRIMARY_CONTROLLER.getRightX()
-    // ));
+    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+        () -> PRIMARY_CONTROLLER.getLeftY(),
+        () -> PRIMARY_CONTROLLER.getLeftX(),
+        () -> PRIMARY_CONTROLLER.getRightX()
+    ));
+
+    PRIMARY_CONTROLLER.povLeft().whileTrue(aimAndIntakeObjectCommand());
   }
 
   /**
@@ -253,7 +257,7 @@ public class RobotContainer {
         () -> PRIMARY_CONTROLLER.getRightX(),
         () -> speakerSupplier().pose.getTranslation().toTranslation2d(),
         true,
-        true
+        false
       ),
       SHOOTER_SUBSYSTEM.shootCommand(() -> DRIVE_SUBSYSTEM.isAimed(), override)
     );
@@ -283,27 +287,27 @@ public class RobotContainer {
    * Command to aim at detected game object automatically, driving normally if none is detected
    * @return Command to aim at object
    */
-  private Command aimAtObject() {
-    return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
-      () -> PRIMARY_CONTROLLER.getLeftY(),
-      () -> PRIMARY_CONTROLLER.getLeftX(),
-      () -> PRIMARY_CONTROLLER.getRightX(),
-      () -> {
-        return VISION_SUBSYSTEM.getObjectLocation().isPresent()
-                ? VISION_SUBSYSTEM.getObjectLocation().get()
-                : null;
-      },
-      false,
-      false
-    );
-  }
+  // private Command aimAtObject() {
+  //   return DRIVE_SUBSYSTEM.aimAtPointRobotCentric(
+  //     () -> PRIMARY_CONTROLLER.getLeftY(),
+  //     () -> PRIMARY_CONTROLLER.getLeftX(),
+  //     () -> PRIMARY_CONTROLLER.getRightX(),
+  //     () -> {
+  //       return VISION_SUBSYSTEM.getObjectLocation().isPresent()
+  //               ? VISION_SUBSYSTEM.getObjectLocation().get()
+  //               : null;
+  //     },
+  //     false,
+  //     false
+  //   );
+  // }
 
    /**
     * Automatically aim robot heading at object, drive, and intake a game object
     * @return Command to aim robot at object, drive, and intake a game object
     */
    private Command aimAndIntakeObjectCommand() {
-     return Commands.sequence(
+    //  return Commands.sequence(
     //   DRIVE_SUBSYSTEM.driveCommand(() -> 0, () -> 0, () -> 0).withTimeout(0.1),
     //   DRIVE_SUBSYSTEM.aimAtPointCommand(
     //       () -> VISION_SUBSYSTEM.getObjectLocation().isPresent() ? PRIMARY_CONTROLLER.getLeftY() : 0,
@@ -314,22 +318,21 @@ public class RobotContainer {
     //       },
     //       false,
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
-    //  Commands.parallel(
+     return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * 0.75,
-        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * 0.75,
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * (VISION_SUBSYSTEM.objectIsVisible() ? 0.75 : 0),
+        () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * (VISION_SUBSYSTEM.objectIsVisible() ? 0.75 : 0),
         () -> 0,
         () -> {
           return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
         },
         false,
-        false)
+        false),
 
-        //  INTAKE_SUBSYSTEM.intakeCommand(),
-        //  SHOOTER_SUBSYSTEM.intakeCommand()
-    //  )
-    //  .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent())
-    );
+         INTAKE_SUBSYSTEM.intakeCommand(),
+         SHOOTER_SUBSYSTEM.intakeCommand()
+     )
+     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
    }
 
   /**
