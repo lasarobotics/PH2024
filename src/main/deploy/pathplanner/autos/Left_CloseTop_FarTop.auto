@@ -72,6 +72,12 @@
           "data": {
             "name": "auto shoot"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "dummy path"
+          }
         }
       ]
     }
