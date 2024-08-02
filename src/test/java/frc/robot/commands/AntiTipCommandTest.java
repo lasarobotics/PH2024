@@ -41,6 +41,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.AbsoluteValueMatcher;
+import frc.robot.AngleMatcher;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
@@ -232,13 +233,13 @@ public class AntiTipCommandTest {
 
     // Verify motors are being driven with expected values
     verify(m_lFrontDriveMotor, times(1)).set(doubleThat(m_matchLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lFrontRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(Math.PI, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lFrontRotateMotor, times(1)).set(doubleThat(new AngleMatcher(AngleMatcher.Units.RADIANS, Math.PI, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
     verify(m_rFrontDriveMotor, times(1)).set(doubleThat(m_matchLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rFrontRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rFrontRotateMotor, times(1)).set(doubleThat(new AngleMatcher(AngleMatcher.Units.RADIANS, Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
     verify(m_lRearDriveMotor, times(1)).set(doubleThat(m_matchLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_lRearRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_lRearRotateMotor, times(1)).set(doubleThat(new AngleMatcher(AngleMatcher.Units.RADIANS, Math.PI / 2, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
     verify(m_rRearDriveMotor, times(1)).set(doubleThat(m_matchLinearVelocity), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_rRearRotateMotor, times(1)).set(doubleThat(new AbsoluteValueMatcher(0.0, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
+    verify(m_rRearRotateMotor, times(1)).set(doubleThat(new AngleMatcher(AngleMatcher.Units.RADIANS, 0.0, DELTA)), ArgumentMatchers.eq(ControlType.kPosition));
   }
 
   @Test

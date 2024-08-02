@@ -57,10 +57,12 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
   );
+
   private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
     IntakeSubsystem.initializeHardware(),
     Constants.Intake.ROLLER_VELOCITY
   );
+
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
