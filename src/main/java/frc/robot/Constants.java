@@ -120,7 +120,7 @@ public final class Constants {
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
     public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
     public static final double DRIVE_TURN_SCALAR = 90.0;
-    public static final double DRIVE_LOOKAHEAD = 8;
+    public static final double DRIVE_LOOKAHEAD = 10;
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
@@ -153,11 +153,11 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        3.0,
+        2.9,
         0.01,
         0.0,
         0.0,
-        0.0
+        Units.Degrees.of(1.0).in(Units.Radians)
       ),
       false,
       true,
@@ -168,7 +168,7 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(360.0 * 8).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 6).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),

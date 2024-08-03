@@ -373,6 +373,7 @@ public class RobotContainer {
   private void autoModeChooser() {
     m_automodeChooser.setDefaultOption("Do nothing", Commands.none());
     m_automodeChooser.addOption("Simple", new SimpleAuto(DRIVE_SUBSYSTEM));
+    m_automodeChooser.addOption("Just shoot", SHOOTER_SUBSYSTEM.shootSpeakerCommand().withTimeout(5));
     m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSETOP_CLOSEMID_CLOSEBOTTOM_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.CENTER_CLOSEBOTTOM_CLOSEMID_CLOSETOP_FARTOP_AUTO_NAME.getSecond()).getCommand());
     m_automodeChooser.addOption(Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME.getFirst(), new AutoTrajectory(DRIVE_SUBSYSTEM, Constants.AutoNames.RIGHT_FARBOTTOM_FARMIDBOTTOM_AUTO_NAME.getSecond()).getCommand());
