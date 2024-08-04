@@ -318,21 +318,18 @@ public class RobotContainer {
     //       },
     //       false,
     //       false).until(() -> VISION_SUBSYSTEM.shouldIntake()),
-     return Commands.parallel(
+    return Commands.parallel(
       DRIVE_SUBSYSTEM.aimAtPointCommand(
         () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getCos() * (VISION_SUBSYSTEM.objectIsVisible() ? 0.75 : 0),
         () -> -DRIVE_SUBSYSTEM.getPose().getRotation().plus(new Rotation2d(VISION_SUBSYSTEM.getObjectHeading().orElse(Units.Degrees.of(0)))).getSin() * (VISION_SUBSYSTEM.objectIsVisible() ? 0.75 : 0),
         () -> 0,
-        () -> {
-          return VISION_SUBSYSTEM.getObjectLocation().orElse(null);
-        },
+        () -> VISION_SUBSYSTEM.getObjectLocation().orElse(null),
         false,
-        false),
-
-         INTAKE_SUBSYSTEM.intakeCommand(),
-         SHOOTER_SUBSYSTEM.intakeCommand()
-     )
-     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
+        false
+      ),
+      INTAKE_SUBSYSTEM.intakeCommand(),
+      SHOOTER_SUBSYSTEM.intakeCommand()
+     ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
    }
 
   /**
