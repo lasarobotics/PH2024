@@ -4,13 +4,13 @@
 
 package frc.robot;
 
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,8 +22,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.autonomous.SimpleAuto;
 import frc.robot.subsystems.drive.AutoTrajectory;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -57,12 +55,8 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
   );
-
-  private static final IntakeSubsystem INTAKE_SUBSYSTEM = new IntakeSubsystem(
-    IntakeSubsystem.initializeHardware(),
-    Constants.Intake.ROLLER_VELOCITY
-  );
-
+  private static final IntakeSubsystem.Proxy INTAKE_PROXY = new IntakeSubsystem.Proxy(UUID.randomUUID());
+  private static final IntakeSubsystem INTAKE_SUBSYSTEM = INTAKE_PROXY.getInstance();
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);
@@ -119,7 +113,8 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.rightBumper().whileTrue(SHOOTER_SUBSYSTEM.scoreAmpCommand());
 
     // Left trigger button - intake game piece
-    PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
+    //PRIMARY_CONTROLLER.leftTrigger().whileTrue(intakeCommand());
+
 
     // Left bumper button - intake game piece from source
     PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
@@ -157,13 +152,15 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
 
     // B Button - pass note
-    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+    //PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+    INTAKE_SUBSYSTEM.bindIntakeButton(PRIMARY_CONTROLLER.b());
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
 
     // Y button - spit out note
-    PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
+    //PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
+    INTAKE_SUBSYSTEM.bindOuttakeButton(PRIMARY_CONTROLLER.y());
 
     // DPAD up - shoot manual
     PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
@@ -205,7 +202,7 @@ public class RobotContainer {
   private Command intakeCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
+      //INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     );
   }
@@ -227,7 +224,7 @@ public class RobotContainer {
    */
   private Command autoIntakeCommand() {
     return Commands.parallel(
-      INTAKE_SUBSYSTEM.intakeCommand(),
+      //INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.intakeCommand()
     ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
   }
@@ -239,7 +236,7 @@ public class RobotContainer {
   private Command outtakeCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      INTAKE_SUBSYSTEM.outtakeCommand(),
+      //INTAKE_SUBSYSTEM.outtakeCommand(),
       SHOOTER_SUBSYSTEM.outtakeCommand()
     );
   }
@@ -278,7 +275,7 @@ public class RobotContainer {
   private Command feedThroughCommand() {
     return Commands.parallel(
       rumbleCommand(),
-      INTAKE_SUBSYSTEM.intakeCommand(),
+      //INTAKE_SUBSYSTEM.intakeCommand(),
       SHOOTER_SUBSYSTEM.feedThroughCommand(() -> DRIVE_SUBSYSTEM.isAimed())
     );
   }
@@ -325,11 +322,12 @@ public class RobotContainer {
         () -> 0,
         () -> VISION_SUBSYSTEM.getObjectLocation().orElse(null),
         false,
-        false
-      ),
-      INTAKE_SUBSYSTEM.intakeCommand(),
-      SHOOTER_SUBSYSTEM.intakeCommand()
-     ).until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
+        false),
+
+         //INTAKE_SUBSYSTEM.intakeCommand(),
+         SHOOTER_SUBSYSTEM.intakeCommand()
+     )
+     .until(() -> SHOOTER_SUBSYSTEM.isObjectPresent());
    }
 
   /**
