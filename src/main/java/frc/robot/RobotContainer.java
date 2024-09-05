@@ -55,8 +55,7 @@ public class RobotContainer {
     DRIVE_SUBSYSTEM::getPose,
     () -> speakerSupplier()
   );
-  private static final IntakeSubsystem.Proxy INTAKE_PROXY = new IntakeSubsystem.Proxy(UUID.randomUUID());
-  private static final IntakeSubsystem INTAKE_SUBSYSTEM = INTAKE_PROXY.getInstance();
+  private static final IntakeSubsystem INTAKE_SUBSYSTEM = IntakeSubsystem.getInstance(IntakeSubsystem.initializeHardware());
   private static final VisionSubsystem VISION_SUBSYSTEM = VisionSubsystem.getInstance();
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(Constants.HID.PRIMARY_CONTROLLER_PORT);

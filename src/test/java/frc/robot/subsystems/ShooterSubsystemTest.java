@@ -25,7 +25,6 @@ import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
 import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Angle;

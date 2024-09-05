@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import java.util.UUID;
-
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.littletonrobotics.junction.Logger;
@@ -22,28 +20,12 @@ import frc.robot.Constants;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.SystemState;
 
-public class IntakeSubsystem extends SubsystemBase implements StateMachine {
+public class IntakeSubsystem extends SubsystemBase implements StateMachine, AutoCloseable {
   public static class Hardware {
     private Spark rollerMotor;
 
     public Hardware(Spark rollerMotor) {
       this.rollerMotor = rollerMotor;
-    }
-  }
-
-  public static class Proxy {
-    private final UUID m_uuid;
-
-    public Proxy(UUID uuid) {
-      m_uuid = uuid;
-    }
-
-    public IntakeSubsystem getInstance() {
-      return IntakeSubsystem.getInstance(m_uuid);
-    }
-
-    public IntakeSubsystem getInstance(Hardware intakeHardware) {
-      return IntakeSubsystem.getInstance(m_uuid, intakeHardware);
     }
   }
 
@@ -94,14 +76,12 @@ public class IntakeSubsystem extends SubsystemBase implements StateMachine {
 
   private SystemState m_currentState;
 
-  private final UUID m_uuid;
   private final Measure<Dimensionless> m_rollerVelocity;
 
   private final Spark m_rollerMotor;
 
   /** Creates a new IntakeSubsystem. */
-  private IntakeSubsystem(UUID uuid, Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
-    this.m_uuid = uuid;
+  private IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
     this.m_rollerVelocity = rollerVelocity;
     this.m_currentState = State.IDLE;
@@ -115,26 +95,25 @@ public class IntakeSubsystem extends SubsystemBase implements StateMachine {
     setDefaultCommand();
   }
 
-  private static IntakeSubsystem getInstance(UUID uuid) {
-    return getInstance(uuid, IntakeSubsystem.initializeHardware());
-  }
-
-  private static IntakeSubsystem getInstance(UUID uuid, Hardware intakeHardware) {
+  /**
+   * Get an instance of IntakeSubsystem
+   * <p>
+   * Will only return an instance once, subsequent calls will return null.
+   * @param intakeHardware Necessary hardware for this subsystem
+   * @return Subsystem instance
+   */
+  public static IntakeSubsystem getInstance(Hardware intakeHardware) {
     if (s_instance == null) {
-      s_instance = new IntakeSubsystem(uuid, intakeHardware, Constants.Intake.ROLLER_VELOCITY);
-    }
-
-    if (!uuid.equals(s_instance.m_uuid)) throw new IllegalAccessError("Invalid UUID!");
-
-    return s_instance;
+      s_instance = new IntakeSubsystem(intakeHardware, Constants.Intake.ROLLER_VELOCITY);
+      return s_instance;
+    } else return null;
   }
 
   /**
    * Initialize hardware devices for intake subsystem
-   *
    * @return Hardware object containing all necessary devices for this subsystem
    */
-  private static Hardware initializeHardware() {
+  public static Hardware initializeHardware() {
     Hardware intakeHardware = new Hardware(
       new Spark(Constants.IntakeHardware.ROLLER_MOTOR_ID, MotorKind.NEO_VORTEX)
     );
@@ -193,5 +172,11 @@ public class IntakeSubsystem extends SubsystemBase implements StateMachine {
    */
   public void bindOuttakeButton(Trigger outtakeButton) {
     s_outtakeButton = outtakeButton;
+  }
+
+  @Override
+  public void close() {
+    m_rollerMotor.close();
+    s_instance = null;
   }
 }
