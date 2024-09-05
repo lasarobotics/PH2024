@@ -43,7 +43,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -107,7 +106,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
+  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(20.0);
   public static final Measure<Velocity<Angle>> VISION_ANGULAR_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(720.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
@@ -115,12 +114,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   // Other settings
   private static final double TIP_THRESHOLD = 35.0;
-  private static final double TOLERANCE = 1.5;
+  private static final double TOLERANCE = 2.5;
   private static final double BALANCED_THRESHOLD = 10.0;
-  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.5;
+  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(12.0, 0.0, 0.1, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
 
   private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI / 2);
@@ -416,11 +414,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param inertialVelocity Current inertial velocity
    * @param rotateRate Current robot rotate rate
    */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
-    m_lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    m_rFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    m_lRearModule.set(moduleStates, inertialVelocity, rotateRate);
-    m_rRearModule.set(moduleStates, inertialVelocity, rotateRate);
+  private void setSwerveModules(SwerveModuleState[] moduleStates, ChassisSpeeds inertialSpeeds) {
+    m_lFrontModule.set(moduleStates, inertialSpeeds);
+    m_rFrontModule.set(moduleStates, inertialSpeeds);
+    m_lRearModule.set(moduleStates, inertialSpeeds);
+    m_rRearModule.set(moduleStates, inertialSpeeds);
     Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
@@ -435,8 +433,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
                      Measure<Velocity<Distance>> xRequest,
                      Measure<Velocity<Distance>> yRequest,
                      Measure<Velocity<Angle>> rotateRequest,
-                     Measure<Velocity<Distance>> inertialVelocity,
-                     Measure<Velocity<Angle>> rotateRate) {
+                     ChassisSpeeds inertialSpeeds) {
     // Get requested chassis speeds, correcting for second order kinematics
     m_desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -453,7 +450,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
     // Set modules to calculated states, WITH traction control
-    setSwerveModules(moduleStates, inertialVelocity, rotateRate);
+    setSwerveModules(moduleStates, inertialSpeeds);
   }
 
   /**
@@ -496,51 +493,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       m_lRearModule.getState(),
       m_rRearModule.getState()
     };
-  }
-
-  /**
-   * Get current module positions
-   * @return Array of swerve module positions
-   */
-  private SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-      m_lFrontModule.getPosition(),
-      m_rFrontModule.getPosition(),
-      m_lRearModule.getPosition(),
-      m_rRearModule.getPosition()
-    };
-  }
-
-  /**
-   * Update robot pose
-   */
-  private void updatePose() {
-    // Save previous pose
-    m_previousPose = getPose();
-
-    // Update pose based on odometry
-    //m_poseEstimator.update(getRotation2d(), getModulePositions());
-
-    // Update current heading
-    m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
-
-    // Get estimated poses from VisionSubsystem
-    var apriltagCameraResults = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (apriltagCameraResults.isEmpty()) return;
-
-    // Exit if robot is spinning too fast
-    if (getRotateRate().gt(VISION_ANGULAR_VELOCITY_THRESHOLD)) return;
-
-    // Add vision measurements to pose estimator
-    // for (var result : apriltagCameraResults) {
-    //   m_poseEstimator.addVisionMeasurement(
-    //     result.estimatedRobotPose.estimatedPose.toPose2d(),
-    //     result.estimatedRobotPose.timestampSeconds,
-    //     result.visionMeasurementStdDevs
-    //   );
-    // }
   }
 
   /**
@@ -602,8 +554,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         velocityOutput.times(Math.cos(moveDirection)),
         velocityOutput.times(Math.sin(moveDirection)),
         rotateOutput,
-        getInertialVelocity(),
-        getRotateRate()
+        getInertialSpeeds()
       );
       return;
     }
@@ -651,8 +602,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       velocityOutput.times(Math.cos(moveDirection)),
       velocityOutput.times(Math.sin(moveDirection)),
       rotateOutput,
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialSpeeds()
     );
   }
 
@@ -684,8 +634,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       velocityOutput.times(Math.cos(moveDirection)),
       velocityOutput.times(Math.sin(moveDirection)),
       rotateOutput,
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialSpeeds()
     );
   }
 
@@ -722,8 +671,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         velocityOutput.times(Math.cos(moveDirection)),
         velocityOutput.times(Math.sin(moveDirection)),
         rotateOutput,
-        getInertialVelocity(),
-        getRotateRate()
+        getInertialSpeeds()
       );
       return;
     }
@@ -738,8 +686,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       velocityOutput,
       DRIVE_MAX_LINEAR_SPEED.times(objectYaw.get().in(Units.Degrees) / Constants.VisionHardware.CAMERA_OBJECT_FOV.getDegrees()),
       rotateOutput,
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialSpeeds()
     );
   }
 
@@ -755,8 +702,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       Units.MetersPerSecond.of(0),
       Units.MetersPerSecond.of(0),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialSpeeds()
     );
   }
 
@@ -793,8 +739,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       velocityOutput.times(Math.cos(moveDirection)),
       velocityOutput.times(Math.sin(moveDirection)),
       rotateOutput,
-      getInertialVelocity(),
-      getRotateRate()
+      getInertialSpeeds()
     );
   }
 
@@ -869,7 +814,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
 
     if (RobotBase.isSimulation()) return;
-    //updatePose();
     smartDashboard();
     logOutputs();
   }
@@ -1256,13 +1200,19 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Get inertial velocity of robot
+   * Get inertial velocity of robot in X axis
    * @return Inertial velocity of robot in m/s
    */
-  public Measure<Velocity<Distance>> getInertialVelocity() {
-    return Units.MetersPerSecond.of(
-      Math.hypot(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond), m_navx.getInputs().yVelocity.in(Units.MetersPerSecond))
-    );
+  public Measure<Velocity<Distance>> getInertialVelocityX() {
+    return m_navx.getInputs().xVelocity;
+  }
+
+  /**
+   * Get inertial velocity of robot in X axis
+   * @return Inertial velocity of robot in m/s
+   */
+  public Measure<Velocity<Distance>> getInertialVelocityY() {
+    return m_navx.getInputs().yVelocity;
   }
 
   /**
@@ -1311,15 +1261,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     return m_navx.getInputs().rotation2d;
   }
 
-  public Command testMotor() {
-    return runEnd(
-      () -> {
-        m_lFrontModule.set(new SwerveModuleState(1, m_lFrontModule.getState().angle.plus(new Rotation2d(Units.Degrees.fromBaseUnits(0.1)))));
-      },
-      () -> {
-        m_lFrontModule.stop();
-      }
-    );
+  /**
+   * Get inertial velocity of robot
+   * @return Inertial chassis speeds of robot from IMU
+   */
+  public ChassisSpeeds getInertialSpeeds() {
+    return new ChassisSpeeds(getInertialVelocityX(), getInertialVelocityY(), getRotateRate());
   }
 
   @Override

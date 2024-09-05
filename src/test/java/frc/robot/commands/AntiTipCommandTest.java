@@ -94,9 +94,13 @@ public class AntiTipCommandTest {
     when(m_rRearRotateMotor.getInputs()).thenReturn(sparkInputs);
 
     when(m_lFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_lFrontRotateMotor.getKind()).thenReturn(MotorKind.NEO_550);
     when(m_rFrontDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_rFrontRotateMotor.getKind()).thenReturn(MotorKind.NEO_550);
     when(m_lRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_lRearRotateMotor.getKind()).thenReturn(MotorKind.NEO_550);
     when(m_rRearDriveMotor.getKind()).thenReturn(MotorKind.NEO);
+    when(m_rRearRotateMotor.getKind()).thenReturn(MotorKind.NEO_550);
 
     when(m_lFrontDriveMotor.getID()).thenReturn(Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID);
     when(m_lFrontRotateMotor.getID()).thenReturn(Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID);
