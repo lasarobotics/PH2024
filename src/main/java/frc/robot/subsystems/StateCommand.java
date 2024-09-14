@@ -27,6 +27,7 @@ public class StateCommand extends Command {
   private final Supplier<SystemState> m_selector;
   private final StateMachine m_machine;
   private SystemState m_selectedState;
+  private SystemState m_nextState;
 
   /**
    * Creates a new SelectCommand.
@@ -44,6 +45,7 @@ public class StateCommand extends Command {
   @Override
   public void initialize() {
     m_selectedState = m_selector.get();
+    m_nextState = m_selectedState;
     m_selectedState.initialize();
   }
 
@@ -55,17 +57,13 @@ public class StateCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     m_selectedState.end(interrupted);
+    m_machine.setState(m_nextState);
   }
 
   @Override
   public boolean isFinished() {
-    var nextState = m_selectedState.nextState();
-    if (!nextState.equals(m_selectedState)) {
-      m_machine.setState(nextState);
-      return true;
-    }
-
-    return false;
+    m_nextState = m_selectedState.nextState();
+    return !m_nextState.equals(m_selectedState);
   }
 
   @Override
