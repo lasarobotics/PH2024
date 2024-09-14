@@ -179,7 +179,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialize PID
     m_topFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
     m_bottomFlywheelMotor.initializeSparkPID(m_flywheelConfig, FeedbackSensor.NEO_ENCODER);
-    m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.THROUGH_BORE_ENCODER, true, true);
+    m_angleMotor.initializeSparkPID(m_angleConfig, FeedbackSensor.ABSOLUTE_ENCODER, true, true);
 
     // Set flywheel conversion factor
     var topFlywheelConversionFactor = topFlywheelDiameter.in(Units.Meters) * Math.PI;
@@ -191,8 +191,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Set angle adjust conversion factor
     var angleConversionFactor = Math.PI * 2;
-    m_angleMotor.setPositionConversionFactor(FeedbackSensor.THROUGH_BORE_ENCODER, angleConversionFactor);
-    m_angleMotor.setVelocityConversionFactor(FeedbackSensor.THROUGH_BORE_ENCODER, angleConversionFactor / 60);
+    m_angleMotor.setPositionConversionFactor(FeedbackSensor.ABSOLUTE_ENCODER, angleConversionFactor);
+    m_angleMotor.setVelocityConversionFactor(FeedbackSensor.ABSOLUTE_ENCODER, angleConversionFactor / 60);
 
     // Set idle mode
     m_topFlywheelMotor.setIdleMode(IdleMode.kCoast);

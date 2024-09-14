@@ -204,7 +204,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
                         double turnScalar, double deadband, double lookAhead) {
-    setSubsystem(getClass().getSimpleName());
     DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
     DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
     this.m_navx = drivetrainHardware.navx;
