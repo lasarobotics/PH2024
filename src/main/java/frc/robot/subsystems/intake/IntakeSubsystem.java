@@ -14,13 +14,12 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.SystemState;
 
-public class IntakeSubsystem extends SubsystemBase implements StateMachine, AutoCloseable {
+public class IntakeSubsystem extends StateMachine implements AutoCloseable {
   public static class Hardware {
     private Spark rollerMotor;
 
@@ -74,25 +73,21 @@ public class IntakeSubsystem extends SubsystemBase implements StateMachine, Auto
   private static Trigger s_intakeButton = new Trigger(() -> false);
   private static Trigger s_outtakeButton = new Trigger(() -> false);
 
-  private SystemState m_currentState;
-
   private final Measure<Dimensionless> m_rollerVelocity;
 
   private final Spark m_rollerMotor;
 
   /** Creates a new IntakeSubsystem. */
   private IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
+    super(State.IDLE);
     this.m_rollerMotor = intakeHardware.rollerMotor;
     this.m_rollerVelocity = rollerVelocity;
-    this.m_currentState = State.IDLE;
 
     // Reset motor to defaults
     m_rollerMotor.restoreFactoryDefaults();
 
     // Set idle mode
     m_rollerMotor.setIdleMode(IdleMode.kCoast);
-
-    setDefaultCommand();
   }
 
   /**
@@ -143,19 +138,7 @@ public class IntakeSubsystem extends SubsystemBase implements StateMachine, Auto
 
   @Override
   public void periodic() {
-    Logger.recordOutput(getName() + "/State", m_currentState.toString());
-  }
-
-
-  @Override
-  public SystemState getState() {
-    return m_currentState;
-  }
-
-
-  @Override
-  public void setState(SystemState state) {
-    m_currentState = state;
+    Logger.recordOutput(getName() + "/State", getState().toString());
   }
 
   /**

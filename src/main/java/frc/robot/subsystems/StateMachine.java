@@ -1,29 +1,33 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public interface StateMachine extends Subsystem {
+public abstract class StateMachine extends SubsystemBase {
+  private SystemState m_currentState;
+
   /**
-   * Get current system state
-   * @return Current system state
+   * Create a state machine
+   * @param initialState Starting state for state machine
    */
-  public SystemState getState();
+  public StateMachine(SystemState initialState) {
+    this.m_currentState = initialState;
+    setDefaultCommand(new StateCommand(this::getState, this).repeatedly());
+  }
 
   /**
    * Iterate system to next state
    * <p>
    * ONLY TO BE USED BY {@link StateCommand#end(boolean)}
-   * <p>
-   * DO NOT CALL THIS METHOD!
    */
-  public void setState(SystemState state);
+  void setState(SystemState state) {
+    m_currentState = state;
+  }
 
   /**
-   * Sets the default command for this subsystem using the state machine architecture
-   * @param commands List of state commands
+   * Get current system state
+   * @return Current system state
    */
-  public default void setDefaultCommand() {
-    // Set default command to a repeating select command, with the state getter as the selector
-    setDefaultCommand(new StateCommand(() -> getState(), this).repeatedly());
+  public SystemState getState() {
+    return m_currentState;
   }
 }
