@@ -52,25 +52,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
-  public static class Hardware {
-    private Spark topFlywheelMotor;
-    private Spark bottomFlywheelMotor;
-    private Spark angleMotor;
-    private Spark indexerMotor;
-    private LEDStrip ledStrip;
 
-    public Hardware(Spark lSlaveMotor,
-                    Spark rMasterMotor,
-                    Spark angleMotor,
-                    Spark indexerMotor,
-                    LEDStrip ledStrip) {
-      this.topFlywheelMotor = lSlaveMotor;
-      this.bottomFlywheelMotor = rMasterMotor;
-      this.angleMotor = angleMotor;
-      this.indexerMotor = indexerMotor;
-      this.ledStrip = ledStrip;
-    }
-  }
+  public static record Hardware(Spark topFlywheelMotor,
+                                Spark bottomFlywheelMotor,
+                                Spark angleMotor,
+                                Spark indexerMotor,
+                                LEDStrip ledStrip) {}
 
   /** Shooter state */
   public static class State {
@@ -159,7 +146,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param targetSupplier Speaker target supplier
    */
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
-                          TrapezoidProfile.Constraints angleConstraint, Measure<Distance> topFlywheelDiameter, Measure<Distance> bottomFlywheelDiameter,
+                          TrapezoidProfile.Constraints angleConstraint,
+                          Measure<Distance> topFlywheelDiameter,
+                          Measure<Distance> bottomFlywheelDiameter,
                           List<Entry<Measure<Distance>, State>> shooterMap,
                           Supplier<Pose2d> poseSupplier, Supplier<AprilTag> targetSupplier) {
     setSubsystem(getClass().getSimpleName());

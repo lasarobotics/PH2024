@@ -20,13 +20,7 @@ import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.SystemState;
 
 public class IntakeSubsystem extends StateMachine implements AutoCloseable {
-  public static class Hardware {
-    private Spark rollerMotor;
-
-    public Hardware(Spark rollerMotor) {
-      this.rollerMotor = rollerMotor;
-    }
-  }
+  public static record Hardware(Spark rollerMotor) {}
 
   public enum State implements SystemState {
     IDLE {

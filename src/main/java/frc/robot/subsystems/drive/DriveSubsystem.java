@@ -72,31 +72,14 @@ import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
-  public static class Hardware {
-    NavX2 navx;
-    MAXSwerveModule lFrontModule;
-    MAXSwerveModule rFrontModule;
-    MAXSwerveModule lRearModule;
-    MAXSwerveModule rRearModule;
-    AprilTagCamera frontCamera;
-    AprilTagCamera rearCamera;
 
-    public Hardware(NavX2 navx,
-                    MAXSwerveModule lFrontModule,
-                    MAXSwerveModule rFrontModule,
-                    MAXSwerveModule lRearModule,
-                    MAXSwerveModule rRearModule,
-                    AprilTagCamera frontCamera,
-                    AprilTagCamera rearCamera) {
-      this.navx = navx;
-      this.lFrontModule = lFrontModule;
-      this.rFrontModule = rFrontModule;
-      this.lRearModule = lRearModule;
-      this.rRearModule = rRearModule;
-      this.frontCamera = frontCamera;
-      this.rearCamera = rearCamera;
-    }
-  }
+  public static record Hardware(NavX2 navx,
+                                MAXSwerveModule lFrontModule,
+                                MAXSwerveModule rFrontModule,
+                                MAXSwerveModule lRearModule,
+                                MAXSwerveModule rRearModule,
+                                AprilTagCamera frontCamera,
+                                AprilTagCamera rearCamera) {}
 
   // Drive specs
   public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.5588);

@@ -18,15 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class ClimberSubsystem extends SubsystemBase {
-  public static class Hardware {
-    private Spark lClimberMotor;
-    private Spark rClimberMotor;
-
-    public Hardware(Spark lClimberMotor, Spark rClimberMotor) {
-      this.lClimberMotor = lClimberMotor;
-      this.rClimberMotor = rClimberMotor;
-    }
-  }
+  public static record Hardware(Spark lClimberMotor, Spark rClimberMotor) {}
 
   private Spark m_lClimberMotor;
   private Spark m_rClimberMotor;
