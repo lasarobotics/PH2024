@@ -16,7 +16,7 @@ public abstract class StateMachine extends SubsystemBase {
   }
 
   /**
-   * Iterate system to next state
+   * Set system state
    * <p>
    * ONLY TO BE USED BY {@link StateCommand#end(boolean)}
    */
