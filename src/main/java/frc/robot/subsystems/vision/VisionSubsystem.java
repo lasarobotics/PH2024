@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.VisionSystemSim;
 
@@ -27,7 +26,6 @@ import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;

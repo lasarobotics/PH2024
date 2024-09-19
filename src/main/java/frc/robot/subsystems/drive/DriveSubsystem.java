@@ -5,7 +5,6 @@
 package frc.robot.subsystems.drive;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -19,6 +18,7 @@ import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.SwervePoseEstimatorService;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
+import org.lasarobotics.hardware.kauailabs.NavX2Sim;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
@@ -106,7 +106,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
   public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(20.0);
   public static final Measure<Velocity<Angle>> VISION_ANGULAR_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(720.0);
   public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
   public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
@@ -114,12 +113,13 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   // Other settings
   private static final double TIP_THRESHOLD = 35.0;
-  private static final double TOLERANCE = 2.5;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(12.0, 0.0, 0.1, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
+  private static final Measure<Angle> ROTATE_TOLERANCE = Units.Degrees.of(2.5);
+  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(20.0);
 
   private static final Measure<Angle> BLUE_AMP_DIRECTION = Units.Radians.of(-Math.PI / 2);
   private static final Measure<Angle> BLUE_SOURCE_DIRECTION = Units.Radians.of(-1.060 + Math.PI);
@@ -173,6 +173,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private MAXSwerveModule m_lRearModule;
   private MAXSwerveModule m_rRearModule;
 
+  private NavX2Sim m_navxSim;
 
   private ControlCentricity m_controlCentricity;
   private ChassisSpeeds m_desiredChassisSpeeds;
@@ -211,6 +212,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_rFrontModule = drivetrainHardware.rFrontModule;
     this.m_lRearModule = drivetrainHardware.lRearModule;
     this.m_rRearModule = drivetrainHardware.rRearModule;
+    this.m_navxSim = new NavX2Sim();
     this.m_controlCentricity = controlCentricity;
     this.m_throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.m_rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
@@ -230,8 +232,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     m_navx.reset();
 
     // Setup rotate PID
-    m_rotatePIDController.setTolerance(TOLERANCE);
-    m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
+    m_rotatePIDController.setTolerance(ROTATE_TOLERANCE, AIM_VELOCITY_THRESHOLD);
+    m_rotatePIDController.setSetpoint(getAngle());
 
     // Define drivetrain kinematics
     m_kinematics = new SwerveDriveKinematics(m_lFrontModule.getModuleCoordinate(),
@@ -266,11 +268,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Setup auto-aim PID controller
     m_autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
     m_autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
-    m_autoAimPIDControllerFront.setTolerance(TOLERANCE);
+    m_autoAimPIDControllerFront.setTolerance(ROTATE_TOLERANCE.in(Units.Degrees));
     m_autoAimPIDControllerFront.setIZone(AUTO_AIM_PID.kIZone);
     m_autoAimPIDControllerBack = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
     m_autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
-    m_autoAimPIDControllerBack.setTolerance(TOLERANCE);
+    m_autoAimPIDControllerBack.setTolerance(ROTATE_TOLERANCE.in(Units.Degrees));
     m_autoAimPIDControllerBack.setIZone(AUTO_AIM_PID.kIZone);
 
     // Initialise other variables
@@ -690,22 +692,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Aim robot by given angle
-   * @param angle Desired angle in degrees
-   */
-  private void aimAtAngle(double angle) {
-    double rotateOutput = m_rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
-
-    drive(
-      m_controlCentricity,
-      Units.MetersPerSecond.of(0),
-      Units.MetersPerSecond.of(0),
-      Units.DegreesPerSecond.of(rotateOutput),
-      getInertialSpeeds()
-    );
-  }
-
-  /**
    * Call this repeatedly to drive using PID during teleoperation
    * @param xRequest Desired X axis (forward) speed [-1.0, +1.0]
    * @param yRequest Desired Y axis (sideways) speed [-1.0, +1.0]
@@ -820,17 +806,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run in simulation
-    double randomNoise = ThreadLocalRandom.current().nextDouble(0.9, 1.0);
-    m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
-    m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
-    m_navx.getInputs().yawRate = Units.RadiansPerSecond.of(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise);
+    m_navxSim.update(getPose().getRotation(), m_desiredChassisSpeeds, m_controlCentricity);
 
-    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
-    double angle = m_navx.getSimAngle() - Math.toDegrees(m_desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise) * GlobalConstants.ROBOT_LOOP_PERIOD
-                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
-    m_navx.setSimAngle(angle);
-
-    //updatePose();
     smartDashboard();
     logOutputs();
   }
@@ -976,15 +953,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Change robot aim by desired angle
-   * @param angleRequestSupplier
-   * @return Command that aims robot
-   */
-  public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
-    return run(() -> aimAtAngle(angleRequestSupplier.getAsDouble()));
-  }
-
-  /**
    *
    * @param xRequestSupplier
    * @param yRequestSupplier
@@ -1118,7 +1086,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * Reset DriveSubsystem turn PID
    */
   public void resetRotatePID() {
-    m_rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
+    m_rotatePIDController.setSetpoint(getAngle());
     m_rotatePIDController.reset();
   }
 
