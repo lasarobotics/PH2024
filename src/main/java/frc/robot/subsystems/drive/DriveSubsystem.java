@@ -38,6 +38,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -167,6 +168,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Field2d m_field;
   private Alliance m_currentAlliance;
 
+  private LinearFilter m_inertialVelocityXFilter;
+  private LinearFilter m_inertialVelocityYFilter;
+
   private boolean m_isTractionControlEnabled = true;
   private boolean m_autoAimFront = false;
   private boolean m_autoAimBack = false;
@@ -209,6 +213,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
     this.m_currentAlliance = Alliance.Blue;
     this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
+    this.m_inertialVelocityXFilter = LinearFilter.singlePoleIIR(0.1, GlobalConstants.ROBOT_LOOP_PERIOD);
+    this.m_inertialVelocityXFilter = LinearFilter.singlePoleIIR(0.1, GlobalConstants.ROBOT_LOOP_PERIOD);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -780,6 +786,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Update current heading
     m_currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
+
+    // Filter NavX2 velocity
+    m_navx.getInputs().xVelocity = Units.MetersPerSecond.of(m_inertialVelocityXFilter.calculate(m_navx.getInputs().xVelocity.in(Units.MetersPerSecond)));
+    m_navx.getInputs().yVelocity = Units.MetersPerSecond.of(m_inertialVelocityYFilter.calculate(m_navx.getInputs().yVelocity.in(Units.MetersPerSecond)));
 
     if (RobotBase.isSimulation()) return;
     smartDashboard();
