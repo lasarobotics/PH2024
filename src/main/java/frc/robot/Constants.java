@@ -153,8 +153,8 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        2.6,
-        0.01,
+        0.2,
+        0.0,
         0.0,
         0.0,
         Units.Degrees.of(1.0).in(Units.Radians)

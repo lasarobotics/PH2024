@@ -27,6 +27,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,7 +41,6 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -81,7 +81,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
-  private static final Measure<Voltage> ANGLE_FF = Units.Volts.of(0.15);
+  private static final ArmFeedforward ANGLE_FF = new ArmFeedforward(0.2, 0.41, 0.97, 0.01);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
@@ -285,7 +285,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     // Set angle
-    m_angleMotor.smoothMotion(m_desiredShooterState.angle.in(Units.Radians), m_angleConstraint, motionState -> ANGLE_FF.in(Units.Volts));
+    m_angleMotor.smoothMotion(
+      m_desiredShooterState.angle.in(Units.Radians),
+      m_angleConstraint,
+      motionState -> ANGLE_FF.calculate(motionState.position, motionState.velocity)
+    );
   }
 
   /**
