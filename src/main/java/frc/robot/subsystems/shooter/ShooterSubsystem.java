@@ -94,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
-  private static final ArmFeedforward ANGLE_FF = new ArmFeedforward(0.2, 0.41, 0.97, 0.01);
+  private static final ArmFeedforward ANGLE_FF = new ArmFeedforward(0.2, 0.2, 0.3);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
@@ -114,9 +114,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final Measure<Current> NOTE_SHOT_CURRENT_THRESHOLD = Units.Amps.of(10.0);
   private final Measure<Time> NOTE_SHOT_TIME_THRESHOLD = Units.Seconds.of(0.1);
-  private final Measure<Time> READY_TIME_THRESHOLD = Units.Seconds.of(GlobalConstants.ROBOT_LOOP_PERIOD * 2);
+  private final Measure<Time> READY_TIME_THRESHOLD = Units.Seconds.of(0.2);
   private final Debouncer NOTE_SHOT_DETECTOR = new Debouncer(NOTE_SHOT_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kRising);
-  private final Debouncer READY_DEBOUNCER = new Debouncer(READY_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kBoth);
+  private final Debouncer READY_DEBOUNCER = new Debouncer(READY_TIME_THRESHOLD.in(Units.Seconds), DebounceType.kFalling);
 
   private Spark m_topFlywheelMotor;
   private Spark m_bottomFlywheelMotor;

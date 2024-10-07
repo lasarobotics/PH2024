@@ -116,9 +116,9 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(3.0), Units.Value.of(0.8), Units.Value.of(0.7));
+    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(2.0), Units.Value.of(0.5), Units.Value.of(0.4));
     public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
+    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(5.0);
     public static final double DRIVE_TURN_SCALAR = 90.0;
     public static final double DRIVE_LOOKAHEAD = 10;
 
@@ -153,8 +153,8 @@ public final class Constants {
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
       new PIDConstants(
-        0.2,
-        0.0,
+        2.0,
+        0.015,
         0.0,
         0.0,
         Units.Degrees.of(1.0).in(Units.Radians)
@@ -168,7 +168,7 @@ public final class Constants {
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
       Units.DegreesPerSecond.of(360.0 * 8),
-      Units.DegreesPerSecond.of(360.0 * 12).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0 * 24).per(Units.Second)
     );
     public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),

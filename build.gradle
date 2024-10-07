@@ -97,9 +97,11 @@ dependencies {
   nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
   simulationRelease wpi.sim.enableRelease()
 
-  implementation 'com.github.lasarobotics:PurpleLib:172583a8d6'
+  implementation 'com.github.lasarobotics:PurpleLib:a627bf3e66'
 
   implementation 'org.apache.commons:commons-math3:3.+'
+  implementation 'org.tinylog:tinylog-api:2.7.0'
+  implementation 'org.tinylog:tinylog-impl:2.7.0'
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.+'
   testImplementation 'org.mockito:mockito-core:3.+'
