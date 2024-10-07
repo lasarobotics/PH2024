@@ -214,7 +214,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_currentAlliance = Alliance.Blue;
     this.m_allianceCorrection = GlobalConstants.ROTATION_ZERO;
     this.m_inertialVelocityXFilter = LinearFilter.singlePoleIIR(0.1, GlobalConstants.ROBOT_LOOP_PERIOD);
-    this.m_inertialVelocityXFilter = LinearFilter.singlePoleIIR(0.1, GlobalConstants.ROBOT_LOOP_PERIOD);
+    this.m_inertialVelocityYFilter = LinearFilter.singlePoleIIR(0.1, GlobalConstants.ROBOT_LOOP_PERIOD);
 
     // Calibrate and reset navX
     while (m_navx.isCalibrating()) stop();
@@ -295,7 +295,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Hardware object containing all necessary devices for this subsystem
    */
   public static Hardware initializeHardware() {
-    NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID, GlobalConstants.ROBOT_LOOP_HZ * 2);
+    NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
     MAXSwerveModule lFrontModule = new MAXSwerveModule(
       MAXSwerveModule.initializeHardware(
