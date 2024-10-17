@@ -284,6 +284,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // Initialise other variables
     m_previousPose = new Pose2d();
     m_currentHeading = new Rotation2d();
+    m_navxSim = new NavX2Sim();
 
     // Initalise PurplePathClient
     m_purplePathClient = new PurplePathClient(this);
@@ -818,6 +819,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // This method will be called once per scheduler run in simulation
     m_navxSim.update(getPose().getRotation(), m_desiredChassisSpeeds, m_controlCentricity);
 
+    //updatePose();
     smartDashboard();
     logOutputs();
   }
