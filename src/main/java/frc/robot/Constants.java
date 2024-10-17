@@ -61,13 +61,13 @@ public final class Constants {
     public static final AprilTag RED_SPEAKER = getTag(4).get();
 
     public static final PurplePathPose AMP = new PurplePathPose(
-      new Pose2d(Units.Meters.of(1.85), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
+      new Pose2d(Units.Meters.of(2), Units.Meters.of(7), Rotation2d.fromDegrees(-90.0)),
       new Pose2d(Units.Meters.of(14.66), Units.Meters.of(7.77), Rotation2d.fromDegrees(-90.0)),
       Units.Meters.of(0.5),
       true
     );
     public static final PurplePathPose SOURCE = new PurplePathPose(
-      new Pose2d(Units.Meters.of(15.48), Units.Meters.of(0.84), Rotation2d.fromDegrees(+120.00)),
+      new Pose2d(Units.Meters.of(15.5), Units.Meters.of(1.5), Rotation2d.fromDegrees(+120.00)),
       new Pose2d(Units.Meters.of(1.07), Units.Meters.of(0.82), Rotation2d.fromDegrees(+60.0)),
       Units.Meters.of(0.5),
       true

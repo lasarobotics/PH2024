@@ -4,18 +4,10 @@
 
 package frc.robot.subsystems.drive;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
-import org.lasarobotics.utils.GlobalConstants;
-import org.lasarobotics.utils.JSONObject;
+import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.commands.FollowPathHolonomic;
@@ -27,6 +19,10 @@ import com.pathplanner.lib.path.RotationTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArraySubscriber;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,16 +38,22 @@ public class PurplePathClient {
   private final String URI;
 
   private DriveSubsystem m_driveSubsystem;
-  private HttpURLConnection m_serverConnection;
   private boolean m_isConnected;
   private boolean m_connectivityCheckEnabled;
   private Notifier m_periodicNotifier;
+  private NetworkTableInstance m_purplePath;
+  private StructArraySubscriber<Translation2d> m_pathSub;
+  private StructPublisher<Translation2d> m_startPub;
+  private StructPublisher<Translation2d> m_endPub;
+
+  private NetworkTable m_NetworkTable;
+
 
   public PurplePathClient(DriveSubsystem driveSubsystem) {
-    this.m_driveSubsystem = driveSubsystem;
     this.m_isConnected = false;
-    this.m_connectivityCheckEnabled = true;
-
+    this.m_driveSubsystem = driveSubsystem;
+    this.m_purplePath = NetworkTableInstance.getDefault();
+    this.m_purplePath.startServer();
     // Set URI
     if (RobotBase.isSimulation()) URI = "http://localhost:5000/";
     else URI = "http://purplebox.local:5000/";
@@ -59,41 +61,19 @@ public class PurplePathClient {
     // Initialize connectivity check thread
     this.m_periodicNotifier = new Notifier(() -> periodic());
 
-    // Start connectivity check thread
-    m_periodicNotifier.setName(getClass().getSimpleName());
-    m_periodicNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
-  }
+    Translation2d[] temp = {new Translation2d(0.0, 0.0), new Translation2d(0.0, 0.0)};
 
-  /**
-   * Send JSON request to PurplePath server
-   * @param jsonRequest JSON array string of start and goal point
-   * @return PurplePath server response
-   * @throws IOException
-   */
-  private String sendRequest(String jsonRequest) throws IOException {
-    String jsonResponse = "";
+    m_NetworkTable = m_purplePath.getTable("SmartDashboard");
 
-    // Define the server endpoint to send the HTTP request to
-    m_serverConnection = (HttpURLConnection)new URL(URI).openConnection();
+    m_pathSub = m_NetworkTable.getStructArrayTopic("Path", Translation2d.struct).subscribe(temp);
+    m_startPub = m_NetworkTable.getStructTopic("Start Point", Translation2d.struct).publish();
+    m_endPub = m_NetworkTable.getStructTopic("End Point", Translation2d.struct).publish();
 
-    // Indicate that we want to write to the HTTP request body
-    m_serverConnection.setDoOutput(true);
-    m_serverConnection.setRequestMethod("POST");
-    m_serverConnection.setRequestProperty("Content-Type", "application/json");
+    m_startPub.setDefault(new Translation2d(0.0, 0.0));
+    m_endPub.setDefault(new Translation2d(0.0, 0.0));
 
-    // Writing the post data to the HTTP request body
-    BufferedWriter httpRequestBodyWriter = new BufferedWriter(new OutputStreamWriter(m_serverConnection.getOutputStream()));
-    httpRequestBodyWriter.write(jsonRequest);
-    httpRequestBodyWriter.close();
+    PurpleManager.addCallback(this::periodic);
 
-    // Reading from the HTTP response body
-    Scanner httpResponseScanner = new Scanner(m_serverConnection.getInputStream());
-    while (httpResponseScanner.hasNextLine()) jsonResponse += httpResponseScanner.nextLine();
-    m_isConnected = m_serverConnection.getResponseCode() == 200;
-    httpResponseScanner.close();
-
-    // Return response
-    return jsonResponse;
   }
 
   /**
@@ -132,32 +112,18 @@ public class PurplePathClient {
     // Check if robot is close to goal
     boolean isClose = start.getTranslation().getDistance(goalPose.getTranslation()) < finalApproachDistance;
 
-    // Construct JSON request
-    String jsonRequest = isClose ? JSONObject.writePointList(Arrays.asList(start.getTranslation(), goalPose.getTranslation()))
-                                 : JSONObject.writePointList(Arrays.asList(start.getTranslation(), finalApproachPose.getTranslation()));
+    m_endPub.set(goalPose.getTranslation());
 
-    // Send pathfinding request and get response
-    String jsonResponse = "";
-    try {
-      jsonResponse = sendRequest(jsonRequest);
-    } catch (IOException e) {
-      System.out.println(e.getMessage());
-      m_isConnected = false;
-      return Commands.none();
-    }
+    Translation2d points[] = m_pathSub.get();
 
-    // Attempt to read path from response
-    List<Translation2d> points = JSONObject.readPointList(jsonResponse);
-
-    // If path isn't there, return specified command
-    if (points == null || points.size() < 2) return parallelCommand;
+    System.out.println(points);
 
     // Convert to PathPoint list
     double distance = 0.0;
     List<PathPoint> waypoints = new ArrayList<>();
-    for (int i = 0; i < points.size(); i++) {
-      waypoints.add(new PathPoint(points.get(i), new RotationTarget(0.0, goalPose.getRotation())));
-      distance += points.get(i).getDistance(points.get(MathUtil.clamp(i - 1, 0, points.size())));
+    for (int i = 0; i < points.length; i++) {
+      waypoints.add(new PathPoint(points[i], new RotationTarget(0.0, goalPose.getRotation())));
+      distance += points[i].getDistance(points[(MathUtil.clamp(i - 1, 0, points.length))]);
     }
 
     // Generate path
@@ -178,8 +144,11 @@ public class PurplePathClient {
     Logger.recordOutput(getClass().getSimpleName() + FINAL_APPROACH_POSE_LOG_ENTRY, finalApproachPose);
 
     // Return path following command
+
+    System.out.println("this works");
+
     return isClose ? getPathPlannerCommand(path).alongWith(parallelCommand)
-                   : Commands.sequence(
+                    : Commands.sequence(
                       getPathPlannerCommand(path),
                       getPathPlannerCommand(finalApproachPath).alongWith(parallelCommand)
                      );
@@ -188,15 +157,11 @@ public class PurplePathClient {
   /**
    * Call this method periodically
    */
-  private void periodic() {
-    if (!m_connectivityCheckEnabled) return;
-    if (m_isConnected) return;
+  public void periodic() {
+    Translation2d start_point = m_driveSubsystem.getPose().getTranslation();
+    m_startPub.set(start_point);
+    m_isConnected = m_purplePath.isConnected();
 
-    try {
-      sendRequest(JSONObject.writePointList(Arrays.asList(new Translation2d(), new Translation2d())));
-    } catch (IOException e) {
-      m_isConnected = false;
-    }
   }
 
   /**

@@ -125,22 +125,22 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.leftBumper().whileTrue(sourceIntakeCommand());
 
     // A button - go to amp and score
-    // PRIMARY_CONTROLLER.a().whileTrue(
-      // DRIVE_SUBSYSTEM.goToPoseCommand(
-        // Constants.Field.AMP,
-        // SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
-        // SHOOTER_SUBSYSTEM.scoreAmpCommand()
-      // )
-    // );
+    PRIMARY_CONTROLLER.a().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.AMP,
+        SHOOTER_SUBSYSTEM.prepareForAmpCommand(),
+        SHOOTER_SUBSYSTEM.scoreAmpCommand()
+      )
+    );
 
     // B button - go to source and intake game piece
-    // PRIMARY_CONTROLLER.b().whileTrue(
-    //   DRIVE_SUBSYSTEM.goToPoseCommand(
-    //     Constants.Field.SOURCE,
-    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
-    //     SHOOTER_SUBSYSTEM.sourceIntakeCommand()
-    //   )
-    // );
+    PRIMARY_CONTROLLER.b().whileTrue(
+      DRIVE_SUBSYSTEM.goToPoseCommand(
+        Constants.Field.SOURCE,
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand(),
+        SHOOTER_SUBSYSTEM.sourceIntakeCommand()
+      )
+    );
 
     // Right stick click - snap robot to the nearest cardinal direction
     PRIMARY_CONTROLLER.rightStick().whileTrue(
