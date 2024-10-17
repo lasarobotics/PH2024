@@ -97,7 +97,7 @@ dependencies {
   nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
   simulationRelease wpi.sim.enableRelease()
 
-  implementation 'com.github.lasarobotics:PurpleLib:87a27eedff'
+  implementation 'com.github.lasarobotics:PurpleLib:8669113639'
 
   implementation 'org.apache.commons:commons-math3:3.+'
 
