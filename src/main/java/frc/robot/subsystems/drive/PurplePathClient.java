@@ -113,9 +113,14 @@ public class PurplePathClient {
     boolean isClose = start.getTranslation().getDistance(goalPose.getTranslation()) < finalApproachDistance;
 
     m_endPub.set(goalPose.getTranslation());
-
     Translation2d points[] = m_pathSub.get();
-
+    if(points.length != 2){
+    while(points[points.length-1].getX() != goalPose.getTranslation().getX() && points[points.length-1].getY() != goalPose.getTranslation().getY()){
+      points = m_pathSub.get();
+    } 
+  } else {
+    return parallelCommand;
+  }
     System.out.println(points);
 
     // Convert to PathPoint list
@@ -144,8 +149,6 @@ public class PurplePathClient {
     Logger.recordOutput(getClass().getSimpleName() + FINAL_APPROACH_POSE_LOG_ENTRY, finalApproachPose);
 
     // Return path following command
-
-    System.out.println("this works");
 
     return isClose ? getPathPlannerCommand(path).alongWith(parallelCommand)
                     : Commands.sequence(

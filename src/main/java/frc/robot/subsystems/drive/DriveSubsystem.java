@@ -225,7 +225,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
-      new ReplanningConfig(),
+      new ReplanningConfig(false, false),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
     this.m_currentAlliance = Alliance.Blue;
