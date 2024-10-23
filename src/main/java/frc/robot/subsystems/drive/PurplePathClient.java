@@ -7,6 +7,7 @@ package frc.robot.subsystems.drive;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.Precision;
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.Logger;
 
@@ -23,8 +24,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArraySubscriber;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,19 +33,17 @@ public class PurplePathClient {
   private final String GOAL_POSE_LOG_ENTRY = "/GoalPose";
   private final String FINAL_APPROACH_POSE_LOG_ENTRY = "/FinalApproachPose";
   private final double FINAL_APPROACH_SPEED_FUDGE_FACTOR = 0.6;
-
-  private final String URI;
+  private final double EPSILON = 5e-3;
+  private final Translation2d[] PATH_SUBSCRIBER_DEFAULT_VALUE = { new Translation2d(0.0, 0.0), new Translation2d(0.0, 0.0) };
 
   private DriveSubsystem m_driveSubsystem;
   private boolean m_isConnected;
-  private boolean m_connectivityCheckEnabled;
-  private Notifier m_periodicNotifier;
   private NetworkTableInstance m_purplePath;
   private StructArraySubscriber<Translation2d> m_pathSub;
   private StructPublisher<Translation2d> m_startPub;
   private StructPublisher<Translation2d> m_endPub;
 
-  private NetworkTable m_NetworkTable;
+  private NetworkTable m_networkTable;
 
 
   public PurplePathClient(DriveSubsystem driveSubsystem) {
@@ -54,26 +51,17 @@ public class PurplePathClient {
     this.m_driveSubsystem = driveSubsystem;
     this.m_purplePath = NetworkTableInstance.getDefault();
     this.m_purplePath.startServer();
-    // Set URI
-    if (RobotBase.isSimulation()) URI = "http://localhost:5000/";
-    else URI = "http://purplebox.local:5000/";
 
-    // Initialize connectivity check thread
-    this.m_periodicNotifier = new Notifier(() -> periodic());
+    m_networkTable = m_purplePath.getTable("SmartDashboard");
 
-    Translation2d[] temp = {new Translation2d(0.0, 0.0), new Translation2d(0.0, 0.0)};
-
-    m_NetworkTable = m_purplePath.getTable("SmartDashboard");
-
-    m_pathSub = m_NetworkTable.getStructArrayTopic("Path", Translation2d.struct).subscribe(temp);
-    m_startPub = m_NetworkTable.getStructTopic("Start Point", Translation2d.struct).publish();
-    m_endPub = m_NetworkTable.getStructTopic("End Point", Translation2d.struct).publish();
+    m_pathSub = m_networkTable.getStructArrayTopic("Path", Translation2d.struct).subscribe(PATH_SUBSCRIBER_DEFAULT_VALUE);
+    m_startPub = m_networkTable.getStructTopic("Start Point", Translation2d.struct).publish();
+    m_endPub = m_networkTable.getStructTopic("End Point", Translation2d.struct).publish();
 
     m_startPub.setDefault(new Translation2d(0.0, 0.0));
     m_endPub.setDefault(new Translation2d(0.0, 0.0));
 
     PurpleManager.addCallback(this::periodic);
-
   }
 
   /**
@@ -107,21 +95,25 @@ public class PurplePathClient {
     PathPlannerPath finalApproachPath = goal.getFinalApproachPath();
     double finalApproachDistance = goal.getFinalApproachDistance();
 
+    // Exit if anything is null
     if (goalPose == null || finalApproachPose == null || finalApproachPath == null) return parallelCommand;
 
     // Check if robot is close to goal
     boolean isClose = start.getTranslation().getDistance(goalPose.getTranslation()) < finalApproachDistance;
 
-    m_endPub.set(goalPose.getTranslation());
-    Translation2d points[] = m_pathSub.get();
-    if(points.length != 2){
-    while(points[points.length-1].getX() != goalPose.getTranslation().getX() && points[points.length-1].getY() != goalPose.getTranslation().getY()){
-      points = m_pathSub.get();
-    } 
-  } else {
-    return parallelCommand;
-  }
-    System.out.println(points);
+    // Select destination pose based on if robot is close to end goal
+    var selectedPose = isClose ? goalPose : finalApproachPose;
+
+    // Publish selected destination
+    m_endPub.set(selectedPose.getTranslation());
+
+    // Retrieve path
+    var points = m_pathSub.get();
+    if (points.length != 2) {
+        while (!Precision.equals(points[points.length - 1].getX(), selectedPose.getTranslation().getX(), EPSILON)
+               && !Precision.equals(points[points.length - 1].getY(), selectedPose.getTranslation().getY(), EPSILON))
+          points = m_pathSub.get();
+    } else return parallelCommand;
 
     // Convert to PathPoint list
     double distance = 0.0;
@@ -149,7 +141,6 @@ public class PurplePathClient {
     Logger.recordOutput(getClass().getSimpleName() + FINAL_APPROACH_POSE_LOG_ENTRY, finalApproachPose);
 
     // Return path following command
-
     return isClose ? getPathPlannerCommand(path).alongWith(parallelCommand)
                     : Commands.sequence(
                       getPathPlannerCommand(path),
@@ -161,10 +152,9 @@ public class PurplePathClient {
    * Call this method periodically
    */
   public void periodic() {
-    Translation2d start_point = m_driveSubsystem.getPose().getTranslation();
-    m_startPub.set(start_point);
+    var startPoint = m_driveSubsystem.getPose().getTranslation();
+    m_startPub.set(startPoint);
     m_isConnected = m_purplePath.isConnected();
-
   }
 
   /**
@@ -192,19 +182,5 @@ public class PurplePathClient {
    */
   public boolean isConnected() {
     return m_isConnected;
-  }
-
-  /**
-   * Enable connectivity check
-   */
-  public void enableConnectivityCheck() {
-    m_connectivityCheckEnabled = true;
-  }
-
-  /**
-   * Disable connectivity check
-   */
-  public void disableConnectivityCheck() {
-    m_connectivityCheckEnabled = false;
   }
 }

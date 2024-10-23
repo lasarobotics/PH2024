@@ -225,7 +225,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
       DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
       m_lFrontModule.getModuleCoordinate().getNorm(),
-      new ReplanningConfig(false, false),
+      new ReplanningConfig(),
       GlobalConstants.ROBOT_LOOP_PERIOD
     );
     this.m_currentAlliance = Alliance.Blue;
@@ -1118,7 +1118,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public PathConstraints getPathConstraints() {
     return new PathConstraints(
       3.0,
-      1.0,
+      DRIVE_AUTO_ACCELERATION.in(Units.MetersPerSecondPerSecond),
       DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
       DRIVE_ROTATE_ACCELERATION.magnitude()
     );
