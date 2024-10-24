@@ -76,9 +76,9 @@ public class RobotContainer {
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
       DRIVE_SUBSYSTEM.driveCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX()
+        () -> PRIMARY_CONTROLLER.getLeftY() * 0.5,
+        () -> PRIMARY_CONTROLLER.getLeftX() * 0.5,
+        () -> PRIMARY_CONTROLLER.getRightX() * 0.5
       )
     );
 
@@ -154,10 +154,10 @@ public class RobotContainer {
     // PRIMARY_CONTROLLER.b().whileTrue(aimAtObject());
 
     // A Button - shoot note into speaker from podium
-    PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
+    // PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
 
     // B Button - pass note
-    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+    // PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());
@@ -166,19 +166,19 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.y().whileTrue(outtakeCommand());
 
     // DPAD up - shoot manual
-    PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
+    // PRIMARY_CONTROLLER.povUp().whileTrue(SHOOTER_SUBSYSTEM.shootManualCommand(() -> dashboardStateSupplier()));
 
     // DPAD right - feed a note through
     PRIMARY_CONTROLLER.povRight().whileTrue(feedThroughCommand());
 
-    // DPAD down - auto defense
-    PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
-        () -> PRIMARY_CONTROLLER.getLeftY(),
-        () -> PRIMARY_CONTROLLER.getLeftX(),
-        () -> PRIMARY_CONTROLLER.getRightX()
-    ));
+    // // DPAD down - auto defense
+    // PRIMARY_CONTROLLER.povDown().whileTrue(DRIVE_SUBSYSTEM.autoDefenseCommand(
+    //     () -> PRIMARY_CONTROLLER.getLeftY(),
+    //     () -> PRIMARY_CONTROLLER.getLeftX(),
+    //     () -> PRIMARY_CONTROLLER.getRightX()
+    // ));
 
-    PRIMARY_CONTROLLER.povLeft().whileTrue(aimAndIntakeObjectCommand());
+    // PRIMARY_CONTROLLER.povLeft().whileTrue(aimAndIntakeObjectCommand());
   }
 
   /**

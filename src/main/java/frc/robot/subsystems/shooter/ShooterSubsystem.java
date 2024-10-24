@@ -79,9 +79,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     public static final State AMP_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
     public static final State AMP_SCORE_STATE = new State(Units.MetersPerSecond.of(+3.1), Units.Degrees.of(55.0));
     public static final State SPEAKER_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(55.0));
+    public static final State SPEAKER_SCORE_STATE = new State(Units.MetersPerSecond.of(+8.0), Units.Degrees.of(55.0));
     public static final State SOURCE_PREP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(55.0));
-    public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-10.0), Units.Degrees.of(55.0));
+    public static final State SOURCE_INTAKE_STATE = new State(Units.MetersPerSecond.of(-7.0), Units.Degrees.of(55.0));
     public static final State PASSING_STATE = new State(Units.MetersPerSecond.of(+15.0), Units.Degrees.of(45.0));
     public static final State PODIUM_SCORE_STATE = new State(Units.MetersPerSecond.of(+16.25786), Units.Degrees.of(36));
     public static final State TEST_STOP_STATE = new State(ZERO_FLYWHEEL_SPEED, Units.Degrees.of(30.0));
@@ -94,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
   public static final Measure<Velocity<Distance>> ZERO_FLYWHEEL_SPEED = Units.MetersPerSecond.of(0.0);
-  private static final ArmFeedforward ANGLE_FF = new ArmFeedforward(0.2, 0.2, 0.3);
+  private static final ArmFeedforward ANGLE_FF = new ArmFeedforward(0.2, 0.1, 0.2);
   private static final Measure<Current> FLYWHEEL_CURRENT_LIMIT = Units.Amps.of(80.0);
   private static final Measure<Current> ANGLE_MOTOR_CURRENT_LIMIT = Units.Amps.of(50.0);
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
