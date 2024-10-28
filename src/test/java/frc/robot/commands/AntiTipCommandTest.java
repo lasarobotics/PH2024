@@ -18,8 +18,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.lasarobotics.drive.MAXSwerveModule;
-import org.lasarobotics.drive.ModuleLocation;
+import org.lasarobotics.drive.swerve.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.ModuleLocation;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
@@ -223,7 +223,7 @@ public class AntiTipCommandTest {
   public void execute() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.rollAngle = Units.Degrees.of(+35.0);
+    inputs.rollAngle.mut_replace(Units.Degrees.of(+35.0));
 
     when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
     when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
@@ -252,7 +252,7 @@ public class AntiTipCommandTest {
   public void isFinished() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.rollAngle = Units.Degrees.of(+4.0);
+    inputs.rollAngle.mut_replace(Units.Degrees.of(+4.0));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 

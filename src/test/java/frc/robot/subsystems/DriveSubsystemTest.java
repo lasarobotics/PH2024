@@ -17,8 +17,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.lasarobotics.drive.MAXSwerveModule;
-import org.lasarobotics.drive.ModuleLocation;
+import org.lasarobotics.drive.swerve.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.ModuleLocation;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
@@ -219,7 +219,7 @@ public class DriveSubsystemTest {
   public void forward() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
+    inputs.yVelocity.mut_replace(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED);
 
     when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
     when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
@@ -248,7 +248,7 @@ public class DriveSubsystemTest {
   public void reverse() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
+    inputs.yVelocity.mut_replace(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate());
 
     when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
     when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
@@ -277,7 +277,7 @@ public class DriveSubsystemTest {
   public void strafeLeft() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
+    inputs.xVelocity.mut_replace(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED);
 
     when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
     when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
@@ -306,7 +306,7 @@ public class DriveSubsystemTest {
   public void strafeRight() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
+    inputs.xVelocity.mut_replace(m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate());
 
     when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
     when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
@@ -335,7 +335,7 @@ public class DriveSubsystemTest {
   public void rotateLeft() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawRate = Units.DegreesPerSecond.of(90.0);
+    inputs.yawRate.mut_replace(Units.DegreesPerSecond.of(90.0));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -359,7 +359,7 @@ public class DriveSubsystemTest {
   public void rotateRight() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawRate = Units.DegreesPerSecond.of(90.0);
+    inputs.yawRate.mut_replace(Units.DegreesPerSecond.of(90.0));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -419,7 +419,7 @@ public class DriveSubsystemTest {
   public void maintainOrientation() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawAngle = Units.Degrees.of(+30.0);
+    inputs.yawAngle.mut_replace(Units.Degrees.of(+30.0));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
