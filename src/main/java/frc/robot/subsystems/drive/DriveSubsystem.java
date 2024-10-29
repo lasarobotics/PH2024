@@ -1235,7 +1235,10 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Inertial chassis speeds of robot from IMU
    */
   public ChassisSpeeds getInertialSpeeds() {
-    return new ChassisSpeeds(getInertialVelocityX(), getInertialVelocityY(), getRotateRate());
+    return ChassisSpeeds.fromFieldRelativeSpeeds(
+      new ChassisSpeeds(getInertialVelocityX(), getInertialVelocityY(), getRotateRate()),
+      getRotation2d()
+    );
   }
 
   @Override
