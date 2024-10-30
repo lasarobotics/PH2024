@@ -31,7 +31,10 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
@@ -100,6 +103,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
   private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
   private static final String MECHANISM_2D_LOG_ENTRY = "/Mechanism2d";
+  private static final String SHOOTER_3D_POSE = "/Pose3d";
   private static final String SHOOTER_STATE_FLYWHEEL_SPEED = "/CurrentState/FlywheelSpeed";
   private static final String SHOOTER_STATE_ANGLE_DEGREES = "/CurrentState/Angle";
   private static final String SHOOTER_DESIRED_STATE_ANGLE = "/DesiredState/Angle";
@@ -140,6 +144,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TrapezoidProfile m_simShooterAngleMotionProfile;
   private TrapezoidProfile.State m_simShooterAngleState;
   private Measure<Distance> m_targetDistance;
+  private Pose3d m_shooter3d;
 
   /**
    * Create an instance of ShooterSubsystem
@@ -422,6 +427,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Log outputs
     var currentState = getCurrentState();
     Logger.recordOutput(getName() + MECHANISM_2D_LOG_ENTRY, m_mechanism2d);
+    Logger.recordOutput(getName() + SHOOTER_3D_POSE, m_shooter3d);
     Logger.recordOutput(getName() + SHOOTER_STATE_FLYWHEEL_SPEED, currentState.speed.in(Units.MetersPerSecond));
     Logger.recordOutput(getName() + SHOOTER_STATE_ANGLE_DEGREES, currentState.angle.in(Units.Degrees));
     Logger.recordOutput(getName() + SHOOTER_DESIRED_STATE_ANGLE, m_desiredShooterState.angle.in(Units.Degrees));
@@ -444,6 +450,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       new TrapezoidProfile.State(m_desiredShooterState.angle.in(Units.Radians), 0.0)
     );
 
+    m_shooter3d = new Pose3d(new Translation3d(-0.175,-0.038,0.31), new Rotation3d(0, m_simShooterAngleState.position-0.41, 0));
     m_simShooterJoint.setAngle(Rotation2d.fromRadians(Math.PI - m_simShooterAngleState.position));
   }
 
@@ -649,6 +656,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public boolean hasBeenShot() {
     return NOTE_SHOT_DETECTOR.calculate(m_topFlywheelMotor.getOutputCurrent().compareTo(NOTE_SHOT_CURRENT_THRESHOLD) > 0);
+  }
+
+  /**
+   * Get current angle of the shooter mechanism
+   * @return Angle in degrees of shooter mechanism
+   */
+  public double getSimShooterAngle() {
+    return getCurrentState().angle.in(Units.Degrees);
   }
 
   @Override
