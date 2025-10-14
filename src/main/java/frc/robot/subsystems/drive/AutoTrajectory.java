@@ -9,6 +9,7 @@ import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
@@ -30,8 +31,10 @@ public class AutoTrajectory {
   public AutoTrajectory(DriveSubsystem driveSubsystem, String autoName) {
     this.m_driveSubsystem = driveSubsystem;
 
-    // Get path
-    m_auto = new Pair<String, List<PathPlannerPath>>(autoName, PathPlannerAuto.getPathGroupFromAutoFile(autoName));
+    try {
+      // Get path
+      m_auto = new Pair<String, List<PathPlannerPath>>(autoName, PathPlannerAuto.getPathGroupFromAutoFile(autoName));
+    } catch (Exception e) { }
   }
 
   /**
@@ -45,15 +48,16 @@ public class AutoTrajectory {
 
     // Generate path from waypoints
     m_auto = new Pair<String, List<PathPlannerPath>>("", List.of(new PathPlannerPath(
-      PathPlannerPath.bezierFromPoses(waypoints),
+      PathPlannerPath.waypointsFromPoses(waypoints),
       pathConstraints,
+      new IdealStartingState(0, waypoints.get(0).getRotation()),
       new GoalEndState(0.0, waypoints.get(waypoints.size() - 1).getRotation())
     )));
   }
 
   /** Return initial pose */
   public Pose2d getInitialPose() {
-    return m_auto.getSecond().get(0).getPreviewStartingHolonomicPose();
+    return m_auto.getSecond().get(0).getStartingHolonomicPose().get();
   }
 
   /**

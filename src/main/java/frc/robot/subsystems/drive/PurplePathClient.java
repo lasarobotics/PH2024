@@ -18,7 +18,8 @@ import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.JSONObject;
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.commands.FollowPathHolonomic;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
@@ -27,6 +28,7 @@ import com.pathplanner.lib.path.RotationTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -61,7 +63,7 @@ public class PurplePathClient {
 
     // Start connectivity check thread
     m_periodicNotifier.setName(getClass().getSimpleName());
-    m_periodicNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
+    m_periodicNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_HZ.asPeriod().in(Units.Seconds));
   }
 
   /**
@@ -102,15 +104,23 @@ public class PurplePathClient {
    * @return Underlying PathPlanner command to use
    */
   private Command getPathPlannerCommand(PathPlannerPath path) {
-    return new FollowPathHolonomic(
-      path,
-      m_driveSubsystem::getPose,
-      m_driveSubsystem::getChassisSpeeds,
-      m_driveSubsystem::autoDrive,
-      m_driveSubsystem.getPathFollowerConfig(),
-      () -> false,
-      m_driveSubsystem
-    );
+    try{
+      RobotConfig config = RobotConfig.fromGUISettings();
+      return new FollowPathCommand(
+        path,
+        m_driveSubsystem::getPose,
+        m_driveSubsystem::getChassisSpeeds,
+        m_driveSubsystem::autoDrive,
+        m_driveSubsystem.getPathFollowerConfig(),
+        config,
+        () -> false,
+        m_driveSubsystem
+      );
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+    return null;
   }
 
   /**
@@ -167,8 +177,8 @@ public class PurplePathClient {
       new GoalEndState(
         isClose ? 0.0
                 : Math.min(
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * distance)
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * distance)
                 ),
         finalApproachPose.getRotation()
       )

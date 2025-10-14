@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Percent;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +14,14 @@ import java.util.Optional;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.DriveWheel;
-import org.lasarobotics.drive.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
+import org.lasarobotics.drive.swerve.DriveWheel;
+import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.SparkPIDConfig;
 import org.lasarobotics.led.LEDStrip;
+import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.lasarobotics.vision.AprilTagCamera.Resolution;
 
@@ -33,9 +36,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Dimensionless;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.shooter.ShooterSubsystem.State;
@@ -54,7 +58,7 @@ import frc.robot.subsystems.shooter.ShooterSubsystem.State;
  */
 public final class Constants {
   public static class Field {
-    public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
     public static final Translation2d CENTER = new Translation2d(FIELD_LAYOUT.getFieldLength() / 2, FIELD_LAYOUT.getFieldWidth() / 2);
 
     public static final AprilTag BLUE_SPEAKER = getTag(7).get();
@@ -86,7 +90,7 @@ public final class Constants {
   public static class HID {
     public static final int PRIMARY_CONTROLLER_PORT = 0;
     public static final int SECONDARY_CONTROLLER_PORT = 1;
-    public static final double CONTROLLER_DEADBAND = 0.1;
+    public static final Dimensionless CONTROLLER_DEADBAND = Dimensionless.ofRelativeUnits(0.1, Percent);
   }
 
   public static class NamedCommands {
@@ -116,11 +120,15 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final DriveWheel DRIVE_WHEEL = new DriveWheel(Units.Inches.of(3.0), Units.Value.of(1.1), Units.Value.of(1.0));
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(8.0, 0.0, 0.3, 0.0, 0.0);
-    public static final Measure<Dimensionless> DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
-    public static final double DRIVE_TURN_SCALAR = 90.0;
-    public static final double DRIVE_LOOKAHEAD = 8;
+    public static final DriveWheel DRIVE_WHEEL = DriveWheel.create(Units.Inches.of(3.0), Units.Value.of(1.1), Units.Value.of(1.0));
+    public static final PIDConstants DRIVE_PID = PIDConstants.of(0.3, 0.0, 0.001, 0.0, 0.0);
+    public static final FFConstants DRIVE_FF = FFConstants.of(0.2, 0.0, 0.0, 0.0);
+    public static final PIDConstants ROTATE_PID = PIDConstants.of(2.0, 0.0, 0.1, 0.0, 0.0);
+    public static final FFConstants ROTATE_FF = FFConstants.of(0.2, 0.0, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(8.0, 0.0, 0.3, 0.0, 0.0);
+    public static final Dimensionless DRIVE_SLIP_RATIO = Units.Percent.of(8.0);
+    public static final Angle DRIVE_TURN_SCALAR = Units.Degrees.of(90.0);
+    public static final Time DRIVE_LOOKAHEAD = Units.Seconds.of(8);
 
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
@@ -137,10 +145,10 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final Measure<Distance> TOP_FLYWHEEL_DIAMETER = Units.Inches.of(2.40);
-    public static final Measure<Distance> BOTTOM_FLYWHEEL_DIAMETER = Units.Inches.of(2.42);
+    public static final Distance TOP_FLYWHEEL_DIAMETER = Units.Inches.of(2.40);
+    public static final Distance BOTTOM_FLYWHEEL_DIAMETER = Units.Inches.of(2.42);
     public static final SparkPIDConfig FLYWHEEL_CONFIG = new SparkPIDConfig(
-      new PIDConstants(
+      PIDConstants.of(
         0.32,
         2e-3,
         0.08,
@@ -152,7 +160,7 @@ public final class Constants {
       0.12
     );
     public static final SparkPIDConfig ANGLE_CONFIG = new SparkPIDConfig(
-      new PIDConstants(
+      PIDConstants.of(
         3.0,
         0.01,
         0.0,
@@ -167,10 +175,10 @@ public final class Constants {
       true
     );
     public static final TrapezoidProfile.Constraints ANGLE_MOTION_CONSTRAINT = new TrapezoidProfile.Constraints(
-      Units.DegreesPerSecond.of(360.0),
-      Units.DegreesPerSecond.of(360.0 * 8).per(Units.Second)
+      Units.DegreesPerSecond.of(360.0).magnitude(),
+      Units.DegreesPerSecond.of(360.0 * 8).per(Units.Second).magnitude()
     );
-    public static final List<Entry<Measure<Distance>,State>> SHOOTER_MAP = Arrays.asList(
+    public static final List<Entry<Distance,State>> SHOOTER_MAP = Arrays.asList(
       Map.entry(Units.Meters.of(0.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
       Map.entry(Units.Meters.of(1.00), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
       Map.entry(Units.Meters.of(1.40), new State(Units.MetersPerSecond.of(15.0), Units.Degrees.of(55.0))),
@@ -206,11 +214,11 @@ public final class Constants {
   }
 
   public static class Intake {
-    public static final Measure<Dimensionless> ROLLER_VELOCITY = Units.Percent.of(100);
+    public static final Dimensionless ROLLER_VELOCITY = Units.Percent.of(100);
   }
 
   public static class Climber {
-    public static final Measure<Dimensionless> CLIMBER_VELOCITY = Units.Percent.of(50);
+    public static final Dimensionless CLIMBER_VELOCITY = Units.Percent.of(50);
   }
 
   public static class DriveHardware {

@@ -7,11 +7,10 @@ package frc.robot.subsystems.intake;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.units.Dimensionless;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,10 +27,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private Spark m_rollerMotor;
 
-  private final Measure<Dimensionless> ROLLER_VELOCITY;
+  private final Dimensionless ROLLER_VELOCITY;
 
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(Hardware intakeHardware, Measure<Dimensionless> rollerVelocity) {
+  public IntakeSubsystem(Hardware intakeHardware, Dimensionless rollerVelocity) {
     this.m_rollerMotor = intakeHardware.rollerMotor;
     ROLLER_VELOCITY = rollerVelocity;
     this.m_rollerMotor = intakeHardware.rollerMotor;

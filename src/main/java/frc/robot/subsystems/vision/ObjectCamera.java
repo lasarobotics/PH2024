@@ -16,9 +16,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Units;
 import frc.robot.Constants;
 import org.lasarobotics.vision.AprilTagCamera.Resolution;
@@ -80,7 +79,7 @@ public class ObjectCamera implements AutoCloseable {
   }
 
   public Optional<PhotonTrackedTarget> getBestTarget() {
-    List<PhotonTrackedTarget> targets = m_camera.getLatestResult().getTargets();
+    List<PhotonTrackedTarget> targets = m_camera.getAllUnreadResults().get(0).getTargets();
 
     PhotonTrackedTarget bestTarget = null;
     double bestTargetScore = Double.MAX_VALUE; // lower is better
@@ -113,10 +112,10 @@ public class ObjectCamera implements AutoCloseable {
     * Get distance to game object
     * @return Distance to object, empty if undetected
     */
-  public Optional<Measure<Distance>> getDistance() {
+  public Optional<Distance> getDistance() {
     if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
 
-    PhotonPipelineResult result = m_camera.getLatestResult();
+    PhotonPipelineResult result = m_camera.getAllUnreadResults().get(0);
     if (!result.hasTargets()) return Optional.empty();
 
     double range = PhotonUtils.calculateDistanceToTargetMeters(
@@ -133,9 +132,9 @@ public class ObjectCamera implements AutoCloseable {
     * Get yaw angle to target
     * @return Yaw angle to target, empty if undetected
     */
-  public Optional<Measure<Angle>> getYaw() {
+  public Optional<Angle> getYaw() {
     if (getObjectArea().orElse(0.0) < MIN_OBJECT_AREA) return Optional.empty();
-    PhotonPipelineResult result = m_camera.getLatestResult();
+    PhotonPipelineResult result = m_camera.getAllUnreadResults().get(0);
     if (!result.hasTargets()) return Optional.empty();
     return Optional.of(Units.Degrees.of(result.getBestTarget().getYaw()));
   }
@@ -149,13 +148,13 @@ public class ObjectCamera implements AutoCloseable {
   }
 
   public Optional<Double> getObjectArea() {
-    PhotonPipelineResult result = m_camera.getLatestResult();
+    PhotonPipelineResult result = m_camera.getAllUnreadResults().get(0);
     if (!result.hasTargets()) return Optional.empty();
     return Optional.of(result.getBestTarget().getArea());
   }
 
   public boolean objectIsVisible() {
-    return m_camera.getLatestResult().hasTargets();
+    return m_camera.getAllUnreadResults().get(0).hasTargets();
   }
 
   @Override

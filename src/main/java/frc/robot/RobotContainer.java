@@ -7,7 +7,6 @@ package frc.robot;
 import java.util.function.BooleanSupplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
-import com.revrobotics.REVPhysicsSim;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -384,9 +383,7 @@ public class RobotContainer {
   /**
    * Run simlation related methods
    */
-  public void simulationPeriodic() {
-    REVPhysicsSim.getInstance().run();
-  }
+  public void simulationPeriodic() {}
 
   /**
    * Run checks in auto

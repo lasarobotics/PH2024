@@ -7,11 +7,10 @@ package frc.robot.subsystems.climber;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.units.Dimensionless;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,10 +30,10 @@ public class ClimberSubsystem extends SubsystemBase {
   private Spark m_lClimberMotor;
   private Spark m_rClimberMotor;
 
-  private final Measure<Dimensionless> CLIMBER_VELOCITY;
+  private final Dimensionless CLIMBER_VELOCITY;
 
   /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem(Hardware climberHardware, Measure<Dimensionless> climberVelocity) {
+  public ClimberSubsystem(Hardware climberHardware, Dimensionless climberVelocity) {
     this.m_lClimberMotor = climberHardware.lClimberMotor;
     this.m_rClimberMotor = climberHardware.rClimberMotor;
 

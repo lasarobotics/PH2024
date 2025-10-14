@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.VisionSystemSim;
 
@@ -22,12 +21,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.AprilTagCamera.AprilTagCameraResult;
@@ -86,7 +83,7 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_sim = new VisionSystemSim(getName());
 
     // Load AprilTag field layout
-    m_fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    m_fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
     // PV estimates will always be blue
     m_fieldLayout.setOrigin(AprilTagFieldLayout.OriginPosition.kBlueAllianceWallRightSide);
 
@@ -231,8 +228,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Optional<Translation2d> getObjectLocation() {
 
-    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
-    Optional<Measure<Distance>> distance = m_objectCamera.getDistance();
+    Optional<Angle> yaw = m_objectCamera.getYaw();
+    Optional<Distance> distance = m_objectCamera.getDistance();
     Pose2d pose = m_poseSupplier.get();
     if (yaw.isEmpty() || distance.isEmpty() || pose == null) return Optional.empty();
 
@@ -251,8 +248,8 @@ public class VisionSubsystem extends SubsystemBase implements AutoCloseable {
    * Gets the object heading, relative to the camera.
    * @return the heading
    */
-  public Optional<Measure<Angle>> getObjectHeading() {
-    Optional<Measure<Angle>> yaw = m_objectCamera.getYaw();
+  public Optional<Angle> getObjectHeading() {
+    Optional<Angle> yaw = m_objectCamera.getYaw();
     if (yaw.isEmpty()) return Optional.empty();
     return yaw;
   }

@@ -4,12 +4,15 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import java.nio.file.Path;
 
 import org.lasarobotics.hardware.PurpleManager;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.LoggedRobot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -20,14 +23,14 @@ public class Robot extends LoggedRobot {
   private RobotContainer m_robotContainer;
 
   public Robot() {
-    super(GlobalConstants.ROBOT_LOOP_PERIOD);
+    super(GlobalConstants.ROBOT_LOOP_HZ.asPeriod().abs(Seconds));
   }
 
   @Override
   public void robotInit() {
     PurpleManager.initialize(
       this,
-      AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+      AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
       Path.of("/media/sda1"),
       BuildConstants.MAVEN_NAME,
       BuildConstants.GIT_SHA,

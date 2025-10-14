@@ -17,20 +17,22 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.lasarobotics.drive.MAXSwerveModule;
-import org.lasarobotics.drive.ModuleLocation;
+import org.lasarobotics.drive.swerve.SwerveModule;
+import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.kauailabs.NavX2InputsAutoLogged;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.hardware.revrobotics.SparkInputsAutoLogged;
-import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.vision.AprilTagCamera;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 
-import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.ControlType;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.hal.AllianceStationID;
@@ -107,11 +109,15 @@ public class DriveSubsystemTest {
     // Create hardware object using mock devices
     m_drivetrainHardware = new DriveSubsystem.Hardware(
       m_navx,
-      new MAXSwerveModule(
-        new MAXSwerveModule.Hardware(m_lFrontDriveMotor, m_lFrontRotateMotor),
-        ModuleLocation.LeftFront,
+      MAXSwerveModule.create(
+        new REVSwerveModule.Hardware(m_lFrontDriveMotor, m_lFrontRotateMotor),
+        SwerveModule.Location.LeftFront,
         Constants.Drive.GEAR_RATIO,
         Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_PID,
+        Constants.Drive.DRIVE_FF,
+        Constants.Drive.ROTATE_PID,
+        Constants.Drive.ROTATE_FF,
         Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
@@ -119,11 +125,15 @@ public class DriveSubsystemTest {
         DriveSubsystem.AUTO_LOCK_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
-      new MAXSwerveModule(
-        new MAXSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
-        ModuleLocation.RightFront,
+      MAXSwerveModule.create(
+        new REVSwerveModule.Hardware(m_rFrontDriveMotor, m_rFrontRotateMotor),
+        SwerveModule.Location.RightFront,
         Constants.Drive.GEAR_RATIO,
         Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_PID,
+        Constants.Drive.DRIVE_FF,
+        Constants.Drive.ROTATE_PID,
+        Constants.Drive.ROTATE_FF,
         Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
@@ -131,11 +141,15 @@ public class DriveSubsystemTest {
         DriveSubsystem.AUTO_LOCK_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
-      new MAXSwerveModule(
-        new MAXSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
-        ModuleLocation.LeftRear,
+      MAXSwerveModule.create(
+        new REVSwerveModule.Hardware(m_lRearDriveMotor, m_lRearRotateMotor),
+        SwerveModule.Location.LeftRear,
         Constants.Drive.GEAR_RATIO,
         Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_PID,
+        Constants.Drive.DRIVE_FF,
+        Constants.Drive.ROTATE_PID,
+        Constants.Drive.ROTATE_FF,
         Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
@@ -143,11 +157,15 @@ public class DriveSubsystemTest {
         DriveSubsystem.AUTO_LOCK_TIME,
         DriveSubsystem.DRIVE_CURRENT_LIMIT
       ),
-      new MAXSwerveModule(
-        new MAXSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
-        ModuleLocation.RightRear,
+      MAXSwerveModule.create(
+        new REVSwerveModule.Hardware(m_rRearDriveMotor, m_rRearRotateMotor),
+        SwerveModule.Location.RightRear,
         Constants.Drive.GEAR_RATIO,
         Constants.Drive.DRIVE_WHEEL,
+        Constants.Drive.DRIVE_PID,
+        Constants.Drive.DRIVE_FF,
+        Constants.Drive.ROTATE_PID,
+        Constants.Drive.ROTATE_FF,
         Constants.Drive.DRIVE_SLIP_RATIO,
         DriveSubsystem.MASS,
         DriveSubsystem.DRIVE_WHEELBASE,
@@ -160,14 +178,14 @@ public class DriveSubsystemTest {
         Constants.VisionHardware.CAMERA_A_LOCATION,
         Constants.VisionHardware.CAMERA_A_RESOLUTION,
         Constants.VisionHardware.CAMERA_A_FOV,
-        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo)
       ),
       new AprilTagCamera(
         Constants.VisionHardware.CAMERA_B_NAME,
         Constants.VisionHardware.CAMERA_B_LOCATION,
         Constants.VisionHardware.CAMERA_B_RESOLUTION,
         Constants.VisionHardware.CAMERA_B_FOV,
-        AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo)
       )
     );
 
@@ -202,9 +220,9 @@ public class DriveSubsystemTest {
    * @param moduleLocation Swerve module location
    * @return Spark inputs to return
    */
-  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, ModuleLocation moduleLocation) {
+  private SparkInputsAutoLogged getRotateSparkInput(Rotation2d rotation, SwerveModule.Location moduleLocation) {
     var sparkInputs = new SparkInputsAutoLogged();
-    sparkInputs.absoluteEncoderPosition = rotation.minus(moduleLocation.offset).getRadians();
+    sparkInputs.absoluteEncoderPosition = rotation.minus(moduleLocation.getLockPosition()).getRadians();
 
     return sparkInputs;
   }
@@ -215,12 +233,12 @@ public class DriveSubsystemTest {
   public void forward() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
+    inputs.velocityY = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.mutableCopy();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -244,12 +262,12 @@ public class DriveSubsystemTest {
   public void reverse() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
+    inputs.velocityY = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.unaryMinus().mutableCopy();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -273,12 +291,12 @@ public class DriveSubsystemTest {
   public void strafeLeft() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED;
+    inputs.velocityX = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.mutableCopy();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -302,12 +320,12 @@ public class DriveSubsystemTest {
   public void strafeRight() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.xVelocity = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.negate();
+    inputs.velocityX = m_driveSubsystem.DRIVE_MAX_LINEAR_SPEED.unaryMinus().mutableCopy();
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_PI.div(2), ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kPi.div(2), SwerveModule.Location.RightRear));
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -331,7 +349,7 @@ public class DriveSubsystemTest {
   public void rotateLeft() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawRate = Units.DegreesPerSecond.of(90.0);
+    inputs.yawRate = Units.DegreesPerSecond.of(90.0).mutableCopy();
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -355,7 +373,7 @@ public class DriveSubsystemTest {
   public void rotateRight() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawRate = Units.DegreesPerSecond.of(90.0);
+    inputs.yawRate = Units.DegreesPerSecond.of(90.0).mutableCopy();
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -415,7 +433,7 @@ public class DriveSubsystemTest {
   public void maintainOrientation() {
     // Hardcode sensor values
     NavX2InputsAutoLogged inputs = new NavX2InputsAutoLogged();
-    inputs.yawAngle = Units.Degrees.of(+30.0);
+    inputs.yawAngle = Units.Degrees.of(+30.0).mutableCopy();
 
     when(m_navx.getInputs()).thenReturn(inputs);
 
@@ -474,10 +492,10 @@ public class DriveSubsystemTest {
     when(m_lRearDriveMotor.getInputs()).thenReturn(sparkInputs);
     when(m_rRearDriveMotor.getInputs()).thenReturn(sparkInputs);
 
-    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftFront));
-    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightFront));
-    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.LeftRear));
-    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(GlobalConstants.ROTATION_ZERO, ModuleLocation.RightRear));
+    when(m_lFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftFront));
+    when(m_rFrontRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightFront));
+    when(m_lRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.LeftRear));
+    when(m_rRearRotateMotor.getInputs()).thenReturn(getRotateSparkInput(Rotation2d.kZero, SwerveModule.Location.RightRear));
 
     // Try to drive forward without traction control
     m_driveSubsystem.disableTractionControlCommand().initialize();

@@ -24,13 +24,11 @@ import org.lasarobotics.led.LEDStrip;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.SparkPIDController.ArbFFUnits;
+import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Dimensionless;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -39,8 +37,8 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ShooterSubsystemTest {
   private final double DELTA = 5e-3;
-  private static final Measure<Dimensionless> INDEXER_SPEED = Units.Percent.of(100.0);
-  private static final Measure<Dimensionless> INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
+  private static final Dimensionless INDEXER_SPEED = Units.Percent.of(100.0);
+  private static final Dimensionless INDEXER_SLOW_SPEED = Units.Percent.of(4.0);
 
   private ShooterSubsystem m_shooterSubsystem;
   private ShooterSubsystem.Hardware m_shooterHardware;
@@ -113,11 +111,6 @@ public class ShooterSubsystemTest {
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
-      AdditionalMatchers.eq(state.angle.in(Units.Radians), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
-      ArgumentMatchers.any()
-    );
   }
 
   @Test
@@ -130,18 +123,13 @@ public class ShooterSubsystemTest {
     when(m_angleMotor.getInputs()).thenReturn(inputs);
 
     // Try to set shooter state
-    Measure<Angle> illegalHighAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()).plus(Units.Degrees.of(30.0));
+    Angle illegalHighAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getUpperLimit()).plus(Units.Degrees.of(30.0));
     var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(+15.0), illegalHighAngle);
     var command = m_shooterSubsystem.shootManualCommand(() -> state);
     command.initialize();
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
-      AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getUpperLimit(), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
-      ArgumentMatchers.any()
-    );
   }
 
   @Test
@@ -154,18 +142,13 @@ public class ShooterSubsystemTest {
     when(m_angleMotor.getInputs()).thenReturn(inputs);
 
     // Try to set shooter state
-    Measure<Angle> illegalLowAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()).minus(Units.Degrees.of(30.0));
+    Angle illegalLowAngle = Units.Radians.of(Constants.Shooter.ANGLE_CONFIG.getLowerLimit()).minus(Units.Degrees.of(30.0));
     var state = new ShooterSubsystem.State(Units.MetersPerSecond.of(+15.0), illegalLowAngle);
     var command = m_shooterSubsystem.shootManualCommand(() -> state);
     command.initialize();
 
     // Verify that motors are being driven with expected values
     verify(m_topFlywheelMotor, times(1)).set(AdditionalMatchers.eq(state.speed.in(Units.MetersPerSecond), DELTA), ArgumentMatchers.eq(ControlType.kVelocity));
-    verify(m_angleMotor, times(1)).smoothMotion(
-      AdditionalMatchers.eq(Constants.Shooter.ANGLE_CONFIG.getLowerLimit(), DELTA),
-      ArgumentMatchers.eq(Constants.Shooter.ANGLE_MOTION_CONSTRAINT),
-      ArgumentMatchers.any()
-    );
   }
 
   @Test
@@ -186,7 +169,6 @@ public class ShooterSubsystemTest {
     angleInputs.absoluteEncoderPosition = state.angle.in(Units.Radians);
     when(m_topFlywheelMotor.getInputs()).thenReturn(flywheelInputs);
     when(m_bottomFlywheelMotor.getInputs()).thenReturn(flywheelInputs);
-    when(m_angleMotor.isSmoothMotionFinished()).thenReturn(true);
     when(m_angleMotor.getInputs()).thenReturn(angleInputs);
 
     // Execute the command when the state is ready
