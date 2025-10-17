@@ -165,7 +165,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public ShooterSubsystem(Hardware shooterHardware, SparkPIDConfig flywheelConfig, SparkPIDConfig angleConfig,
                           TrapezoidProfile.Constraints angleConstraint, Distance topFlywheelDiameter, Distance bottomFlywheelDiameter,
                           List<Entry<Distance, State>> shooterMap,
-                          Supplier<Pose2d> poseSupplier, Supplier<AprilTag> targetSupplier) {
+                          // Supplier<Pose2d> poseSupplier,
+                          Supplier<AprilTag> targetSupplier) {
     setSubsystem(getClass().getSimpleName());
     MAX_FLYWHEEL_SPEED = Units.MetersPerSecond.of((shooterHardware.topFlywheelMotor.getKind().getMaxRPM() / 60) * (topFlywheelDiameter.in(Units.Meters) * Math.PI));
     this.m_topFlywheelMotor = shooterHardware.topFlywheelMotor;
@@ -176,7 +177,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_flywheelConfig = flywheelConfig;
     this.m_angleConfig = angleConfig;
     this.m_angleConstraint = angleConstraint;
-    this.m_poseSupplier = poseSupplier;
+    // this.m_poseSupplier = poseSupplier;
     this.m_targetSupplier = targetSupplier;
 
     var topFlywheelMotorConfig = new SparkMaxConfig();
@@ -452,7 +453,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Update target distance
     m_targetDistance = Units.Meters.of(MathUtil.clamp(
-      m_poseSupplier.get().getTranslation().getDistance(m_targetSupplier.get().pose.toPose2d().getTranslation()),
+      10.0,
       MIN_SHOOTING_DISTANCE.in(Units.Meters),
       MAX_SHOOTING_DISTANCE.in(Units.Meters)
     ));
