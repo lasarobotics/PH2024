@@ -155,7 +155,7 @@ public class RobotContainer {
     PRIMARY_CONTROLLER.a().whileTrue(SHOOTER_SUBSYSTEM.shootPodiumCommand());
 
     // B Button - pass note
-    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.passCommand());
+    PRIMARY_CONTROLLER.b().whileTrue(SHOOTER_SUBSYSTEM.testShooterCommand());
 
     // X button - shoot note into speaker from against the subwoofer
     PRIMARY_CONTROLLER.x().whileTrue(SHOOTER_SUBSYSTEM.shootSpeakerCommand());

@@ -343,6 +343,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * test only shooter motors
+   */
+  private void testOnlyShooterMotors() {
+    m_topFlywheelMotor.set(State.SPEAKER_SCORE_STATE.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+    m_bottomFlywheelMotor.set(State.SPEAKER_SCORE_STATE.speed.in(Units.MetersPerSecond), ControlType.kVelocity);
+  }
+
+  /**
    * Normalize shooter state to be within valid values
    * @param state Desired state
    * @return Valid shooter state
@@ -672,6 +680,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public Command spinupCommand() {
     return run(() -> setState(new State(SPINUP_SPEED, m_desiredShooterState.angle), false));
+  }
+
+  /**
+   * Test shooter
+   */
+  public Command testShooterCommand() {
+    return run(() -> testOnlyShooterMotors());
   }
 
   /**
