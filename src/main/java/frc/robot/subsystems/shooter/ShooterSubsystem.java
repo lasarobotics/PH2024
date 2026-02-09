@@ -19,6 +19,7 @@ import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.GlobalConstants;
 import org.littletonrobotics.junction.Logger;
 
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -26,7 +27,6 @@ import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.EncoderConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -233,9 +233,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     bottomFlywheelMotorConfig.smartCurrentLimit((int)FLYWHEEL_CURRENT_LIMIT.in(Units.Amps));
     angleMotorConfig.smartCurrentLimit((int)ANGLE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
 
-    m_topFlywheelMotor.configure(topFlywheelMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    m_bottomFlywheelMotor.configure(bottomFlywheelMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    m_angleMotor.configure(angleMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    // m_topFlywheelMotor.configure(topFlywheelMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    // m_bottomFlywheelMotor.configure(bottomFlywheelMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    // m_angleMotor.configure(angleMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     m_topFlywheelMotor.setInverted(m_flywheelConfig.getInverted());
     m_bottomFlywheelMotor.setInverted(m_flywheelConfig.getInverted());
@@ -248,8 +248,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.setIdleMode(IdleMode.kBrake);
 
     // Disable indexer hard limits
-    m_indexerMotor.disableForwardLimitSwitch();
-    m_indexerMotor.disableReverseLimitSwitch();
+    // m_indexerMotor.disableForwardLimitSwitch();
+    // m_indexerMotor.disableReverseLimitSwitch();
 
     // Initialize shooter state
     m_desiredShooterState = getCurrentState();
@@ -502,11 +502,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return runEnd(
       () -> getDefaultCommand().execute(),
       () -> {
-        m_indexerMotor.disableForwardLimitSwitch();
+        // m_indexerMotor.disableForwardLimitSwitch();
         feedStop();
       }
     ).beforeStarting(() -> {
-        m_indexerMotor.enableForwardLimitSwitch();
+        // m_indexerMotor.enableForwardLimitSwitch();
         feedStart(true);
     }).until(() -> isObjectPresent());
   }
@@ -518,12 +518,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public Command sourceIntakeCommand() {
     return startEnd(
       () -> {
-        m_indexerMotor.enableReverseLimitSwitch();
+        // m_indexerMotor.enableReverseLimitSwitch();
         feedReverse(true);
         setState(State.SOURCE_INTAKE_STATE, false);
       },
       () -> {
-        m_indexerMotor.disableReverseLimitSwitch();
+        // m_indexerMotor.disableReverseLimitSwitch();
         feedStop();
         resetState();
       }

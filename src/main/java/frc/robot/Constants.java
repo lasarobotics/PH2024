@@ -29,7 +29,6 @@ import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -239,7 +238,7 @@ public final class Constants {
     public static final double MAX_SPEED = 4.4196; // 14.5 feet to meters
     public static final double DEADBAND = 0.08;
     public static final double TRANSLATION_SCALE = 0.8;
-    public static final double GIMP_SCALE = 0.05;
+    public static final double GIMP_SCALE = 1.0;
     public static final double AUTO_DRIVE_TIME = 2;
     public static final double AUTO_FORWARD_SPEED = -0.15;
   }
